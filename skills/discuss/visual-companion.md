@@ -1,271 +1,274 @@
-# Visual Companion Guide
+# 可视化伴侣指南
 
-Browser-based visual companion for showing mockups, diagrams, and options during design discussions.
+在设计讨论过程中，通过浏览器展示线框图、架构图和方案对比。
 
-## When to Use
+> **路径说明：** 以下脚本路径为 `skills/discuss/scripts/`，相对于插件安装目录。
+> 安装为个人 skill 后路径为 `~/.factory/skills/discuss/scripts/`。
 
-Decide per-question, not per-session. The test: **would the user understand this better by seeing it than reading it?**
+## 使用时机
 
-**Use the browser** when the content itself is visual:
+**按问题判断，而非按 session 判断。** 判断标准：**用户看到比读到更容易理解吗？**
 
-- **UI mockups** — wireframes, layouts, navigation structures, component designs
-- **Architecture diagrams** — system components, data flow, relationship maps
-- **Side-by-side visual comparisons** — comparing two layouts, two color schemes, two design directions
-- **Design polish** — when the question is about look and feel, spacing, visual hierarchy
-- **Spatial relationships** — state machines, flowcharts, entity relationships rendered as diagrams
+**使用浏览器** 当内容本身是可视化的：
 
-**Use the terminal** when the content is text or tabular:
+- **UI 线框图** — 布局、导航结构、组件设计
+- **架构图** — 系统组件、数据流、关系图
+- **并排可视化对比** — 对比两种布局、两种配色、两种设计方向
+- **设计细节** — 问题关于外观、间距、视觉层次时
+- **空间关系** — 状态机、流程图、实体关系图
 
-- **Requirements and scope questions** — "what does X mean?", "which features are in scope?"
-- **Conceptual A/B/C choices** — picking between approaches described in words
-- **Tradeoff lists** — pros/cons, comparison tables
-- **Technical decisions** — API design, data modeling, architectural approach selection
-- **Clarifying questions** — anything where the answer is words, not a visual preference
+**使用终端** 当内容是文本或表格：
 
-A question *about* a UI topic is not automatically a visual question. "What kind of wizard do you want?" is conceptual — use the terminal. "Which of these wizard layouts feels right?" is visual — use the browser.
+- **需求和范围问题** — "X 是什么意思？"、"哪些功能在范围内？"
+- **概念性 A/B/C 选择** — 在文字描述的方案间选择
+- **权衡列表** — 优缺点、对比表
+- **技术决策** — API 设计、数据建模、架构方案选择
+- **澄清性问题** — 答案是文字而非视觉偏好的任何情况
 
-## How It Works
+关于 UI 话题的问题不等于可视化问题。"你想要什么类型的向导？"是概念问题——用终端。"这两种向导布局哪个更合适？"是可视化问题——用浏览器。
 
-The server watches a directory for HTML files and serves the newest one to the browser. You write HTML content, the user sees it in their browser and can click to select options. Selections are recorded to a `.events` file that you read on your next turn.
+## 工作原理
 
-**Content fragments vs full documents:** If your HTML file starts with `<!DOCTYPE` or `<html`, the server serves it as-is (just injects the helper script). Otherwise, the server automatically wraps your content in the frame template — adding the header, CSS theme, selection indicator, and all interactive infrastructure. **Write content fragments by default.** Only write full documents when you need complete control over the page.
+服务器监视一个目录中的 HTML 文件，将最新的文件提供给浏览器。你写 HTML 内容，用户在浏览器中看到并可以点击选择方案。选择结果记录到 `.events` 文件，你在下一轮对话中读取。
 
-## Starting a Session
+**内容片段 vs 完整文档：** 如果 HTML 文件以 `<!DOCTYPE` 或 `<html` 开头，服务器原样提供（只注入辅助脚本）。否则，服务器自动将你的内容包装在框架模板中——添加页眉、CSS 主题、选择指示器和所有交互基础设施。**默认写内容片段。** 只有在需要完全控制页面时才写完整文档。
+
+## 启动 Session
 
 ```bash
-# Start server with persistence (mockups saved to project)
-~/.factory/skills/discuss/scripts/start-server.sh --project-dir /path/to/project
+# 带持久化地启动服务器（线框图保存到项目）
+skills/discuss/scripts/start-server.sh --project-dir /path/to/project
 
-# Returns: {"type":"server-started","port":52341,"url":"http://localhost:52341",
-#           "screen_dir":"/path/to/project/.superpowers/brainstorm/12345-1706000000"}
+# 返回: {"type":"server-started","port":52341,"url":"http://localhost:52341",
+#        "screen_dir":"/path/to/project/.superpowers/brainstorm/12345-1706000000"}
 ```
 
-Save `screen_dir` from the response. Tell user to open the URL.
+保存响应中的 `screen_dir`。告诉用户打开 URL。
 
-**Finding connection info:** The server writes its startup JSON to `$SCREEN_DIR/.server-info`. If you launched the server in the background and didn't capture stdout, read that file to get the URL and port. When using `--project-dir`, check `<project>/.superpowers/brainstorm/` for the session directory.
+**查找连接信息：** 服务器将启动 JSON 写入 `$SCREEN_DIR/.server-info`。如果你在后台启动了服务器且没有捕获 stdout，读取该文件获取 URL 和端口。使用 `--project-dir` 时，在 `<project>/.superpowers/brainstorm/` 中查找 session 目录。
 
-**Note:** Pass the project root as `--project-dir` so mockups persist in `.superpowers/brainstorm/` and survive server restarts. Without it, files go to `/tmp` and get cleaned up. Remind the user to add `.superpowers/` to `.gitignore` if it's not already there.
+**注意：** 传入项目根目录作为 `--project-dir`，使线框图持久化到 `.superpowers/brainstorm/` 并在服务器重启后仍然可用。不传则文件放到 `/tmp` 会被清理。提醒用户将 `.superpowers/` 添加到 `.gitignore`（如果尚未添加）。
 
-**Launching the server by platform:**
+**按平台启动服务器：**
 
-**Droid (macOS / Linux):**
+**Droid（macOS / Linux）：**
 ```bash
-# Default mode works — the script backgrounds the server itself
-~/.factory/skills/discuss/scripts/start-server.sh --project-dir /path/to/project
+# 默认模式可用——脚本本身会在后台运行服务器
+skills/discuss/scripts/start-server.sh --project-dir /path/to/project
 ```
 
-**Droid (Windows):**
+**Droid（Windows）：**
 ```bash
-# Windows auto-detects and uses foreground mode, which blocks the tool call.
-# Use run_in_background: true (fireAndForget) so the server survives across conversation turns.
-~/.factory/skills/discuss/scripts/start-server.sh --project-dir /path/to/project
+# Windows 自动检测并使用前台模式，这会阻塞工具调用。
+# 使用 fireAndForget: true 使服务器在对话轮次间保持运行。
+skills/discuss/scripts/start-server.sh --project-dir /path/to/project
 ```
-When calling this via Execute tool, set `fireAndForget: true`. Then read `$SCREEN_DIR/.server-info` on the next turn to get the URL and port.
+通过 Execute 工具调用时，设置 `fireAndForget: true`。然后在下一轮对话中读取 `$SCREEN_DIR/.server-info` 获取 URL 和端口。
 
-**Other environments:** The server must keep running in the background across conversation turns. If your environment reaps detached processes, use `--foreground` and launch the command with your platform's background execution mechanism.
+**其他环境：** 服务器必须在对话轮次间持续在后台运行。如果你的环境会回收分离的进程，使用 `--foreground` 并通过平台的后台执行机制启动命令。
 
-If the URL is unreachable from your browser (common in remote/containerized setups), bind a non-loopback host:
+如果 URL 无法从浏览器访问（远程/容器化环境常见），绑定非回环地址：
 
 ```bash
-~/.factory/skills/discuss/scripts/start-server.sh \
+skills/discuss/scripts/start-server.sh \
   --project-dir /path/to/project \
   --host 0.0.0.0 \
   --url-host localhost
 ```
 
-Use `--url-host` to control what hostname is printed in the returned URL JSON.
+用 `--url-host` 控制返回的 URL JSON 中显示的主机名。
 
-## The Loop
+## 循环
 
-1. **Check server is alive**, then **write HTML** to a new file in `screen_dir`:
-   - Before each write, check that `$SCREEN_DIR/.server-info` exists. If it doesn't (or `.server-stopped` exists), the server has shut down — restart it with `start-server.sh` before continuing. The server auto-exits after 30 minutes of inactivity.
-   - Use semantic filenames: `platform.html`, `visual-style.html`, `layout.html`
-   - **Never reuse filenames** — each screen gets a fresh file
-   - Use Create tool — **never use cat/heredoc** (dumps noise into terminal)
-   - Server automatically serves the newest file
+1. **确认服务器运行**，然后**写 HTML** 到 `screen_dir` 中的新文件：
+   - 每次写入前，检查 `$SCREEN_DIR/.server-info` 是否存在。如果不存在（或 `.server-stopped` 存在），服务器已关闭——在继续之前用 `start-server.sh` 重启。服务器在无活动 30 分钟后自动退出。
+   - 使用语义化文件名：`platform.html`、`visual-style.html`、`layout.html`
+   - **不要复用文件名** — 每个屏幕使用新文件
+   - 使用 Create 工具——**不要用 cat/heredoc**（会在终端输出噪音）
+   - 服务器自动提供最新文件
 
-2. **Tell user what to expect and end your turn:**
-   - Remind them of the URL (every step, not just first)
-   - Give a brief text summary of what's on screen (e.g., "Showing 3 layout options for the homepage")
-   - Ask them to respond in the terminal: "Take a look and let me know what you think. Click to select an option if you'd like."
+2. **告诉用户预期看到什么，然后结束本轮：**
+   - 每一步都提醒 URL（不只是第一次）
+   - 简短描述屏幕上的内容（如"显示首页的 3 种布局方案"）
+   - 引导用户在终端回复："看一下，如果想选择某个方案可以点击。"
 
-3. **On your next turn** — after the user responds in the terminal:
-   - Read `$SCREEN_DIR/.events` if it exists — this contains the user's browser interactions (clicks, selections) as JSON lines
-   - Merge with the user's terminal text to get the full picture
-   - The terminal message is the primary feedback; `.events` provides structured interaction data
+3. **下一轮**——用户在终端回复后：
+   - 如果 `$SCREEN_DIR/.events` 存在就读取——其中包含用户的浏览器交互（点击、选择），每行一个 JSON 对象
+   - 结合用户的终端文字获取完整图像
+   - 终端消息是主要反馈；`.events` 提供结构化的交互数据
 
-4. **Iterate or advance** — if feedback changes current screen, write a new file (e.g., `layout-v2.html`). Only move to the next question when the current step is validated.
+4. **迭代或推进** — 如果反馈改变了当前屏幕，写新文件（如 `layout-v2.html`）。只有当前步骤确认后才进入下一个问题。
 
-5. **Unload when returning to terminal** — when the next step doesn't need the browser (e.g., a clarifying question, a tradeoff discussion), push a waiting screen to clear the stale content:
+5. **返回终端时卸载** — 当下一步不需要浏览器时（如澄清性问题、权衡讨论），推送等待屏幕以清除过期内容：
 
    ```html
-   <!-- filename: waiting.html (or waiting-2.html, etc.) -->
+   <!-- 文件名: waiting.html（或 waiting-2.html 等） -->
    <div style="display:flex;align-items:center;justify-content:center;min-height:60vh">
-     <p class="subtitle">Continuing in terminal...</p>
+     <p class="subtitle">在终端继续...</p>
    </div>
    ```
 
-   This prevents the user from staring at a resolved choice while the conversation has moved on. When the next visual question comes up, push a new content file as usual.
+   这防止用户盯着已经解决的选项看，而对话已经继续推进。下一个可视化问题出现时，正常推送新内容文件。
 
-6. Repeat until done.
+6. 重复直到完成。
 
-## Writing Content Fragments
+## 编写内容片段
 
-Write just the content that goes inside the page. The server wraps it in the frame template automatically (header, theme CSS, selection indicator, and all interactive infrastructure).
+只写放在页面内部的内容。服务器自动将其包装在框架模板中（页眉、主题 CSS、选择指示器和所有交互基础设施）。
 
-**Minimal example:**
+**最小示例：**
 
 ```html
-<h2>Which layout works better?</h2>
-<p class="subtitle">Consider readability and visual hierarchy</p>
+<h2>哪种布局更好？</h2>
+<p class="subtitle">考虑可读性和视觉层次</p>
 
 <div class="options">
   <div class="option" data-choice="a" onclick="toggleSelect(this)">
     <div class="letter">A</div>
     <div class="content">
-      <h3>Single Column</h3>
-      <p>Clean, focused reading experience</p>
+      <h3>单列</h3>
+      <p>清晰、专注的阅读体验</p>
     </div>
   </div>
   <div class="option" data-choice="b" onclick="toggleSelect(this)">
     <div class="letter">B</div>
     <div class="content">
-      <h3>Two Column</h3>
-      <p>Sidebar navigation with main content</p>
+      <h3>双列</h3>
+      <p>侧边导航 + 主内容区</p>
     </div>
   </div>
 </div>
 ```
 
-That's it. No `<html>`, no CSS, no `<script>` tags needed. The server provides all of that.
+就这些。不需要 `<html>`、CSS 或 `<script>` 标签。服务器全部提供。
 
-## CSS Classes Available
+## 可用 CSS 类
 
-The frame template provides these CSS classes for your content:
+框架模板为你的内容提供以下 CSS 类：
 
-### Options (A/B/C choices)
+### 选项（A/B/C 选择）
 
 ```html
 <div class="options">
   <div class="option" data-choice="a" onclick="toggleSelect(this)">
     <div class="letter">A</div>
     <div class="content">
-      <h3>Title</h3>
-      <p>Description</p>
+      <h3>标题</h3>
+      <p>描述</p>
     </div>
   </div>
 </div>
 ```
 
-**Multi-select:** Add `data-multiselect` to the container to let users select multiple options. Each click toggles the item. The indicator bar shows the count.
+**多选：** 在容器上添加 `data-multiselect`，允许用户选择多个选项。每次点击切换选中状态，指示栏显示数量。
 
 ```html
 <div class="options" data-multiselect>
-  <!-- same option markup — users can select/deselect multiple -->
+  <!-- 相同的 option 标记——用户可以选择/取消选择多个 -->
 </div>
 ```
 
-### Cards (visual designs)
+### 卡片（可视化设计）
 
 ```html
 <div class="cards">
   <div class="card" data-choice="design1" onclick="toggleSelect(this)">
-    <div class="card-image"><!-- mockup content --></div>
+    <div class="card-image"><!-- 线框图内容 --></div>
     <div class="card-body">
-      <h3>Name</h3>
-      <p>Description</p>
+      <h3>名称</h3>
+      <p>描述</p>
     </div>
   </div>
 </div>
 ```
 
-### Mockup container
+### 线框图容器
 
 ```html
 <div class="mockup">
-  <div class="mockup-header">Preview: Dashboard Layout</div>
-  <div class="mockup-body"><!-- your mockup HTML --></div>
+  <div class="mockup-header">预览：仪表盘布局</div>
+  <div class="mockup-body"><!-- 你的线框图 HTML --></div>
 </div>
 ```
 
-### Split view (side-by-side)
+### 并排视图
 
 ```html
 <div class="split">
-  <div class="mockup"><!-- left --></div>
-  <div class="mockup"><!-- right --></div>
+  <div class="mockup"><!-- 左侧 --></div>
+  <div class="mockup"><!-- 右侧 --></div>
 </div>
 ```
 
-### Pros/Cons
+### 优缺点
 
 ```html
 <div class="pros-cons">
-  <div class="pros"><h4>Pros</h4><ul><li>Benefit</li></ul></div>
-  <div class="cons"><h4>Cons</h4><ul><li>Drawback</li></ul></div>
+  <div class="pros"><h4>优点</h4><ul><li>优势</li></ul></div>
+  <div class="cons"><h4>缺点</h4><ul><li>劣势</li></ul></div>
 </div>
 ```
 
-### Mock elements (wireframe building blocks)
+### 模拟元素（线框图构建块）
 
 ```html
-<div class="mock-nav">Logo | Home | About | Contact</div>
+<div class="mock-nav">Logo | 首页 | 关于 | 联系</div>
 <div style="display: flex;">
-  <div class="mock-sidebar">Navigation</div>
-  <div class="mock-content">Main content area</div>
+  <div class="mock-sidebar">导航</div>
+  <div class="mock-content">主内容区</div>
 </div>
-<button class="mock-button">Action Button</button>
-<input class="mock-input" placeholder="Input field">
-<div class="placeholder">Placeholder area</div>
+<button class="mock-button">操作按钮</button>
+<input class="mock-input" placeholder="输入框">
+<div class="placeholder">占位区域</div>
 ```
 
-### Typography and sections
+### 排版和章节
 
-- `h2` — page title
-- `h3` — section heading
-- `.subtitle` — secondary text below title
-- `.section` — content block with bottom margin
-- `.label` — small uppercase label text
+- `h2` — 页面标题
+- `h3` — 小节标题
+- `.subtitle` — 标题下方的次要文本
+- `.section` — 有底部间距的内容块
+- `.label` — 小型大写标签文本
 
-## Browser Events Format
+## 浏览器事件格式
 
-When the user clicks options in the browser, their interactions are recorded to `$SCREEN_DIR/.events` (one JSON object per line). The file is cleared automatically when you push a new screen.
+用户在浏览器中点击选项时，交互记录到 `$SCREEN_DIR/.events`（每行一个 JSON 对象）。推送新屏幕时文件自动清空。
 
 ```jsonl
-{"type":"click","choice":"a","text":"Option A - Simple Layout","timestamp":1706000101}
-{"type":"click","choice":"c","text":"Option C - Complex Grid","timestamp":1706000108}
-{"type":"click","choice":"b","text":"Option B - Hybrid","timestamp":1706000115}
+{"type":"click","choice":"a","text":"选项 A - 简单布局","timestamp":1706000101}
+{"type":"click","choice":"c","text":"选项 C - 复杂网格","timestamp":1706000108}
+{"type":"click","choice":"b","text":"选项 B - 混合方案","timestamp":1706000115}
 ```
 
-The full event stream shows the user's exploration path — they may click multiple options before settling. The last `choice` event is typically the final selection, but the pattern of clicks can reveal hesitation or preferences worth asking about.
+完整的事件流显示用户的探索路径——他们可能点击多个选项再确定。最后一个 `choice` 事件通常是最终选择，但点击模式可以揭示犹豫或值得追问的偏好。
 
-If `.events` doesn't exist, the user didn't interact with the browser — use only their terminal text.
+如果 `.events` 不存在，用户没有与浏览器交互——只使用他们的终端文字。
 
-## Design Tips
+## 设计建议
 
-- **Scale fidelity to the question** — wireframes for layout, polish for polish questions
-- **Explain the question on each page** — "Which layout feels more professional?" not just "Pick one"
-- **Iterate before advancing** — if feedback changes current screen, write a new version
-- **2-4 options max** per screen
-- **Use real content when it matters** — for a photography portfolio, use actual images (Unsplash). Placeholder content obscures design issues.
-- **Keep mockups simple** — focus on layout and structure, not pixel-perfect design
+- **按问题调整保真度** — 布局问题用线框图，细节问题用高保真
+- **每页都说明问题** — "哪种布局更专业？"而不只是"选一个"
+- **迭代后再推进** — 如果反馈改变了当前屏幕，先写新版本
+- **每屏最多 2-4 个选项**
+- **需要时使用真实内容** — 摄影作品集用真实图片（如 Unsplash）。占位内容会掩盖设计问题。
+- **保持线框图简洁** — 聚焦布局和结构，不追求像素完美
 
-## File Naming
+## 文件命名
 
-- Use semantic names: `platform.html`, `visual-style.html`, `layout.html`
-- Never reuse filenames — each screen must be a new file
-- For iterations: append version suffix like `layout-v2.html`, `layout-v3.html`
-- Server serves newest file by modification time
+- 使用语义化名称：`platform.html`、`visual-style.html`、`layout.html`
+- 不要复用文件名——每个屏幕必须是新文件
+- 迭代版本追加后缀：`layout-v2.html`、`layout-v3.html`
+- 服务器按修改时间提供最新文件
 
-## Cleaning Up
+## 清理
 
 ```bash
-~/.factory/skills/discuss/scripts/stop-server.sh $SCREEN_DIR
+skills/discuss/scripts/stop-server.sh $SCREEN_DIR
 ```
 
-If the session used `--project-dir`, mockup files persist in `.superpowers/brainstorm/` for later reference. Only `/tmp` sessions get deleted on stop.
+使用 `--project-dir` 的 session，线框图文件持久化在 `.superpowers/brainstorm/` 供后续参考。只有 `/tmp` session 会在停止时删除。
 
-## Reference
+## 参考
 
-- Frame template (CSS reference): `~/.factory/skills/discuss/scripts/frame-template.html`
-- Helper script (client-side): `~/.factory/skills/discuss/scripts/helper.js`
+- 框架模板（CSS 参考）：`skills/discuss/scripts/frame-template.html`
+- 辅助脚本（客户端）：`skills/discuss/scripts/helper.js`

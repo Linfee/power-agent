@@ -24,7 +24,7 @@ description: Use when auditing a project's agent workflow, AGENTS.md structure, 
 **目标：** AGENTS.md 应是简短的"目录"（~100行），而非百科全书。
 
 检查项：
-- [ ] AGENTS.md 是否超过 150 行？（超过则需拆分）
+- [ ] AGENTS.md 是否超过 200 行？（超过则需拆分）
 - [ ] 是否将具体规则、架构细节、历史决策堆砌在同一文件？
 - [ ] 是否存在 `docs/` 或类似结构化知识库，承接具体细节？
 - [ ] 是否有指向更深层文档的明确指针？
