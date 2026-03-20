@@ -1,5 +1,9 @@
 # power-agent
 
+> **早期实验项目。** 这是一个个人实验，试图将 [superpowers](https://github.com/obra/superpowers) 的 Skill 体系与 OpenAI [Harness Engineering](https://openai.com/index/harness-engineering/) 的方法论整合为一套连贯的 AI 编码 Agent 工作流。目前处于非常早期阶段，许多 Harness Engineering 的核心主张（尤其是基础设施层：自定义 Linter、Application legibility、自动化 Doc gardening）尚未实现，见[下方路线图](#harness-engineering-实践现状与路线图)。
+
+---
+
 融合两套互补方法论的 AI 编码 Agent 工作流系统：
 
 - **[superpowers](https://github.com/obra/superpowers)**（当前追踪版本 **v5.0.5**）— 面向 AI Agent 的完整软件开发 Skill 体系
@@ -117,6 +121,44 @@ cp -r skills/* ~/.factory/skills/
 | Harness Engineering | 2026 年 2 月 | https://openai.com/index/harness-engineering/ |
 
 当 superpowers 发布新版本时，查阅 CHANGELOG 并将相关改进移植到本项目。
+
+---
+
+## Harness Engineering 实践现状与路线图
+
+对照 [Harness Engineering 博客](https://openai.com/index/harness-engineering/) 的核心主张，本项目的当前状态：
+
+| # | Harness Engineering 主张 | 状态 | 说明 |
+|---|--------------------------|------|------|
+| 1 | AGENTS.md 是目录（~100 行），不是百科全书 | ✅ 已实践 | `init-harness-engineering` skill 强制 ≤150 行 |
+| 2 | docs/ 是 SSOT，设计决策、exec-plans、领域知识结构化版本化 | ✅ 已实践 | design-decisions / exec-plans / domain 分区 |
+| 3 | Exec-plan 是一等公民，active/completed 分区版本化 | ✅ 已实践 | `writing-plans` + `exec-plan-runner` |
+| 4 | Progressive disclosure：agent 从小入口被引导去找下一级 | ✅ 已实践 | AGENTS.md → docs/ 导航指针体系 |
+| 5 | TDD 驱动实现，测试先行 | ✅ 已实践 | `test-driven-development` skill |
+| 6 | 系统化调试，根因优先 | ✅ 已实践 | `systematic-debugging` skill（4 阶段） |
+| 7 | 定期 Doc gardening，扫描过期文档 | ⚠️ 部分实践 | `dev-docs-maintain` 是手动触发 skill；博客是定时自动运行的后台 agent 任务 |
+| 8 | Agent-to-agent review，人工 review 逐渐变为可选 | ⚠️ 部分实践 | `requesting-code-review` 有 subagent 审查；feature-dev Phase 7 仍将人工决策作为必须 gate |
+| 9 | 区分轻量临时计划（小变更）和正式 exec-plan（复杂变更） | ⚠️ 部分实践 | `writing-plans` 区分了单文件 vs 目录结构；但没有明确的"临时计划"概念 |
+| 10 | **机械约束：自定义 Linter，error message 注入 agent 修复指令** | ❌ 路线图 | 目前只有"优先用 linter"的原则，无 linter 实现或模板 |
+| 11 | **分层领域架构，依赖方向由 linter 机械执行** | ❌ 路线图 | 无架构层级约束的实施机制 |
+| 12 | **Application legibility：app 可按 git worktree 启动，logs/metrics/traces 对 agent 可访问** | ❌ 路线图 | 未覆盖运行时可见性；这是博客花最多篇幅描述的核心能力 |
+| 13 | **Chrome DevTools Protocol 接入，agent 可驱动 UI 验证** | ❌ 路线图 | 未覆盖 |
+| 14 | **Golden principles + 自动化持续清理（每日扫描 → 自动开 PR）** | ❌ 路线图 | 无 golden principles 文档，无自动化 cleanup 机制 |
+| 15 | **Quality scoring 文档，追踪各领域质量评级随时间的变化** | ❌ 路线图 | 无对应机制 |
+| 16 | **Tech debt tracker 版本化，与 exec-plans 并列** | ❌ 路线图 | 无对应机制 |
+| 17 | **References 目录存放 llms.txt 格式的外部库文档** | ❌ 路线图 | 有 reference 文档类型但无 llms.txt 规范 |
+| 18 | **PR 是主要工作单元，agent 自主开 PR、响应 review、merge** | ❌ 路线图 | 工作流未覆盖 PR 生命周期 |
+| 19 | **最小阻塞 merge gate，短生命周期 PR** | ❌ 路线图 | 未覆盖 merge 策略 |
+
+**说明：**
+- ✅ 已实践：有对应 skill 或文档机制
+- ⚠️ 部分实践：有概念覆盖，但与博客描述的深度/自动化程度有差距
+- ❌ 路线图：尚未实现，是后续迭代方向
+
+**最高优先级路线图项（P0）：**
+
+1. **自定义 Linter 模板**（#10）— 提供 linter 配置模板和 agent 友好的 error message 设计指南，这是"机械约束"原则的真正落地
+2. **Application legibility 指南**（#12）— 指导如何让 app 对 agent 可见：per-worktree 启动、本地 observability stack、日志结构化
 
 ---
 
