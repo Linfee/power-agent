@@ -71,7 +71,7 @@ Bug / 测试失败 → systematic-debugging skill
 
 ```bash
 # 将此仓库添加为 marketplace
-droid plugin marketplace add https://github.com/your-org/power-agent
+droid plugin marketplace add https://github.com/Linfee/power-agent
 
 # 安装插件（user 作用域——跨项目可用）
 droid plugin install power-agent@power-agent --scope user
@@ -86,7 +86,7 @@ droid plugin install power-agent@power-agent --scope project
 
 ```bash
 # 将此仓库添加为 marketplace
-claude plugin marketplace add https://github.com/your-org/power-agent
+claude plugin marketplace add https://github.com/Linfee/power-agent
 
 # 安装插件（user 作用域——跨项目可用）
 claude plugin install power-agent@power-agent --scope user

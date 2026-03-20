@@ -65,7 +65,7 @@ Bug / test failure → systematic-debugging skill
 
 ```bash
 # Add this repo as a marketplace
-droid plugin marketplace add https://github.com/your-org/power-agent
+droid plugin marketplace add https://github.com/Linfee/power-agent
 
 # Install the plugin (user scope — available across all projects)
 droid plugin install power-agent@power-agent --scope user
