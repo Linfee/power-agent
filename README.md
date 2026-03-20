@@ -80,7 +80,18 @@ droid plugin install power-agent@power-agent --scope project
 
 ### 作为 Claude Code 插件
 
-Claude Code 与 Droid 共享兼容的插件格式（`.claude-plugin/plugin.json`），可直接通过 Claude Code 插件管理器安装。
+```bash
+# 将此仓库添加为 marketplace
+claude plugin marketplace add https://github.com/your-org/power-agent
+
+# 安装插件（user 作用域——跨项目可用）
+claude plugin install power-agent@power-agent --scope user
+
+# 或 project 作用域——通过 git 与团队共享
+claude plugin install power-agent@power-agent --scope project
+```
+
+也可手动安装：将项目目录复制到本地后，通过 Claude Code 插件管理器从本地路径加载（`.claude-plugin/plugin.json` 格式与 Droid 互通）。
 
 ### 作为 Cursor 插件
 
