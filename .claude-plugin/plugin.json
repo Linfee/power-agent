@@ -1,0 +1,8 @@
+{
+  "name": "power-agent",
+  "description": "AI coding agent workflow system combining superpowers and Harness Engineering: structured feature development, TDD-driven exec plans, subagent orchestration, systematic debugging, and doc gardening.",
+  "version": "0.1.0",
+  "author": {
+    "name": "linfee"
+  }
+}

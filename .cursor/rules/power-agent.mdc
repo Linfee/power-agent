@@ -1,0 +1,41 @@
+---
+description: power-agent workflow skills — apply when developing features, debugging, creating plans, or writing documentation
+globs:
+alwaysApply: true
+---
+
+# power-agent Skills
+
+This project uses the power-agent workflow system. The following skills are available as AI agent capabilities.
+
+## When to use each skill
+
+| Situation | Skill |
+|-----------|-------|
+| Starting a new feature | `feature-dev` skill — 8-phase guided development |
+| Exploring requirements before coding | `discuss` skill — design exploration with spec output |
+| Creating an implementation plan | `writing-plans` skill — TDD exec-plan with complete code |
+| Executing an existing exec-plan | `exec-plan-runner` skill — subagent-parallel execution |
+| Creating/updating documentation | `dev-docs` skill — routes to correct doc type |
+| Maintaining stale docs | `dev-docs-maintain` skill — doc gardening |
+| Debugging a bug or test failure | `systematic-debugging` skill — root-cause-first |
+| Writing tests | `test-driven-development` skill — RED-GREEN-REFACTOR |
+| Requesting code review | `requesting-code-review` skill |
+| Receiving code review feedback | `receiving-code-review` skill |
+| Verifying completion | `verification-before-completion` skill |
+| Running independent tasks in parallel | `dispatching-parallel-agents` skill |
+
+## Core constraints
+
+- **No fixes without root cause analysis** — use `systematic-debugging` when encountering bugs
+- **No code before spec approval** — use `discuss` skill first for complex features
+- **No completion claims without evidence** — always run verification commands before declaring done
+- **Repo as SSOT** — all decisions must be versioned in docs/, not left in chat history
+
+## Skill files location
+
+Skills are in `skills/<skill-name>/SKILL.md`. Each skill contains its full workflow protocol.
+
+## Documentation
+
+See `docs/harness-engineering.md` for the complete system design and workflow reference.
