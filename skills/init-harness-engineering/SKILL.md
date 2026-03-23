@@ -24,7 +24,7 @@ $ARGUMENTS
 4. 现有 AGENTS.md / README / 文档的内容
 5. 代码风格与命名约定（从现有代码推断）
 6. CI/CD 配置（如存在）
-7. 现有的 `.factory/memories.md` 或项目级 memories
+7. 现有的全局或项目级 memories
 
 **并行启动 2-3 个 explore 子代理：**
 - 代理 A：扫描项目根目录结构、配置文件、依赖清单，提取构建/测试/lint 命令

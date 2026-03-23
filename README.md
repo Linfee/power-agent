@@ -101,14 +101,6 @@ claude plugin install power-agent@power-agent --scope project
 
 使用 `.cursor-plugin/plugin.json`，通过 Cursor 插件管理器安装，或手动将 `skills/` 目录内容复制到项目中。
 
-### 手动安装（独立使用）
-
-将 `skills/` 目录复制到 `~/.factory/skills/`（个人全局）或项目的 `.factory/skills/`（项目级）：
-
-```bash
-cp -r skills/* ~/.factory/skills/
-```
-
 ---
 
 ## 版本追踪

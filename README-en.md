@@ -84,14 +84,6 @@ Claude Code and Droid share a compatible plugin format. Install the same way via
 
 Copy `.cursor/rules/power-agent.mdc` into your project's `.cursor/rules/` directory. This provides skill descriptions as Cursor context rules.
 
-### Manual installation (standalone)
-
-Copy the `skills/` directory into your project's `.factory/skills/` or `~/.factory/skills/` for personal use:
-
-```bash
-cp -r skills/* ~/.factory/skills/
-```
-
 ---
 
 ## Attribution
