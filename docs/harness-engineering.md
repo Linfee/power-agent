@@ -1,5 +1,6 @@
-<!-- verified: 2026-03-25 -->
-<!-- scope: system-design -->
+
+
+
 
 # Harness Engineering 体系设计
 
@@ -41,6 +42,7 @@ docs/
 ```
 
 **文档元信息（所有文档必须包含）：**
+
 ```markdown
 <!-- verified: YYYY-MM-DD -->
 <!-- scope: [architecture|frontend|backend|security|...] -->
@@ -69,13 +71,15 @@ dev-docs-maintain         → 文档同步
 
 ### Skills 分层
 
-| 层级           | Skills                                                                                                       | 职责                                 |
-| -------------- | ------------------------------------------------------------------------------------------------------------ | ------------------------------------ |
-| **编排层**     | `feature-dev`                                                                                                | 引导式开发，串联所有其他 Skill |
-| **规划层**     | `discuss`, `writing-plans`, `dev-docs`                                                                       | 设计探索、计划创建、文档路由         |
-| **实现层**     | `exec-plan-runner`, `test-driven-development`, `systematic-debugging`, `verification-before-completion`      | 计划执行、TDD、调试、验证            |
-| **审查层**     | `requesting-code-review`, `receiving-code-review`                                                            | 代码审查编排、反馈评估               |
-| **基础设施层** | `dispatching-parallel-agents`, `init-harness-engineering`, `harness-engineering-review`, `dev-docs-maintain` | 并行调度、初始化、审查、维护         |
+
+| 层级        | Skills                                                                                                                                                                | 职责                        |
+| --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------- |
+| **编排层**   | `feature-dev`                                                                                                                                                         | 引导式开发，串联所有其他 Skill        |
+| **规划层**   | `discuss`, `writing-plans`, `dev-docs`                                                                                                                                | 设计探索、计划创建、文档路由            |
+| **实现层**   | `exec-plan-runner`, `test-driven-development`, `systematic-debugging`, `verification-before-completion`                                                               | 计划执行、TDD、调试、验证            |
+| **审查层**   | `requesting-code-review`, `receiving-code-review`                                                                                                                     | 代码审查编排、反馈评估               |
+| **基础设施层** | `dispatching-parallel-agents`, `init-harness-engineering`, `harness-engineering-review`, `dev-docs-maintain`, `using-git-worktrees`, `finishing-a-development-branch` | 并行调度、初始化、审查、维护、工作区隔离、分支收尾 |
+
 
 **详细 Skill 协调机制见** [docs/workflow.md](workflow.md)
 
@@ -83,13 +87,15 @@ dev-docs-maintain         → 文档同步
 
 ## 关键设计决策
 
-| 决策 | 原因 |
-|------|------|
-| AGENTS.md 精简 | 防止上下文臃肿，保持 ≤200 行 |
-| 子代理一次性 | 避免上下文污染，每次完整传入问题 |
-| 产出物作为协调介质 | Skill 通过文件传话，不直接调用 |
-| Gate 强制等待 | 关键决策点必须有人类确认 |
-| 证据优先 | 没有运行验证不得声称完成 |
+
+| 决策           | 原因                 |
+| ------------ | ------------------ |
+| AGENTS.md 精简 | 防止上下文臃肿，保持 ≤200 行  |
+| 子代理一次性       | 避免上下文污染，每次完整传入问题   |
+| 产出物作为协调介质    | Skill 通过文件传话，不直接调用 |
+| Gate 强制等待    | 关键决策点必须有人类确认       |
+| 证据优先         | 没有运行验证不得声称完成       |
+
 
 **所有设计决策见** [docs/arch-decisions/index.md](arch-decisions/index.md)
 
@@ -106,7 +112,10 @@ dev-docs-maintain         → 文档同步
 ### 功能开发生命周期
 
 ```
-discuss (可选) → feature-dev → exec-plan-runner → code-review → dev-docs-maintain
+discuss → feature-dev → exec-plan-runner → dev-docs-maintain
+                                    ├─ [Step 0] using-git-worktrees（建立隔离环境）
+                                    ├─ 实现 + 代码审查 + 全量验证
+                                    └─ [Step 4] finishing-a-development-branch（分支收尾）
 ```
 
 ### 调试路径
@@ -119,14 +128,16 @@ systematic-debugging → test-driven-development → verification-before-complet
 
 ## 反模式
 
-| 反模式             | 正确做法                         |
-| ------------------ | -------------------------------- |
-| 巨型 AGENTS.md     | 精简 AGENTS.md + docs/ 分层    |
-| 口头架构决策       | 立即写入 docs/arch-decisions/  |
-| Prompt 规范啰嗦    | 转化为 Linter 规则 + 测试        |
-| 跳过文档同步       | Phase 8 强制文档同步             |
-| 并行有依赖的任务   | exec-plan-runner 依赖分析        |
-| 未验证就声称完成   | 验证原则：未运行命令不得声称通过 |
-| 重用子代理修复问题 | 每次启动新子代理，完整传入问题   |
+
+| 反模式          | 正确做法                      |
+| ------------ | ------------------------- |
+| 巨型 AGENTS.md | 精简 AGENTS.md + docs/ 分层   |
+| 口头架构决策       | 立即写入 docs/arch-decisions/ |
+| Prompt 规范啰嗦  | 转化为 Linter 规则 + 测试        |
+| 跳过文档同步       | Phase 8 强制文档同步            |
+| 并行有依赖的任务     | exec-plan-runner 依赖分析     |
+| 未验证就声称完成     | 验证原则：未运行命令不得声称通过          |
+| 重用子代理修复问题    | 每次启动新子代理，完整传入问题           |
+
 
 **详细反模式分析见** [docs/workflow.md](workflow.md)

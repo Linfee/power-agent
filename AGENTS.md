@@ -5,7 +5,7 @@ AI 编码 Agent 工作流插件系统，融合 superpowers + Harness Engineering
 ## 快速参考
 
 - **类型**: AI Agent Skill/Prompt 工程
-- **Skills**: 14 个可复用 Skill
+- **Skills**: 16 个可复用 Skill
 - **支持平台**: Claude Code, Cursor, Factory Droid
 
 ## 架构概览
@@ -57,6 +57,8 @@ dev-docs-maintain         → 文档同步
 | `dispatching-parallel-agents` | 并行调度 | '并行执行', 'parallel agents' |
 | `init-harness-engineering` | 项目初始化 | 手动调用 |
 | `harness-engineering-review` | 实践审查 | 'agent最佳实践' |
+| `using-git-worktrees` | 建立隔离 worktree（exec-plan-runner 自动调用） | 手动调用 |
+| `finishing-a-development-branch` | 分支收尾：merge/PR/保留/丢弃（exec-plan-runner 自动调用） | 手动调用 |
 
 ## 约束（硬规则）
 

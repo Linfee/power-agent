@@ -12,7 +12,7 @@ description: 自主执行或恢复执行 exec-plan：分析任务依赖、最大
 ## 整体流程
 
 ```
-加载计划 → 依赖分析 → 划分 batch
+建立工作环境（worktree）→ 加载计划 → 依赖分析 → 划分 batch
     ↓
 [对每个 batch]
     ├─ 并行启动实现子代理（每任务一个）
@@ -22,8 +22,20 @@ description: 自主执行或恢复执行 exec-plan：分析任务依赖、最大
     ├─ 更新 exec-plan 进度
     ↓
 [所有 batch 完成]
-    └─ 启动验证子代理 → 最终报告
+    └─ 启动验证子代理 → 分支收尾 → 归档
 ```
+
+---
+
+## Step 0: 建立工作环境
+
+无条件调用 `using-git-worktrees` skill，由该 skill 自行决策是否需要创建 worktree（已在 worktree 中、AGENTS.md 全局禁用等情况会自动跳过）。
+
+**Branch name 来源优先级：**
+1. exec-plan frontmatter 声明（`branch: feat/xxx`）
+2. 询问用户
+
+建立 worktree 后在该路径执行所有后续步骤。
 
 ---
 
@@ -194,10 +206,24 @@ Task 工具：
 
 ---
 
-## Step 4: 收尾
+## Step 4: 分支收尾
 
-1. 将 exec-plan 状态标记为 completed
-2. 向用户报告：
+所有 batch 完成且全量验证通过后，使用 `finishing-a-development-branch` skill：
+
+1. 再次确认测试通过（finishing 自带安全验证）
+2. 向用户呈现 4 选项（Gate，等待明确决策）：
+   - 1. merge to base branch（本地合并）
+   - 2. push + create PR
+   - 3. keep as-is（保留分支，稍后处理）
+   - 4. discard（需输入 'discard' 确认）
+3. 按选择清理 worktree（选项 1/4 清理，选项 2/3 保留）
+
+---
+
+## Step 5: 归档
+
+1. 将 exec-plan 文件从 `docs/exec-plans/active/` 移动到 `completed/`
+2. 向用户输出简洁总结：
    - 全部任务完成情况
    - 验证结果（带命令输出证据）
    - 实现过程中的关键决策
@@ -230,8 +256,13 @@ Task 工具：
 
 ---
 
-## 依赖 Skills（子代理应使用）
+## 依赖 Skills
 
+**主代理使用：**
+- `using-git-worktrees` — Step 0 建立隔离 worktree
+- `finishing-a-development-branch` — Step 4 分支收尾与清理
+
+**子代理应使用：**
 - `test-driven-development` — 实现子代理必须遵循 TDD
 - `receiving-code-review` — 审查子代理评估代码的准则
 - `verification-before-completion` — 验证子代理的执行标准

@@ -64,8 +64,12 @@ description: 将设计/spec 拆解为 TDD 结构的可执行实现计划（exec-
 
 **技术栈：** [关键技术/库]
 
+**branch:** feat/[功能名]
+
 ---
 ```
+
+`branch` 字段为必填项，供 `exec-plan-runner` Step 0 创建 worktree 时使用。格式约定：`feat/<kebab-case-name>`。
 
 ### 任务结构（TDD 粒度）
 

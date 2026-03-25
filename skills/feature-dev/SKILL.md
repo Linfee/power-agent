@@ -61,7 +61,7 @@ description: 引导式功能开发——串联 Harness Engineering 工作流的�
 
 **Gate：未经用户明确批准不得开始。**
 
-- 有 exec-plan → 使用 `exec-plan-runner` skill 执行
+- 有 exec-plan → 使用 `exec-plan-runner` skill 执行；exec-plan-runner 会自行建立 worktree 隔离环境并在完成后处理分支收尾，无需 feature-dev 介入
 - 无 exec-plan（简单特性）→ 遵循选定架构直接实现，运行 lint/test 验证
 
 ---
