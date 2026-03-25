@@ -1,6 +1,7 @@
 ---
 name: feature-dev
 description: 引导式功能开发——串联 Harness Engineering 工作流的各阶段 skill，在关键决策点等待人工确认。Triggers: '开发功能', '新功能', 'feature-dev', '实现需求', '功能开发'.
+version: 1.0.0
 ---
 
 # 功能开发
@@ -59,7 +60,12 @@ description: 引导式功能开发——串联 Harness Engineering 工作流的�
 
 ## 阶段 6：实现
 
-**Gate：未经用户明确批准不得开始。**
+**启动通知（轻量确认，非审批 Gate）：**
+
+呈现：
+> "Exec-plan 已就绪（N 个任务，预计 M 个 batch）。开始执行？"
+
+用户确认后进入自主执行。阶段 6-8 为 Agent 闭环，仅在 3 轮修复失败时 escalate。
 
 - 有 exec-plan → 使用 `exec-plan-runner` skill 执行；exec-plan-runner 会自行建立 worktree 隔离环境并在完成后处理分支收尾，无需 feature-dev 介入
 - 无 exec-plan（简单特性）→ 遵循选定架构直接实现，运行 lint/test 验证
@@ -79,3 +85,26 @@ description: 引导式功能开发——串联 Harness Engineering 工作流的�
 使用 `dev-docs-maintain` skill 同步受影响的 docs/ 文档（architecture、arch-decisions、domain 等）。
 
 向用户输出简洁总结：构建了什么、关键决策、修改的文件、更新了哪些文档。
+
+---
+
+## 阶段 9：Eval 数据收集
+
+文档同步完成后，自动采集指标写入当前上下文：
+
+```
+<!-- eval: YYYY-MM-DD -->
+<!-- skill: feature-dev -->
+<!-- skill-version: 1.0.0 -->
+- 是否使用 exec-plan: Y/N
+- Gate 等待次数: N（spec 批准 + 方案选择各计 1）
+- 修复循环次数: N
+- Escalation 次数: N
+```
+
+向用户提问：
+> 快速反馈：
+> 1. 整体效果？ [满意 / 一般 / 不满意]
+> 2. 备注？（可选，直接回车跳过）
+
+用户跳过时标注 `feedback: skipped`，不阻塞主流程。
