@@ -36,7 +36,7 @@ Task 工具：
 
     ## 报告格式
 
-    参考 `skills/requesting-code-review/code-reviewer.md` 的格式：
+    参考 `<requesting-code-review-path>/code-reviewer.md` 的格式：
 
     ### 优点
     [具体说明做得好的地方]

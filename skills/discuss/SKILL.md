@@ -19,7 +19,7 @@ description: 需求探索与设计讨论——在动手实现前，通过结构�
 ### Step 1: 建立上下文
 
 1. 确认 AGENTS.md 已加载，获取项目架构概览和知识库导航
-2. 按需加载相关文档：`docs/architecture.md`、`docs/design-decisions/index.md` 等
+2. 按需加载相关文档：`docs/architecture.md`、`docs/arch-decisions/index.md` 等
 3. 如果需求涉及具体代码区域，启动 `explore` 子代理并行分析相关模块
 4. **判断是否有可视化问题**（UI 布局、架构图、设计方案对比）→ 如果有，Step 1 结束后单独发送 Visual Companion 邀请（见"Visual Companion"章节），不与任何其他内容混合，等待用户回复后再继续
 
@@ -33,7 +33,7 @@ description: 需求探索与设计讨论——在动手实现前，通过结构�
 - **关键决策点**：需要做出哪些技术选择
 - **风险和边界**：可预见的难点、兼容性问题、性能影响
 
-然后提出待澄清问题。**按主题分批提问**：无依赖关系的问题合并同批，一次呈现；有顺序依赖（后续问题取决于前面答案）的拆分为多批。每个问题附带推荐答案和理由，选择题优先。已有明确 design-decision 记录的方面直接引用，不重复提问。
+然后提出待澄清问题。**按主题分批提问**：无依赖关系的问题合并同批，一次呈现；有顺序依赖（后续问题取决于前面答案）的拆分为多批。每个问题附带推荐答案和理由，选择题优先。已有明确 arch-decision 记录的方面直接引用，不重复提问。
 
 **YAGNI 审查**：识别可能过度设计的部分，主动建议精简非必要功能，聚焦核心价值。
 
@@ -75,7 +75,7 @@ description: 需求探索与设计讨论——在动手实现前，通过结构�
 
 ### Step 6: Spec Reviewer 循环
 
-写完 spec 后，按 `skills/discuss/spec-reviewer-prompt.md` 模板 dispatch `tech-plan-reviewer` 子代理：
+写完 spec 后，按 `<discuss-path>/spec-reviewer-prompt.md` 模板 dispatch `tech-plan-reviewer` 子代理：
 
 1. 若 **Issues Found** → 修复并重新 dispatch，最多 3 轮
 2. 若超过 3 轮仍有阻塞问题 → 向用户 escalate，描述具体分歧，由用户决策
@@ -118,7 +118,7 @@ description: 需求探索与设计讨论——在动手实现前，通过结构�
 
 关于 UI 话题的问题不自动等于可视化问题。"需要什么风格的个人页面？"是概念问题 → 用终端；"这两种布局哪个更合适？"是可视化问题 → 用浏览器。
 
-用户接受后，读取详细操作指南：`skills/discuss/visual-companion.md`
+用户接受后，读取详细操作指南：`<discuss-path>/visual-companion.md`
 
 ---
 

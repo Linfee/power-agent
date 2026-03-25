@@ -1,6 +1,6 @@
 ---
 name: dev-docs
-description: 创建或更新 docs/ 下的开发文档，支持六种类型：architecture、design-decision、exec-plan、domain、development、reference。收到 exec-plan 任务时委派给 writing-plans skill。Use when: 需要记录架构/决策/领域知识/开发指南，或创建实现计划。Triggers: '写文档', 'dev-docs', 'architecture', 'design-decision', 'exec-plan', '架构文档', '决策记录', '领域文档'.
+description: 创建或更新 docs/ 下的开发文档，支持六种类型：architecture、arch-decision、exec-plan、domain、development、reference。收到 exec-plan 任务时委派给 writing-plans skill。Use when: 需要记录架构/决策/领域知识/开发指南，或创建实现计划。Triggers: '写文档', 'dev-docs', 'architecture', 'arch-decision', 'exec-plan', '架构文档', '决策记录', '领域文档'.
 disable-model-invocation: true
 ---
 
@@ -18,7 +18,7 @@ disable-model-invocation: true
 | --------------- | ------------------------- | ---------------------------------------- |
 | exec-plan       | 计划/重构/迁移/实现/spec  | → **委派给 `writing-plans` skill**       |
 | architecture    | 架构/模块/系统/组件       | `docs/architecture.md` 或 `docs/domain/` |
-| design-decision | 决策/选型/方案/权衡/DD    | `docs/design-decisions/DD-NNN-title.md`  |
+| arch-decision | 决策/选型/方案/权衡/DD    | `docs/arch-decisions/DD-NNN-title.md`  |
 | domain          | 前端/安全/API/数据库/部署 | `docs/domain/[name].md`                  |
 | development     | 开发/搭建/环境/命令       | `docs/development.md`                    |
 | reference       | 参考/外部/集成/第三方     | `docs/references/[name].md`              |
@@ -38,7 +38,7 @@ disable-model-invocation: true
 ### Step 1: 预检
 
 1. 确认 `docs/` 目录存在，`AGENTS.md` 已加载
-2. 按需加载相关文档（`docs/architecture.md`、`docs/design-decisions/index.md` 等）
+2. 按需加载相关文档（`docs/architecture.md`、`docs/arch-decisions/index.md` 等）
 
 ### Step 2: 代码分析
 
@@ -57,7 +57,7 @@ disable-model-invocation: true
 <!-- author: agent -->
 ```
 
-#### 模板：设计决策（design-decision）
+#### 模板：设计决策（arch-decision）
 
 ```markdown
 <!-- verified: YYYY-MM-DD -->
@@ -85,7 +85,7 @@ disable-model-invocation: true
 [影响和注意事项]
 ```
 
-完成后更新 `docs/design-decisions/index.md`。
+完成后更新 `docs/arch-decisions/index.md`。
 
 #### 模板：领域文档（domain）
 
@@ -114,7 +114,7 @@ disable-model-invocation: true
 
 ### Step 4: 更新索引
 
-1. design-decision → 更新 `docs/design-decisions/index.md`
+1. arch-decision → 更新 `docs/arch-decisions/index.md`
 2. 新增文档类型或路径 → 更新 `AGENTS.md` 的知识库导航
 
 ### Step 5: 输出

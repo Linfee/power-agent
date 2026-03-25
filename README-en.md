@@ -16,7 +16,7 @@ The result is a cohesive, opinionated workflow: structured design exploration �
 Three principles from Harness Engineering:
 
 1. **Repo as SSOT** — All knowledge must be versioned. What the agent can't see doesn't exist.
-2. **Context as map, not encyclopedia** — `AGENTS.md` is a navigation index (~150 lines), not a wiki.
+2. **Context as map, not encyclopedia** — `AGENTS.md` is a navigation index (~200 lines), not a wiki.
 3. **Mechanical constraints over verbose prompts** — Linter/test rules outperform instruction walls.
 
 ---

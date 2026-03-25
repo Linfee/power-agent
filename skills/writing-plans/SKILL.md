@@ -15,7 +15,7 @@ description: 将设计/spec 拆解为 TDD 结构的可执行实现计划（exec-
 
 1. 确认 `AGENTS.md` 已加载，`docs/` 目录存在
 2. 若用户提供了 spec 文件（`docs/specs/`），完整阅读它
-3. 加载相关上下文：`docs/architecture.md`、`docs/design-decisions/index.md`
+3. 加载相关上下文：`docs/architecture.md`、`docs/arch-decisions/index.md`
 
 ## Step 2: 代码分析
 
@@ -157,7 +157,7 @@ README.md 头部：
 
 ## Step 6: Plan Reviewer 循环
 
-计划写完后，按 `skills/writing-plans/plan-reviewer-prompt.md` 模板 dispatch `tech-plan-reviewer` 子代理：
+计划写完后，按 `<writing-plans-path>/plan-reviewer-prompt.md` 模板 dispatch `tech-plan-reviewer` 子代理：
 
 1. 若 **Issues Found** → 修复，重新 dispatch，最多 3 轮
 2. 超过 3 轮仍有问题 → 向用户 escalate

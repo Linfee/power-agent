@@ -13,7 +13,7 @@ description: 引导式功能开发——串联 Harness Engineering 工作流的�
 
 ## 阶段 1：上下文建立
 
-加载 AGENTS.md 已有的项目架构概览和知识库导航；按需加载与本功能相关的 docs/ 文档（architecture、design-decisions/index 等），跳过已在上下文中的内容。
+加载 AGENTS.md 已有的项目架构概览和知识库导航；按需加载与本功能相关的 docs/ 文档（architecture、arch-decisions/index 等），跳过已在上下文中的内容。
 
 如果用户在此之前已运行 `discuss` skill 并有 spec 文档，直接加载 spec，跳到阶段 2。
 
@@ -33,7 +33,7 @@ description: 引导式功能开发——串联 Harness Engineering 工作流的�
 
 **Gate：在继续架构设计之前，必须等待所有关键问题得到回答。**
 
-对照已有 design-decisions 识别可复用的历史决策，不重复提问。按维度分批澄清：边界、错误处理、兼容性、性能、范围。
+对照已有 arch-decisions 识别可复用的历史决策，不重复提问。按维度分批澄清：边界、错误处理、兼容性、性能、范围。
 
 做 **YAGNI 审查**：主动识别并建议砍掉非必要功能。
 
@@ -53,7 +53,7 @@ description: 引导式功能开发——串联 Harness Engineering 工作流的�
 
 **判断：** 预估跨多模块或 >5 个文件变更 → 使用 `writing-plans` skill 创建 exec-plan；简单特性跳过此阶段。
 
-如果架构决策值得长期记录，同时使用 `dev-docs` skill 创建 design-decision。
+如果架构决策值得长期记录，同时使用 `dev-docs` skill 创建 arch-decision。
 
 ---
 
@@ -76,6 +76,6 @@ description: 引导式功能开发——串联 Harness Engineering 工作流的�
 
 ## 阶段 8：总结与文档同步
 
-使用 `dev-docs-maintain` skill 同步受影响的 docs/ 文档（architecture、design-decisions、domain 等）。
+使用 `dev-docs-maintain` skill 同步受影响的 docs/ 文档（architecture、arch-decisions、domain 等）。
 
 向用户输出简洁总结：构建了什么、关键决策、修改的文件、更新了哪些文档。

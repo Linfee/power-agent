@@ -6,7 +6,7 @@ disable-model-invocation: true
 
 # 项目 Harness 初始化
 
-为当前项目构建 Agent 可读的知识体系：AGENTS.md 作为简短目录（~150行），具体知识下沉到结构化的 `docs/` 目录。
+为当前项目构建 Agent 可读的知识体系：AGENTS.md 作为简短目录（~200行），具体知识下沉到结构化的 `docs/` 目录。
 
 **核心理念：** 给 Agent 一张地图，而非一本百科全书。仓库知识即唯一记录系统。
 
@@ -39,7 +39,7 @@ $ARGUMENTS
 docs/
 ├── architecture.md          # 系统架构：模块划分、层级依赖、数据流
 ├── development.md           # 开发指南：环境搭建、构建命令、调试方法
-├── design-decisions/        # 设计决策记录
+├── arch-decisions/        # 设计决策记录
 │   └── index.md             # 决策索引（带验证状态）
 ├── exec-plans/              # 执行计划
 │   ├── active/              # 进行中的计划
@@ -64,7 +64,7 @@ docs/
 - 调试技巧
 - 贡献流程
 
-**design-decisions/index.md** — 决策追踪：
+**arch-decisions/index.md** — 决策追踪：
 ```markdown
 # 设计决策索引
 
@@ -81,7 +81,7 @@ docs/
 
 ### Phase 3: 生成/更新 AGENTS.md
 
-AGENTS.md 控制在 ~150 行，作为目录而非百科全书。结构：
+AGENTS.md 控制在 ~200 行，作为目录而非百科全书。结构：
 
 ```markdown
 # [项目名] — Agent 指南
@@ -103,7 +103,7 @@ AGENTS.md 控制在 ~150 行，作为目录而非百科全书。结构：
 | -------- | ---------------------- | ------------------ |
 | 系统架构 | docs/architecture.md   | 模块划分与依赖方向 |
 | 开发指南 | docs/development.md    | 环境搭建与常用命令 |
-| 设计决策 | docs/design-decisions/ | 重要技术决策记录   |
+| 设计决策 | docs/arch-decisions/ | 重要技术决策记录   |
 | 执行计划 | docs/exec-plans/       | 活跃与已完成的计划 |
 | ...      | ...                    | ...                |
 

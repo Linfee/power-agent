@@ -20,7 +20,7 @@
 来自 Harness Engineering 的三个核心原则：
 
 1. **仓库是唯一真相来源（Repo as SSOT）** — 所有知识必须版本化。Agent 看不到的东西不存在。
-2. **上下文是地图而非百科全书** — `AGENTS.md` 是导航索引（约 150 行），而非 Wiki。
+2. **上下文是地图而非百科全书** — `AGENTS.md` 是导航索引（约 200 行），而非 Wiki。
 3. **机械化约束优于冗长 Prompt** — Linter/Test 规则胜过大篇幅的指令说明。
 
 ---
@@ -29,7 +29,7 @@
 
 | Skill | 用途 |
 |-------|------|
-| `feature-dev` | 八阶段引导式功能开发（薄编排层，串联其他所有 Skill） |
+| `feature-dev` | 引导式功能开发（薄编排层，串联其他所有 Skill） |
 | `discuss` | 编码前的设计探索——含 2-3 方案对比和 Spec 审查循环，产出经批准的 spec 文档 |
 | `writing-plans` | 将 spec/设计转化为 TDD 结构的 exec-plan，含完整代码片段 |
 | `exec-plan-runner` | 通过一次性子代理并行批次执行 exec-plan，含两阶段代码审查 |
@@ -129,7 +129,7 @@ claude plugin install power-agent@power-agent --scope project
 > "We tried the 'one big AGENTS.md' approach. It failed in predictable ways... When everything is 'important,' nothing is... So instead of treating AGENTS.md as the encyclopedia, we treat it as **the table of contents**. A short AGENTS.md (roughly 100 lines) is injected into context and serves primarily as a map, with pointers to deeper sources of truth elsewhere."
 > — §We made repository knowledge the system of record
 
-**本项目状态：** `init-harness-engineering` skill 在初始化项目时强制生成目录式 AGENTS.md，限制在 150 行以内，并在 `harness-engineering-review` skill 中将行数超标列为审查项。`docs/` 下的分层结构承载具体知识。
+**本项目状态：** `init-harness-engineering` skill 在初始化项目时强制生成目录式 AGENTS.md，限制在 200 行以内，并在 `harness-engineering-review` skill 中将行数超标列为审查项。`docs/` 下的分层结构承载具体知识。
 
 ---
 
@@ -138,7 +138,7 @@ claude plugin install power-agent@power-agent --scope project
 > "The repository's knowledge base lives in a structured docs/ directory treated as the system of record... Design documentation is catalogued and indexed, including verification status and a set of core beliefs that define agent-first operating principles."
 > — §We made repository knowledge the system of record
 
-**本项目状态：** `dev-docs` skill 将文档分为 architecture / design-decision / domain / development / reference 五类，各有固定路径和 `<!-- verified: YYYY-MM-DD -->` 元信息。`dev-docs-maintain` skill 负责检查新鲜度和导航指针有效性。
+**本项目状态：** `dev-docs` skill 将文档分为 architecture / arch-decision / domain / development / reference 五类，各有固定路径和 `<!-- verified: YYYY-MM-DD -->` 元信息。`dev-docs-maintain` skill 负责检查新鲜度和导航指针有效性。
 
 ---
 

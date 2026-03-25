@@ -16,7 +16,7 @@
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│                    需求阶段（可选）                        │
+│                    需求阶段                             │
 │                                                         │
 │   discuss skill                                         │
 │   输入：模糊需求                                           │
@@ -219,7 +219,7 @@ Step 6: 启动验证子代理（verification-before-completion skill）
 │   └── 委派给 writing-plans skill，原始需求完整传递
 └── 其他类型 → 直接处理
     ├── architecture → docs/architecture.md 或 docs/domain/
-    ├── design-decision → docs/design-decisions/DD-NNN-title.md
+    ├── arch-decision → docs/arch-decisions/DD-NNN-title.md
     ├── domain → docs/domain/[name].md
     ├── development → docs/development.md
     └── reference → docs/references/[name].md
@@ -380,7 +380,7 @@ Phase 2: 构建 docs/ 知识库
          按项目复杂度裁剪，创建必要文档
 
 Phase 3: 生成 AGENTS.md
-         目录式结构，≤ 150 行，指针指向 docs/
+         目录式结构，≤ 200 行，指针指向 docs/
 
 Phase 4: 验证
          行数检查 + 指针有效性 + 命令可执行性
@@ -398,7 +398,7 @@ Phase 4: 验证
 
 | 维度 | 核心问题 |
 |------|----------|
-| AGENTS.md 结构 | 是否 ≤ 150 行？是否是目录而非百科全书？ |
+| AGENTS.md 结构 | 是否 ≤ 200 行？是否是目录而非百科全书？ |
 | Agent 可见性 | 重要决策是否在仓库中版本化？ |
 | 约束机制化 | 规范靠 Linter/Test 还是 Prompt 口头约定？ |
 | 反馈循环质量 | Agent 能否自运行应用、捕获错误、验证修复？ |
@@ -433,7 +433,7 @@ docs/exec-plans/completed/ ← 归档
 
 ---
 
-## 反模式识别
+## 反模式
 
 | 反模式 | 问题 | 正确做法 |
 |--------|------|----------|

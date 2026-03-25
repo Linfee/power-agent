@@ -1,6 +1,6 @@
 ---
 name: dev-docs-maintain
-description: 扫描并维护 docs/ 知识库，识别过期、缺失或失效内容并修复。适合手动调用 `/dev-docs-maintain [聚焦范围]`，如 `architecture` 或 `仅检查 design-decisions`。
+description: 扫描并维护 docs/ 知识库，识别过期、缺失或失效内容并修复。适合手动调用 `/dev-docs-maintain [聚焦范围]`，如 `architecture` 或 `仅检查 arch-decisions`。
 disable-model-invocation: true
 ---
 
@@ -80,7 +80,7 @@ disable-model-invocation: true
 
 - 将 `docs/exec-plans/active/` 中已完成的计划移动到 `docs/exec-plans/completed/`
 - 更新已修复文档的 `<!-- verified: YYYY-MM-DD -->` 时间戳
-- 更新 `docs/design-decisions/index.md` 中的验证状态
+- 更新 `docs/arch-decisions/index.md` 中的验证状态
 
 ### Step 5: 报告
 

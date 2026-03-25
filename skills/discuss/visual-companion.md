@@ -2,8 +2,7 @@
 
 在设计讨论过程中，通过浏览器展示线框图、架构图和方案对比。
 
-> **路径说明：** 以下脚本路径为 `skills/discuss/scripts/`，相对于插件安装目录。
-> 安装为个人 skill 后路径为 `~/.factory/skills/discuss/scripts/`。
+> **路径说明：** `<discuss-path>` 表示 discuss skill 的安装目录。脚本位于 `<discuss-path>/scripts/`。
 
 ## 使用时机
 
@@ -37,31 +36,31 @@
 
 ```bash
 # 带持久化地启动服务器（线框图保存到项目）
-skills/discuss/scripts/start-server.sh --project-dir /path/to/project
+<discuss-path>/scripts/start-server.sh --project-dir /path/to/project
 
 # 返回: {"type":"server-started","port":52341,"url":"http://localhost:52341",
-#        "screen_dir":"/path/to/project/.superpowers/brainstorm/12345-1706000000"}
+#        "screen_dir":"/path/to/project/.power-agent/discuss/12345-1706000000"}
 ```
 
 保存响应中的 `screen_dir`。告诉用户打开 URL。
 
-**查找连接信息：** 服务器将启动 JSON 写入 `$SCREEN_DIR/.server-info`。如果你在后台启动了服务器且没有捕获 stdout，读取该文件获取 URL 和端口。使用 `--project-dir` 时，在 `<project>/.superpowers/brainstorm/` 中查找 session 目录。
+**查找连接信息：** 服务器将启动 JSON 写入 `$SCREEN_DIR/.server-info`。如果你在后台启动了服务器且没有捕获 stdout，读取该文件获取 URL 和端口。使用 `--project-dir` 时，在 `<project>/.power-agent/discuss/` 中查找 session 目录。
 
-**注意：** 传入项目根目录作为 `--project-dir`，使线框图持久化到 `.superpowers/brainstorm/` 并在服务器重启后仍然可用。不传则文件放到 `/tmp` 会被清理。提醒用户将 `.superpowers/` 添加到 `.gitignore`（如果尚未添加）。
+**注意：** 传入项目根目录作为 `--project-dir`，使线框图持久化到 `.power-agent/discuss/` 并在服务器重启后仍然可用。不传则文件放到 `/tmp` 会被清理。提醒用户将 `.power-agent/` 添加到 `.gitignore`（如果尚未添加）。
 
 **按平台启动服务器：**
 
-**Droid（macOS / Linux）：**
+**macOS / Linux：**
 ```bash
 # 默认模式可用——脚本本身会在后台运行服务器
-skills/discuss/scripts/start-server.sh --project-dir /path/to/project
+<discuss-path>/scripts/start-server.sh --project-dir /path/to/project
 ```
 
-**Droid（Windows）：**
+**Windows：**
 ```bash
 # Windows 自动检测并使用前台模式，这会阻塞工具调用。
 # 使用 fireAndForget: true 使服务器在对话轮次间保持运行。
-skills/discuss/scripts/start-server.sh --project-dir /path/to/project
+<discuss-path>/scripts/start-server.sh --project-dir /path/to/project
 ```
 通过 Execute 工具调用时，设置 `fireAndForget: true`。然后在下一轮对话中读取 `$SCREEN_DIR/.server-info` 获取 URL 和端口。
 
@@ -70,7 +69,7 @@ skills/discuss/scripts/start-server.sh --project-dir /path/to/project
 如果 URL 无法从浏览器访问（远程/容器化环境常见），绑定非回环地址：
 
 ```bash
-skills/discuss/scripts/start-server.sh \
+<discuss-path>/scripts/start-server.sh \
   --project-dir /path/to/project \
   --host 0.0.0.0 \
   --url-host localhost
@@ -263,12 +262,12 @@ skills/discuss/scripts/start-server.sh \
 ## 清理
 
 ```bash
-skills/discuss/scripts/stop-server.sh $SCREEN_DIR
+<discuss-path>/scripts/stop-server.sh $SCREEN_DIR
 ```
 
-使用 `--project-dir` 的 session，线框图文件持久化在 `.superpowers/brainstorm/` 供后续参考。只有 `/tmp` session 会在停止时删除。
+使用 `--project-dir` 的 session，线框图文件持久化在 `.power-agent/discuss/` 供后续参考。只有 `/tmp` session 会在停止时删除。
 
 ## 参考
 
-- 框架模板（CSS 参考）：`skills/discuss/scripts/frame-template.html`
-- 辅助脚本（客户端）：`skills/discuss/scripts/helper.js`
+- 框架模板（CSS 参考）：`<discuss-path>/scripts/frame-template.html`
+- 辅助脚本（客户端）：`<discuss-path>/scripts/helper.js`

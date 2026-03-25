@@ -39,7 +39,7 @@ docs/
 ├── architecture.md      # 系统架构与模块依赖
 ├── frontend.md          # 前端规范
 ├── security.md          # 安全规范
-├── design-decisions/    # 重要决策记录
+├── arch-decisions/    # 重要决策记录
 └── exec-plans/          # 执行计划
     ├── active/
     └── completed/
