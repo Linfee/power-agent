@@ -1,6 +1,7 @@
 ---
 name: exec-plan-runner
 description: 自主执行或恢复执行 exec-plan：分析任务依赖、最大化并行调度子代理、TDD 驱动实现、批次后代码审查、最终验证。支持从中断的 exec-plan 恢复继续。当需要执行 docs/exec-plans/ 中的计划、或继续未完成的计划时使用。
+version: 1.0.0
 ---
 
 # Exec-Plan Runner
@@ -39,12 +40,24 @@ description: 自主执行或恢复执行 exec-plan：分析任务依赖、最大
 
 ---
 
+## Bootstrap（每次会话开始，无条件执行）
+
+在执行 Step 1 之前，强制完成以下序列：
+
+1. 读取 exec-plan 的 `## Session Log` section（如存在，了解上次进度）
+2. `git log --oneline -10`（确认工作树状态）
+3. 运行项目基本健康检查（lint + 核心测试套件）
+4. 若健康检查失败 → 先修复再继续，不在破损基线上工作
+5. 确认恢复点，输出一句话摘要（例："基线健康，从 Batch 2 Task D 恢复"）
+
+---
+
 ## Step 1: 加载、恢复检测与分析
 
 1. 读取 exec-plan 文件（单文件或目录中的 README.md + tasks.md）
 2. 读取项目 AGENTS.md 了解代码规范和约束
 3. **恢复检测：** 扫描进度标记（`[x]` / `[ ]`）和"当前状态" section
-   - 有已完成任务 → 进入**恢复模式**：验证已完成产出是否有效（启动验证子代理），从中断点继续
+   - 有已完成任务 → 进入**恢复模式**：读取 Session Log → git log → exec-plan checkbox 三者交叉验证后确定恢复点，从中断点继续
 4. 提取所有**未完成**任务全文，构建依赖图，划分 batch
 
 **依赖分析原则：**
@@ -104,6 +117,9 @@ Task 工具：
     - 测试结果摘要
     - 若 DONE_WITH_CONCERNS：描述疑虑
     - 若 BLOCKED：描述阻塞原因
+
+    ## 输出粒度: detailed
+    返回完整信息，包含文件列表、关键代码片段、命令输出、推理过程。
 ```
 
 **子代理状态处理：**
@@ -146,6 +162,10 @@ Task 工具：
     **代码质量：** ✅ 通过 | ⚠️ 建议 | ❌ 问题
     **Issues（如有）：** [具体问题 + 影响]
     **建议（Advisory）：** [非阻塞建议]
+
+    ## 输出粒度控制
+    - 审查通过（无 Issues）时：仅返回结论性信息，省略中间推理（concise）
+    - 发现阻塞问题时：返回完整问题描述和定位（detailed）
 ```
 
 **审查结果处理：**
@@ -153,23 +173,23 @@ Task 工具：
 - 有阻塞问题 → 启动**新修复子代理**（提供审查结论 + 修复指令）→ 再次启动审查子代理
 - 修复循环最多 3 轮；超过则 Escalate 给用户
 
-### 2c. 更新 Exec-Plan 进度
+### 2c. 更新 Exec-Plan 进度与 Session Log
 
-每个 batch 完成后立即更新：
+每个 batch 完成后立即更新 exec-plan 文件：
+
+**1. 更新 checkbox 进度（`[x]`）**
+
+**2. 向 `## Session Log` section 追加一条记录（最新在最上方）：**
+
+参考模板格式：`skills/exec-plan-runner/progress-log-template.md`
 
 ```markdown
-## 进度
-- [x] Task A: 用户模型 — src/models/user.py, 测试 5/5 通过
-- [x] Task B: 权限模型 — src/models/permission.py, 测试 3/3 通过
-- [ ] Task D: 用户API
-
-## 当前状态
-Batch 1 完成。下一步：Batch 2，从 Task D 用户API 开始。
-
-## 决策日志
-| 日期 | 决策 | 理由 |
-|------|------|------|
-| YYYY-MM-DD | ... | ... |
+### [YYYY-MM-DD HH:MM] Batch N 完成
+- **已完成**: Task A (`path/to/file`), Task B (`path/to/other`)
+- **遇到的问题**: [描述 + 如何解决，或标注未解决]
+- **已验证假设**: [什么被证实/证伪]
+- **下一步**: Batch N+1，从 Task X 开始
+- **环境状态**: lint ✅ | tests ✅ (N passed) | build ✅
 ```
 
 ---
@@ -231,14 +251,41 @@ Task 工具：
 
 ---
 
-## Escalation 规则（停止执行，向用户请示）
+## Step 6: Eval 数据收集
 
-- 任务描述有歧义且多种解读工作量差异 ≥ 2x
-- 需要引入 exec-plan 未预期的破坏性变更
-- 修复子代理反复失败（3 轮）且无法定位根因
-- exec-plan 的前提假设不成立
+归档完成后，自动采集执行指标并写入 exec-plan 文件尾部：
 
-无需 Escalate（自主处理）：
+```markdown
+<!-- eval: YYYY-MM-DD -->
+<!-- skill: exec-plan-runner -->
+<!-- skill-version: [从 frontmatter version 字段读取] -->
+<!-- project: [从 git remote URL 或目录名推断] -->
+
+## Eval 记录
+- 任务完成率: N/N
+- Batch 数: N
+- 修复循环: N 次
+- Escalation: 0
+- 耗时: Nmin
+```
+
+然后向用户提问：
+> 快速反馈：
+> 1. 整体效果？ [满意 / 一般 / 不满意]
+> 2. 备注？（可选，直接回车跳过）
+
+用户跳过时仍写入自动指标，标注 `feedback: skipped`。
+
+---
+
+## Escalation 规则（唯一触发条件）
+
+**修复子代理反复失败（3 轮审查修复循环耗尽）且无法定位根因** → 停止执行，向用户请示。
+
+**无需 Escalate（自主处理）：**
+- 任务描述有歧义 → Agent 自主判断最合理解读
+- 需要引入破坏性变更 → worktree 沙盒已隔离，自主处理
+- exec-plan 前提假设局部不成立 → 记录到 Session Log，继续执行其余任务
 - 实现细节选择（库函数选择、命名等）
 - 可通过重试或换方向解决的临时失败
 - lint 警告修复
