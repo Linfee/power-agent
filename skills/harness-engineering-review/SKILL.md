@@ -1,6 +1,7 @@
 ---
 name: harness-engineering-review
 description: Use when auditing a project's agent workflow, AGENTS.md structure, or development practices against OpenAI's Harness Engineering best practices. Triggers when user mentions "agent best practices", "AGENTS.md review", "workflow audit", "harness engineering", "知识库结构", "agent工作流审查", "最佳实践检查".
+version: 1.0.0
 ---
 
 # Harness Engineering Review
@@ -133,6 +134,26 @@ docs/
 
 ---
 
+### 7. 代码模式一致性（Code Pattern Consistency）
+
+**目标：** 防止 AI 生成代码引入模式漂移，保持代码库风格一致。
+
+检查项：
+- [ ] 是否有项目专属"黄金原则"列表（golden principles）？
+- [ ] 是否定期检测已知反模式（重复逻辑、不一致命名、过时 API 调用）？
+- [ ] 是否有轻量自动化脚本辅助反模式扫描？
+
+**工具支持：**
+- `scripts/scan-antipatterns.sh` — 使用 ripgrep 扫描项目反模式，输出 Agent 友好报告
+- `golden-principles-template.md`（本目录）— 项目可定制的黄金原则模板
+
+**建议方案：**
+- 建立 `golden-principles.md`，记录团队公认的代码模式约定
+- 每次大型 AI 生成后运行 `scan-antipatterns.sh` 检查一致性
+- 在 AGENTS.md 中以指针引用黄金原则（非全文内嵌）
+
+---
+
 ## 审查报告格式
 
 完成审查后，输出以下格式：
@@ -149,6 +170,7 @@ docs/
 | 反馈循环质量 | ... | ... |
 | 知识维护 | ... | ... |
 | 技术债管理 | ... | ... |
+| 代码模式一致性 | ✅优 / ⚠️需改进 / ❌缺失 | 高/中/低 |
 
 ### 高优先级问题
 1. [问题描述] → [具体调整方案]
