@@ -2,6 +2,7 @@
 name: dev-docs-maintain
 description: 扫描并维护 docs/ 知识库，识别过期、缺失或失效内容并修复。适合手动调用 `/dev-docs-maintain [聚焦范围]`，如 `architecture` 或 `仅检查 arch-decisions`。
 disable-model-invocation: true
+version: 1.0.0
 ---
 
 # 文档园丁（Doc Gardening）

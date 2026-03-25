@@ -1,6 +1,7 @@
 ---
 name: using-git-worktrees
 description: 在执行 exec-plan 前建立隔离 worktree，包含自检跳过逻辑、.gitignore 安全验证和基线测试验证。由 exec-plan-runner 自动调用，也可手动触发。
+version: 1.0.0
 ---
 
 # Using Git Worktrees

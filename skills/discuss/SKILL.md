@@ -1,6 +1,7 @@
 ---
 name: discuss
 description: 需求探索与设计讨论——在动手实现前，通过结构化对话明确目标、对比方案、产出经过审查的 spec 文档。Triggers: '需求讨论', 'discuss', '讨论方案', '设计探索', '可行性分析', 'brainstorming', '需求分析', '方案对比'.
+version: 1.0.0
 ---
 
 # 需求探索与设计讨论
