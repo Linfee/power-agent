@@ -129,7 +129,7 @@ claude plugin install power-agent@power-agent --scope project
 > "We tried the 'one big AGENTS.md' approach. It failed in predictable ways... When everything is 'important,' nothing is... So instead of treating AGENTS.md as the encyclopedia, we treat it as **the table of contents**. A short AGENTS.md (roughly 100 lines) is injected into context and serves primarily as a map, with pointers to deeper sources of truth elsewhere."
 > — §We made repository knowledge the system of record
 
-**本项目状态：** `init-harness-engineering` skill 在初始化项目时强制生成目录式 AGENTS.md，限制在 200 行以内，并在 `harness-engineering-review` skill 中将行数超标列为审查项。`docs/` 下的分层结构承载具体知识。
+**本项目状态：** `init-harness-engineering` skill 在初始化项目时生成精简的 AGENTS.md（~200行），作为 Agent 指南和知识库导航。`docs/` 下的分层结构承载具体知识。
 
 ---
 

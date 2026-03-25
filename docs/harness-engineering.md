@@ -85,7 +85,7 @@ dev-docs-maintain         → 文档同步
 
 | 决策 | 原因 |
 |------|------|
-| AGENTS.md 目录式 | 防止上下文臃肿，保持 ≤200 行 |
+| AGENTS.md 精简 | 防止上下文臃肿，保持 ≤200 行 |
 | 子代理一次性 | 避免上下文污染，每次完整传入问题 |
 | 产出物作为协调介质 | Skill 通过文件传话，不直接调用 |
 | Gate 强制等待 | 关键决策点必须有人类确认 |
@@ -121,7 +121,7 @@ systematic-debugging → test-driven-development → verification-before-complet
 
 | 反模式             | 正确做法                         |
 | ------------------ | -------------------------------- |
-| 巨型 AGENTS.md     | 目录式 AGENTS.md + docs/ 分层    |
+| 巨型 AGENTS.md     | 精简 AGENTS.md + docs/ 分层    |
 | 口头架构决策       | 立即写入 docs/arch-decisions/  |
 | Prompt 规范啰嗦    | 转化为 Linter 规则 + 测试        |
 | 跳过文档同步       | Phase 8 强制文档同步             |

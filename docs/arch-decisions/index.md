@@ -12,7 +12,7 @@
 | DD-001 | Skill 作为执行单元 | ✅ 已验证 | 2026-03-20 | 内嵌于 workflow.md |
 | DD-002 | 子代理一次性原则 | ✅ 已验证 | 2026-03-20 | 内嵌于 workflow.md |
 | DD-003 | 产出物作为协调介质 | ✅ 已验证 | 2026-03-20 | 内嵌于 workflow.md |
-| DD-004 | AGENTS.md 目录式结构 | ✅ 已验证 | 2026-03-20 | 内嵌于 harness-engineering.md |
+| DD-004 | AGENTS.md 精简结构 | ✅ 已验证 | 2026-03-20 | 内嵌于 harness-engineering.md |
 | DD-005 | Gate 机制强制人工确认 | ✅ 已验证 | 2026-03-20 | 内嵌于 workflow.md |
 
 ## 状态说明

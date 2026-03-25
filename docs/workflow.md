@@ -380,7 +380,7 @@ Phase 2: 构建 docs/ 知识库
          按项目复杂度裁剪，创建必要文档
 
 Phase 3: 生成 AGENTS.md
-         目录式结构，≤ 200 行，指针指向 docs/
+         精简结构，≤ 200 行，指针指向 docs/
 
 Phase 4: 验证
          行数检查 + 指针有效性 + 命令可执行性
@@ -443,4 +443,4 @@ docs/exec-plans/completed/ ← 归档
 | 重用子代理修复问题 | 子代理带着错误上下文继续工作 | 每次修复启动新子代理，完整传入问题描述 |
 | 随机修复 bug | 掩盖根本原因，制造新问题 | systematic-debugging 四阶段，先找根因 |
 | 未运行命令就声称完成 | AI 幻觉，产出 AI slop | verification-before-completion 的证据优先原则 |
-| AGENTS.md 写成百科全书 | 上下文臃肿，重点丢失 | 目录式 AGENTS.md + docs/ 分层 |
+| AGENTS.md 写成百科全书 | 上下文臃肿，重点丢失 | 精简 AGENTS.md + docs/ 分层 |

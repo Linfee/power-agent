@@ -1,0 +1,6 @@
+{
+  "name": "power-agent",
+  "description": "AI 编码 Agent 工作流系统：TDD、系统化调试、子代理并行、Harness Engineering 实践",
+  "version": "0.1.0",
+  "contextFileName": "GEMINI.md"
+}
