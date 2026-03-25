@@ -51,6 +51,7 @@ dev-docs-maintain         → 文档同步
 | `systematic-debugging` | 四阶段根因调试 | 'bug', '测试失败', 'debug' |
 | `test-driven-development` | RED-GREEN-REFACTOR | '实现功能', 'TDD' |
 | `requesting-code-review` | 代码审查编排 | '代码审查', 'code review' |
+| `receiving-code-review` | 审查反馈技术评估 | '收到审查', '审查反馈' |
 | `verification-before-completion` | 证据优先验证 | '验证完成', 'verification' |
 | `dev-docs` | 文档路由器 | '写文档', 'architecture' |
 | `dev-docs-maintain` | 文档维护 | 手动调用 |

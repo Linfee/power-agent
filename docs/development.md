@@ -30,7 +30,7 @@ power-agent/
 │   ├── arch-decisions/     # 设计决策
 │   ├── exec-plans/           # 执行计划
 │   └── specs/                # Spec 文档
-├── skills/                   # Skill 定义（14个）
+├── skills/                   # Skill 定义（16个）
 │   ├── feature-dev/
 │   ├── discuss/
 │   ├── writing-plans/

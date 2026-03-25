@@ -10,6 +10,5 @@
   "repository": "https://github.com/linfee/power-agent",
   "license": "MIT",
   "keywords": ["skills", "tdd", "debugging", "harness-engineering", "subagent", "workflow"],
-  "skills": "./skills/",
-  "commands": "./commands/"
+  "skills": "./skills/"
 }

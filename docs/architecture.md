@@ -148,10 +148,12 @@ feature-dev (编排器)
 
 ## 设计原则
 
-1. **Skill 是执行单元，人类是决策者**
-2. **产出物是协调介质** — Skill 通过文件传话，不直接调用
+详见 [设计决策索引](arch-decisions/index.md) 和 [Harness Engineering 体系](harness-engineering.md)。核心原则概要：
+
+1. **Skill 是执行单元，人类是决策者**（[DD-001](arch-decisions/DD-001-skill-as-execution-unit.md)）
+2. **产出物是协调介质**（[DD-003](arch-decisions/DD-003-artifacts-as-coordination.md)）
 3. **仓库是唯一真相来源** — Agent 看不到的内容不存在
-4. **AGENTS.md 是目录，不是百科全书** — ~200 行
+4. **AGENTS.md 是目录，不是百科全书**（[DD-004](arch-decisions/DD-004-lean-agents-md.md)）
 5. **机械化约束优于 Prompt 啰嗦** — Linter/Test > 文字规则
 6. **证据优先** — 没有新鲜验证不得声称完成
 
