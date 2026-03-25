@@ -21,6 +21,7 @@ AI 编码 Agent 工作流插件系统，融合 superpowers + Harness Engineering
 | 工作流机制 | [docs/workflow.md](docs/workflow.md) | Skill 协调、产出物流转、反模式 |
 | Harness 体系 | [docs/harness-engineering.md](docs/harness-engineering.md) | 设计哲学、知识库结构、标准工作流 |
 | 设计决策 | [docs/arch-decisions/](docs/arch-decisions/index.md) | 重要技术决策索引 |
+| Eval 框架 | [docs/eval-framework.md](docs/eval-framework.md) | Skill 执行质量评估、指标收集协议 |
 | 执行计划 | [docs/exec-plans/](docs/exec-plans/) | active/ 进行中，completed/ 已归档 |
 | Spec 文档 | [docs/specs/](docs/specs/) | 经过审查的需求规格 |
 
@@ -67,7 +68,7 @@ dev-docs-maintain         → 文档同步
 |------|------|
 | 依赖方向 | 只能从上层指向下层，禁止反向 |
 | 子代理一次性 | 不重用子代理，每次启动新代理 |
-| Gate 强制等待 | discuss spec 批准、feature-dev 方案选择、实现批准 |
+| Gate 强制等待 | discuss spec 批准、feature-dev 方案选择（规划 Gate）；实现阶段改为轻量启动通知（DD-006） |
 | 证据优先 | 没有运行验证不得声称完成 |
 | 根因优先 | 没有根本原因分析没有修复 |
 | 并发限制 | 最大并行度 3 |
