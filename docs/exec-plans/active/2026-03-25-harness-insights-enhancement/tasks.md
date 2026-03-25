@@ -13,11 +13,11 @@
 
 **变更说明（来自 spec Phase 1.1 + 1.2 + 1.3 + Phase 2.2 + Phase 3.2）：**
 
-- [ ] **Step 1: 读取当前文件**
+- [x] **Step 1: 读取当前文件**
 
   读取 `skills/exec-plan-runner/SKILL.md` 确认现有结构。
 
-- [ ] **Step 2: 在 frontmatter 增加 version 字段**
+- [x] **Step 2: 在 frontmatter 增加 version 字段**
 
   将 frontmatter 从：
   ```yaml
@@ -1151,3 +1151,17 @@
   确认 `docs/eval-framework.md` 文件存在且格式完整
 
 ## Session Log
+
+### [2026-03-25] 全局验证通过，所有 Batch 完成
+- **已完成**: GV1-GV6 全部通过：16 SKILL.md 含 version ✅ | sync-version.sh ✅ | scan-antipatterns.sh ✅ | DD-006 index ✅ | eval-framework.md ✅ | 11 新增文件 ✅
+- **遇到的问题**: 无
+- **已验证假设**: python3 在 macOS 环境下可正确处理 SKILL.md frontmatter
+- **下一步**: Step 4 分支收尾
+- **环境状态**: git clean ✅ | 全部验证通过 ✅
+
+### [2026-03-25] Batch 1 完成
+- **已完成**: Task 1 (`skills/exec-plan-runner/SKILL.md` + `progress-log-template.md`), Task 2 (`skills/systematic-debugging/SKILL.md`), Task 3 (`skills/feature-dev/SKILL.md`)
+- **遇到的问题**: 无
+- **已验证假设**: 所有 3 个 SKILL.md 均可正常编辑，frontmatter 结构一致
+- **下一步**: Batch 2，并行执行 Task 4 + Task 5 + Task 6
+- **环境状态**: git clean ✅ | 3 commits ✅
