@@ -131,3 +131,26 @@ disable-model-invocation: [true|false]  # 可选
 |----------|------|------|
 | superpowers | v5.0.5 | https://github.com/obra/superpowers |
 | Harness Engineering | 2026年2月 | https://openai.com/index/harness-engineering/ |
+
+---
+
+## 版本管理
+
+### Skill 版本机制
+
+所有 `skills/*/SKILL.md` 的 frontmatter 包含 `version` 字段，与 `VERSION` 文件保持同步。全局版本号在 `VERSION` 文件中维护（语义化版本：`MAJOR.MINOR.PATCH`）。
+
+### 提交流程（修改 Skill 内容后）
+
+1. 修改 `VERSION` 文件中的版本号
+2. 运行 `bash scripts/sync-version.sh` 同步所有 SKILL.md
+3. 确认输出包含"✅ 版本同步完成"
+4. 将 `VERSION`、受影响的 `SKILL.md` 文件一起提交
+
+### 版本号规范
+
+| 变更类型 | 版本升级 | 示例 |
+|----------|---------|------|
+| 破坏性变更（移除 Gate、重构流程） | MAJOR | 1.0.0 → 2.0.0 |
+| 新增功能（新章节、新机制） | MINOR | 1.0.0 → 1.1.0 |
+| 文字修正、描述优化 | PATCH | 1.0.0 → 1.0.1 |

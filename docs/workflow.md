@@ -1,3 +1,6 @@
+<!-- verified: 2026-03-25 -->
+<!-- scope: workflow -->
+
 # 工作机制与 Skill 协调
 
 本文档描述 power-agent 的完整工作机制：各 Skill 的职责边界、产出物、以及它们之间如何协调。
@@ -41,8 +44,8 @@
 │   │   → writing-plans skill                             │
 │   │                                                     │
 │   ├── 阶段 6：实现                                        │
-│   │   gate：用户明确批准 ✋                                 │
-│   │   → exec-plan-runner skill                          │
+│   │   启动通知：轻量确认（非审批 Gate）                       │
+│   │   → exec-plan-runner skill（阶段 6-8 自主闭环）         │
 │   │                                                     │
 │   ├── 阶段 7：质量审查                                     │
 │   │   → requesting-code-review skill                    │
@@ -113,14 +116,14 @@ gate ✋ 等待用户选择方案
 ├── 是 → 阶段 5：writing-plans skill 创建 exec-plan
 └── 否 → 跳过阶段 5
 
-gate ✋ 阶段 6 开始前等待用户明确批准
+启动通知 阶段 6 开始前轻量确认（"Exec-plan 已就绪，开始执行？"）
 
 阶段 6：exec-plan-runner skill（或直接实现）
 阶段 7：requesting-code-review skill
 阶段 8：dev-docs-maintain skill
 ```
 
-**关键设计决策：** 两个人工 gate（选方案、批准实现）是故意的强制停顿，防止 Agent 在没有人类确认的情况下推进到破坏性操作。
+**关键设计决策（DD-006）：** 规划阶段两个人工 Gate（选方案、阶段 3 确认）锁定方向；实现阶段改为轻量启动通知（非强制 Gate），worktree 沙盒提供破坏性操作隔离，Agent-to-Agent 审查保障质量，3 轮失败时才 Escalate。
 
 ---
 
@@ -201,9 +204,9 @@ Step 6: 启动验证子代理（verification-before-completion skill）
 **恢复模式：** exec-plan 中有 `[x]` 标记时，先验证已完成产出有效，再从中断点继续。
 
 **Escalation（停止，等待人类）：**
-- 任务歧义且解读差异 ≥ 2x
-- 需要 exec-plan 未预期的破坏性变更
-- 修复子代理反复失败（3 轮）
+- 修复子代理反复失败（3 轮审查修复循环耗尽）
+
+自主处理（无需 Escalate）：任务歧义（自主判断最合理解读）、破坏性变更（worktree 沙盒隔离）。
 
 ---
 
@@ -438,7 +441,7 @@ docs/exec-plans/completed/ ← 归档
 | 反模式 | 问题 | 正确做法 |
 |--------|------|----------|
 | 跳过 discuss，直接 feature-dev | 架构决策不充分，执行中反复返工 | 复杂需求先用 discuss |
-| feature-dev 不等人工确认就推进 | Agent 在不正确方向上浪费资源 | 两个 gate（选方案、批准实现）必须停顿 |
+| 跳过规划 Gate 直接推进实现 | Agent 在未锁定方向时浪费资源 | 两个规划 Gate（选方案、阶段 3 确认）必须停顿；实现阶段启动通知即可 |
 | exec-plan-runner 主代理自己写代码 | 上下文污染，无法有效追踪 | 主代理只编排，所有实现交给子代理 |
 | 重用子代理修复问题 | 子代理带着错误上下文继续工作 | 每次修复启动新子代理，完整传入问题描述 |
 | 随机修复 bug | 掩盖根本原因，制造新问题 | systematic-debugging 四阶段，先找根因 |

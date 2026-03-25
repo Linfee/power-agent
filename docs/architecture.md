@@ -142,8 +142,8 @@ feature-dev (编排器)
 | discuss Step 7     | spec 完成后        | 等待用户批准       |
 | feature-dev 阶段 3 后 | 澄清完成            | 等待用户确认       |
 | feature-dev 阶段 4 后 | 架构方案呈现          | 等待用户选择       |
-| feature-dev 阶段 6 前 | 准备实现            | 等待用户明确批准     |
-| exec-plan-runner   | 歧义/破坏性变更/3轮修复失败 | Escalate 给用户 |
+| feature-dev 阶段 6 前 | 准备实现（启动通知） | 轻量确认（非强制 Gate）；worktree 沙盒隔离 |
+| exec-plan-runner   | 3 轮修复失败 | Escalate 给用户 |
 
 
 ## 设计原则

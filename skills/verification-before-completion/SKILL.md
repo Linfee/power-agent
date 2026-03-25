@@ -1,6 +1,7 @@
 ---
 name: verification-before-completion
 description: 在声称工作完成之前使用，强制运行验证命令并确认输出。没有新鲜验证证据就没有完成声明。Triggers: '验证完成', '完成前验证', '声称通过', 'verification'.
+version: 1.0.0
 ---
 
 # 完成前验证
@@ -62,6 +63,27 @@ description: 在声称工作完成之前使用，强制运行验证命令并确�
 # 4. 对照完成标准逐项检查
 # 对照 exec-plan 的验收标准，逐项确认
 ```
+
+---
+
+## 环境感知验证策略
+
+验证开始前先检测可用工具，按项目类型选择验证手段：
+
+| 项目类型 | 基础验证（必须） | 增强验证（工具可用时） |
+|----------|-----------------|----------------------|
+| CLI/库 | lint + unit test + build | 集成测试、示例脚本运行 |
+| API/后端 | lint + unit test + build | curl/httpie 端到端请求、日志检查 |
+| Web UI | lint + unit test + build | 浏览器自动化（截图对比、DOM 断言） |
+| 全栈 | lint + unit test + build | API 验证 + 浏览器验证 |
+
+**工具检测（验证前执行）：**
+
+```bash
+which curl httpie playwright puppeteer 2>/dev/null || true
+```
+
+工具不可用时 → 回退到基础验证，在报告中注明"增强验证不可用（缺少 [工具名]）"。
 
 ---
 

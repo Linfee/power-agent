@@ -13,7 +13,8 @@
 | DD-002 | 子代理一次性原则 | ✅ 已验证 | 2026-03-25 | [DD-002](DD-002-disposable-subagents.md) |
 | DD-003 | 产出物作为协调介质 | ✅ 已验证 | 2026-03-25 | [DD-003](DD-003-artifacts-as-coordination.md) |
 | DD-004 | AGENTS.md 精简结构 | ✅ 已验证 | 2026-03-25 | [DD-004](DD-004-lean-agents-md.md) |
-| DD-005 | Gate 机制强制人工确认 | ✅ 已验证 | 2026-03-25 | [DD-005](DD-005-gate-mechanism.md) |
+| DD-005 | Gate 机制强制人工确认 | 🔄 superseded by DD-006 | 2026-03-25 | [DD-005](DD-005-gate-mechanism.md) |
+| DD-006 | Gate 机制重构 | ✅ active | 2026-03-25 | [DD-006](DD-006-gate-restructuring.md) |
 
 ## 状态说明
 
@@ -22,6 +23,7 @@
 | ✅ 已验证 | 决策已实施并经代码验证 |
 | ⚠️ 待验证 | 决策已实施但需重新验证 |
 | 📋 提议中 | 决策尚未最终确定 |
+| 🔄 superseded | 决策已被新决策取代，不再适用 |
 
 ## 创建新决策
 

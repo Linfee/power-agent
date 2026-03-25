@@ -1,6 +1,7 @@
 ---
 name: finishing-a-development-branch
 description: 实现完成、测试通过后，引导完成分支收尾：验证测试 → 呈现 merge/PR/保留/丢弃 4 选项 → 清理 worktree。由 exec-plan-runner 自动调用，也可手动触发。
+version: 1.0.0
 ---
 
 # Finishing a Development Branch
