@@ -1,8 +1,10 @@
 <!-- verified: 2026-03-25 -->
 <!-- scope: architecture -->
-<!-- status: accepted -->
+<!-- status: superseded by DD-006 (2026-03-25) -->
 
 # DD-005: Gate 机制强制人工确认
+
+> **状态：** superseded by [DD-006](DD-006-gate-restructuring.md)（2026-03-25）
 
 ## 背景
 
