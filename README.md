@@ -47,7 +47,7 @@
 ### 完整工作流
 
 ```
-discuss skill          ← 可选：设计探索 → spec 文档
+discuss skill          ← 设计探索 → spec 文档
     ↓（spec 批准后）
 feature-dev skill
     ├── 阶段 1-3：上下文建立 + 代码库探索 + 澄清（人工确认）

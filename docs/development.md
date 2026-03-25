@@ -10,7 +10,7 @@ Power-Agent 是一个 AI 编码 Agent 工作流插件系统，以 Markdown 文�
 ## 环境要求
 
 - Git 版本控制
-- 支持的 AI IDE：Claude Code、Cursor、Factory（可选）
+- 支持的 AI IDE：Claude Code、Cursor、Factory
 
 ## 项目结构
 
