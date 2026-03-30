@@ -1,53 +1,69 @@
 ---
-name: writing-plans
+
+## name: writing-plans
 description: 将设计/spec 拆解为 TDD 结构的可执行实现计划（exec-plan），包含完整代码片段、精确命令和计划审查循环。Use when: 有明确规格或需求、准备开始实现之前，或 dev-docs 委派 exec-plan 任务时。Triggers: '创建实现计划', 'exec-plan', 'writing-plans', '任务拆解', '实现计划'.
-version: 1.0.0
----
+version: 2.0.0
 
 # Writing Plans — 创建实现计划
 
-将设计或 spec 拆解为 **agent 可直接执行的细粒度任务**，让执行代理无需额外探索就能理解"做什么、怎么做、怎么验证"。
+基于用户需求（含上下文调查）创建可直接指导另一个 agent 实施的执行计划。
+计划是方案，不是脚本；指导方向与验收，不规定每一步的文件操作。
 
 **声明于开始：** "我正在使用 writing-plans skill 创建实现计划。"
 
+**硬约束：** 此 skill 中绝对禁止直接实施任何代码改动。
+
 ---
 
-## Step 1: 预检与上下文加载
+## Step 1: 需求识别与澄清
 
-1. 确认 `AGENTS.md` 已加载，`docs/` 目录存在
-2. 若用户提供了 spec 文件（`docs/specs/`），完整阅读它
-3. 加载相关上下文：`docs/architecture.md`、`docs/arch-decisions/index.md`
+识别需求来源，按质量由高到低：
 
-## Step 2: 代码分析
 
-启动 `explore` 子代理分析相关代码区域，收集：
-- 关键文件路径、函数签名、模块边界
-- 现有测试结构和测试运行命令
-- 当前代码约定和模式
+| 来源                            | 说明                                | 处理                                |
+| ------------------------------- | ----------------------------------- | ----------------------------------- |
+| `docs/specs/` 中的 spec 文档    | 由 `discuss` skill 产出，需求已明确 | 直接进入 Step 2                     |
+| 来自此前讨论 / 用户直接陈述需求 | 可能有隐含上下文                    | 提炼关键决策，确认理解后进入 Step 2 |
+| 需求不明确                      | 缺少目标、约束或验收标准            | **先与用户讨论，明确需求再继续**    |
 
-**读取** 子代理返回的关键文件后再继续。
+
+若需求不明确，提出具体问题（目标是什么、边界在哪、完成的定义是什么），获得确认后再进行后续步骤。
+
+---
+
+## Step 2: 上下文调查
+
+启动 `explore` 子代理，收集以下信息：
+
+- 涉及模块的关键文件路径与职责边界
+- 现有相关接口、数据结构、核心逻辑
+- 测试运行命令与现有测试结构
+- 代码约定与模式（命名、错误处理、日志等）
+
+调查结束后，将发现的关键上下文记录在计划文档中（供实施 agent 直接参考，避免重复探索）。
+
+---
 
 ## Step 3: 范围检查
 
-若需求涵盖多个独立子系统 → 建议拆分为多个独立 exec-plan，每个单独走完 writing-plans → exec-plan-runner 循环。
+若需求涵盖多个**独立**子系统（相互无依赖、可独立交付）→ 建议拆分为多个 exec-plan，分别走完 writing-plans → exec-plan-runner 循环。
 
-## Step 4: 文件结构规划
+---
 
-写任务前先规划文件清单：
-- 每个文件一个明确职责，按职责拆分而非按技术层级
-- 标注需要修改的现有文件的大致行范围
-- 遵循现有代码约定；只有在文件已过于庞大时才建议拆分
+## Step 4: 创建计划目录
 
-此结构决定任务分解边界。**每个任务产出自包含的变更集。**
+```
+docs/exec-plans/active/YYYY-MM-DD-title/
+├── plan.md      # 方案：目标、架构决策、里程碑、当前状态
+├── context.md   # 上下文：调查发现的关键文件、接口、约束、技术债
+└── tasks.md     # 任务拆解：目标导向，含验收标准与测试要求
+```
 
-## Step 5: 撰写计划
+---
 
-### 规模判断
+## Step 5: 撰写计划文档
 
-- **小任务**（单模块或少量文件）→ 单文件：`docs/exec-plans/active/YYYY-MM-DD-title.md`
-- **大需求**（跨多模块，需要独立方案设计）→ 目录：`docs/exec-plans/active/YYYY-MM-DD-title/`
-
-### 计划文档头部（必须包含）
+### plan.md
 
 ```markdown
 <!-- verified: YYYY-MM-DD -->
@@ -56,109 +72,72 @@ version: 1.0.0
 
 # [功能名] 实现计划
 
-> **给执行代理：** 推荐使用 `exec-plan-runner` skill 执行此计划。
-> 任务使用 checkbox (`- [ ]`) 语法追踪进度。
+> **给执行 agent：** 使用 `exec-plan-runner` skill 执行此计划。
 
-**目标：** [一句话描述构建什么]
+**目标：** [一句话描述要构建什么]
 
-**架构：** [2-3 句话描述实现方法]
+**branch:** feat/[kebab-case-name]
 
-**技术栈：** [关键技术/库]
+## 技术方案
 
-**branch:** feat/[功能名]
-
----
-```
-
-`branch` 字段为必填项，供 `exec-plan-runner` Step 0 创建 worktree 时使用。格式约定：`feat/<kebab-case-name>`。
-
-### 任务结构（TDD 粒度）
-
-每个任务是一个自包含的组件，每步是一个动作，**2-5 分钟**内完成：
-
-````markdown
-### Task N: [组件名]
-
-**文件：**
-- 创建: `exact/path/to/file.py`
-- 修改: `exact/path/to/existing.py`（第 123-145 行附近）
-- 测试: `tests/exact/path/to/test_file.py`
-
-- [ ] **Step 1: 编写失败测试**
-
-```python
-def test_specific_behavior():
-    result = function_under_test(input_value)
-    assert result == expected_value
-```
-
-- [ ] **Step 2: 运行确认失败**
-
-```bash
-pytest tests/path/test_file.py::test_specific_behavior -v
-# 预期: FAIL — NameError 或 AssertionError，说明功能尚未实现
-```
-
-- [ ] **Step 3: 编写最小实现**
-
-```python
-def function_under_test(input_value):
-    return expected_value
-```
-
-- [ ] **Step 4: 运行确认通过**
-
-```bash
-pytest tests/path/test_file.py::test_specific_behavior -v
-# 预期: PASS — 1 passed
-```
-
-- [ ] **Step 5: 运行全量测试，确认无回归**
-
-```bash
-pytest tests/ -v
-# 预期: 所有测试通过，0 failed
-```
-
-- [ ] **Step 6: Commit**
-
-```bash
-git add tests/path/test_file.py src/path/file.py
-git commit -m "feat: add [component name]"
-```
-````
-
-**粒度规则：** 每步一个动作；代码完整写出，不写伪代码；命令可直接执行，含预期输出；DRY、YAGNI、TDD、频繁提交。
-
-### 大需求目录结构
-
-```
-docs/exec-plans/active/YYYY-MM-DD-title/
-├── README.md     # 入口：目标、里程碑、当前状态
-├── design.md     # 技术方案：架构、数据模型、接口
-├── tasks.md      # TDD 粒度任务拆解（同上格式）
-└── decisions.md  # 过程决策日志
-```
-
-README.md 头部：
-```markdown
-<!-- verified: YYYY-MM-DD -->
-<!-- scope: [涉及范围] -->
-<!-- status: active -->
-
-# [计划标题]
-
-## 目标
-[要达成什么，1-3 句话]
+[整体架构与模块分工、关键数据结构与接口设计、外部依赖与集成点、重要技术决策及其理由、不在范围内的内容]
 
 ## 里程碑
+
 | 阶段 | 内容 | 状态 |
-|------|------|------|
-| M1 | ... | ⏳ |
+| ---- | ---- | ---- |
+| M1   | ...  | ⏳    |
 
 ## 当前状态
+
 [下一步从哪里开始]
 ```
+
+### context.md
+
+记录调查阶段发现的关键上下文，供实施 agent 直接复用，避免重复探索：
+
+- 关键文件路径与职责（附文件中相关函数/类名）
+- 现有接口签名、数据结构定义
+- 测试运行命令与测试结构概览
+- 代码约定（命名风格、错误处理模式、日志规范等）
+- 已知技术债或陷阱
+- 相关设计决策（`docs/arch-decisions/` 中已有的）
+
+### tasks.md
+
+任务是**目标导向**的，描述要达到什么状态，而不是机械地列出"第一步创建哪个文件、第二步编辑哪一行"。
+
+每个任务的格式：
+
+```markdown
+### Task N: [功能/组件名]
+
+**目标：** 实现什么，达到什么状态
+
+**涉及范围：** 大致模块或文件区域（不需要精确到行号）
+
+**方案要点：** 实现思路中的关键决策或注意事项
+
+**验收标准：**
+- [ ] [可验证的行为 1]
+- [ ] [可验证的行为 2]
+- [ ] [...]
+
+**测试要求：** 实施结束前必须验证，场景覆盖率 ≥ 90%，至少包含：
+- 正常流程: [描述]
+- 边界条件: [描述]
+- 错误处理: [描述]
+```
+
+**粒度规则：**
+
+- 每个任务对应一个可独立交付的功能单元
+- 验收标准必须可验证，不写"应该正常工作"
+- 测试要求描述场景，不规定测试框架或文件路径
+- 任务间依赖关系需明确标注
+
+---
 
 ## Step 6: Plan Reviewer 循环
 
@@ -168,15 +147,15 @@ README.md 头部：
 2. 超过 3 轮仍有问题 → 向用户 escalate
 3. 若 **Approved** → 进入 Step 7
 
-## Step 7: 更新索引
+---
 
-1. 确保 `docs/exec-plans/active/` 下文件列表一致
-2. 如新增了目录路径 → 更新 `AGENTS.md` 知识库导航
+## Step 7: 执行交棒
 
-## Step 8: 执行交棒
+计划审查通过后：
 
-> "计划已完成，保存至 `docs/exec-plans/active/<filename>`。选择执行方式：
+> "计划已完成，保存至 `docs/exec-plans/active/<dirname>/`。
 >
-> **1. exec-plan-runner（推荐）** — 分析任务依赖、并行调度子代理、TDD 驱动、阶段验证
+> **1. exec-plan-runner（推荐）** — 分析任务依赖、并行调度子代理、阶段验证
 >
-> **2. 内联执行** — 在当前会话中按任务逐步执行"
+> **2. 内联执行** — 在当前会话中逐任务执行"
+
