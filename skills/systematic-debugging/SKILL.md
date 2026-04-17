@@ -1,6 +1,6 @@
 ---
 name: systematic-debugging
-description: 遇到任何 bug、测试失败或意外行为时使用，在提出修复之前——需要根本原因调查而非随机修复。Triggers: 'bug', '测试失败', '意外行为', 'debug', '调试', '修复问题'.
+description: "遇到任何 bug、测试失败或意外行为时使用，在提出修复之前——需要根本原因调查而非随机修复。Triggers: bug, 测试失败, 意外行为, debug, 调试, 修复问题."
 version: 1.0.0
 ---
 

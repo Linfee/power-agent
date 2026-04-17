@@ -1,6 +1,6 @@
 ---
 name: dev-docs
-description: 创建或更新 docs/ 下的开发文档，支持六种类型：architecture、arch-decision、exec-plan、domain、development、reference。收到 exec-plan 任务时委派给 writing-plans skill。Use when: 需要记录架构/决策/领域知识/开发指南，或创建实现计划。Triggers: '写文档', 'dev-docs', 'architecture', 'arch-decision', 'exec-plan', '架构文档', '决策记录', '领域文档'.
+description: "创建或更新 docs/ 下的开发文档，支持六种类型：architecture、arch-decision、exec-plan、domain、development、reference。收到 exec-plan 任务时委派给 writing-plans skill。Use when: 需要记录架构/决策/领域知识/开发指南，或创建实现计划。Triggers: 写文档, dev-docs, architecture, arch-decision, exec-plan, 架构文档, 决策记录, 领域文档."
 disable-model-invocation: true
 version: 1.0.0
 ---

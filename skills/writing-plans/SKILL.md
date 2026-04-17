@@ -1,8 +1,8 @@
 ---
-
-## name: writing-plans
-description: 将设计/spec 拆解为 TDD 结构的可执行实现计划（exec-plan），包含完整代码片段、精确命令和计划审查循环。Use when: 有明确规格或需求、准备开始实现之前，或 dev-docs 委派 exec-plan 任务时。Triggers: '创建实现计划', 'exec-plan', 'writing-plans', '任务拆解', '实现计划'.
+name: writing-plans
+description: "将设计/spec 拆解为 TDD 结构的可执行实现计划（exec-plan），包含完整代码片段、精确命令和计划审查循环。Use when: 有明确规格或需求、准备开始实现之前，或 dev-docs 委派 exec-plan 任务时。Triggers: 创建实现计划, exec-plan, writing-plans, 任务拆解, 实现计划."
 version: 2.0.0
+---
 
 # Writing Plans — 创建实现计划
 
@@ -13,7 +13,6 @@ version: 2.0.0
 
 **硬约束：** 此 skill 中绝对禁止直接实施任何代码改动。
 
----
 
 ## Step 1: 需求识别与澄清
 

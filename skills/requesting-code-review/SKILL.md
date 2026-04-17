@@ -1,6 +1,6 @@
 ---
 name: requesting-code-review
-description: 完成任务、实现主要功能或合并前使用，构建审查上下文并启动代码审查子代理。Triggers: '代码审查', 'code review', '请求审查', '合并前审查'.
+description: "完成任务、实现主要功能或合并前使用，构建审查上下文并启动代码审查子代理。Triggers: 代码审查, code review, 请求审查, 合并前审查."
 version: 1.0.0
 ---
 

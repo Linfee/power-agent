@@ -1,6 +1,6 @@
 ---
 name: verification-before-completion
-description: 在声称工作完成之前使用，强制运行验证命令并确认输出。没有新鲜验证证据就没有完成声明。Triggers: '验证完成', '完成前验证', '声称通过', 'verification'.
+description: "在声称工作完成之前使用，强制运行验证命令并确认输出。没有新鲜验证证据就没有完成声明。Triggers: 验证完成, 完成前验证, 声称通过, verification."
 version: 1.0.0
 ---
 

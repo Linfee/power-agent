@@ -1,6 +1,6 @@
 ---
 name: dispatching-parallel-agents
-description: 当面临 2+ 个可以独立处理、无共享状态或顺序依赖的任务时使用，并行调度子代理解决独立问题。Triggers: '并行执行', '独立任务', '多个失败', 'parallel agents', '并行子代理'.
+description: "当面临 2+ 个可以独立处理、无共享状态或顺序依赖的任务时使用，并行调度子代理解决独立问题。Triggers: 并行执行, 独立任务, 多个失败, parallel agents, 并行子代理."
 version: 1.0.0
 ---
 

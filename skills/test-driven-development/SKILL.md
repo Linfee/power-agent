@@ -1,6 +1,6 @@
 ---
 name: test-driven-development
-description: 实现任何功能或 bugfix 时使用，强制 RED-GREEN-REFACTOR 循环。没有先失败的测试就没有生产代码。Triggers: '实现功能', 'TDD', '测试驱动', 'bugfix', '编写代码'.
+description: "实现任何功能或 bugfix 时使用，强制 RED-GREEN-REFACTOR 循环。没有先失败的测试就没有生产代码。Triggers: 实现功能, TDD, 测试驱动, bugfix, 编写代码."
 version: 1.0.0
 ---
 

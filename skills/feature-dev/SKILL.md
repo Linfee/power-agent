@@ -1,6 +1,6 @@
 ---
 name: feature-dev
-description: 引导式功能开发——串联 Harness Engineering 工作流的各阶段 skill，在关键决策点等待人工确认。Triggers: '开发功能', '新功能', 'feature-dev', '实现需求', '功能开发'.
+description: "引导式功能开发——串联 Harness Engineering 工作流的各阶段 skill，在关键决策点等待人工确认。Triggers: 开发功能, 新功能, feature-dev, 实现需求, 功能开发."
 version: 1.0.0
 ---
 

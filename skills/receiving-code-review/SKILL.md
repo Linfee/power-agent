@@ -1,6 +1,6 @@
 ---
 name: receiving-code-review
-description: 收到代码审查反馈时使用，在实施建议之前——需要技术评估而非表演性同意，验证后再实施。Triggers: '收到审查', '审查反馈', '处理审查', 'code review feedback'.
+description: "收到代码审查反馈时使用，在实施建议之前——需要技术评估而非表演性同意，验证后再实施。Triggers: 收到审查, 审查反馈, 处理审查, code review feedback."
 version: 1.0.0
 ---
 
