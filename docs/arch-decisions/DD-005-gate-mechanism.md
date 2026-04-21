@@ -1,4 +1,4 @@
-<!-- verified: 2026-03-25 -->
+<!-- verified: 2026-04-21 -->
 <!-- scope: architecture -->
 <!-- status: superseded by DD-006 (2026-03-25) -->
 
@@ -26,18 +26,12 @@ Agent 在自主执行过程中可能偏离方向，尤其在架构选择和破�
 
 ## 决定
 
-选择方案 B：在关键决策点设置强制 Gate。具体位置：
+选择方案 B：在关键决策点设置强制 Gate。
 
-| Gate 位置 | 触发条件 | 动作 |
-|-----------|----------|------|
-| discuss Step 7 | spec 完成后 | 等待用户批准 |
-| feature-dev 阶段 3 后 | 澄清完成 | 等待用户确认 |
-| feature-dev 阶段 4 后 | 架构方案呈现 | 等待用户选择 |
-| feature-dev 阶段 6 前 | 准备实现 | 等待用户明确批准 |
-| exec-plan-runner | 歧义/破坏性变更/3 轮修复失败 | Escalate 给用户 |
+> **注意：** `feature-dev` 已移除（2026-04），原 Gate 位置已整合到 discuss 和 exec-plan-runner 中。
 
 ## 后果
 
 - 人类掌舵方向，Agent 执行细节
-- 两个人工 Gate（选方案、批准实现）防止 Agent 在错误方向上浪费资源
+- 人工 Gate 防止 Agent 在错误方向上浪费资源
 - Escalation 机制为自动化流程提供安全阀

@@ -1,4 +1,4 @@
-<!-- verified: 2026-03-25 -->
+<!-- verified: 2026-04-21 -->
 <!-- scope: workflow -->
 
 # 工作机制与 Skill 协调
@@ -9,7 +9,7 @@
 
 ## 核心设计原则
 
-**Skill 是执行单元，人类是决策者。** 每个 Skill 只做一件事，通过明确的输入/输出协议与其他 Skill 协作。规划阶段（spec 批准、架构选择）设置强制 Gate 等待人类决策；实现阶段改为轻量启动通知，Agent 自主闭环，worktree 沙盒兜底（DD-006）。
+**Skill 是执行单元，人类是决策者。** 每个 Skill 只做一件事，通过明确的输入/输出协议与其他 Skill 协作。规划阶段（spec 批准）设置强制 Gate 等待人类决策；实现阶段改为轻量启动通知，Agent 自主闭环，worktree 沙盒兜底（DD-006）。
 
 **产出物是协调介质。** Skill 之间不直接调用彼此——它们通过写入仓库文件来"传话"：spec 文档、exec-plan 文件、代码、docs/ 文档。下一个 Skill 读取这些产出物作为输入。
 
@@ -19,52 +19,56 @@
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│                    需求阶段                             │
+│                    需求阶段                               │
 │                                                         │
 │   discuss skill                                         │
 │   输入：模糊需求                                           │
 │   产出：docs/specs/YYYY-MM-DD-<topic>.md                 │
-│   gate：spec 经 spec-reviewer 审查 + 用户批准              │
+│   gate：spec-reviewer 子代理审查 + 用户批准（强制 Gate）      │
 └─────────────────────┬───────────────────────────────────┘
                       │ spec 文档（或用户直接描述功能）
                       ▼
 ┌─────────────────────────────────────────────────────────┐
-│                 功能开发阶段                               │
+│                 规划阶段                                  │
 │                                                         │
-│   feature-dev skill（薄编排层）                            │
-│   ├── 阶段 1-3：上下文 + 探索 + 澄清                        │
-│   │   工具：explore 子代理 × 2-3（并行）                    │
-│   │   gate：所有关键问题得到回答                             │
-│   │                                                     │
-│   ├── 阶段 4：架构设计                                     │
-│   │   工具：code-architect 子代理 × 2-3（并行）             │
-│   │   gate：用户选定方案 ✋                                 │
-│   │                                                     │
-│   ├── 阶段 5：规划（>5 文件时）                             │
-│   │   → writing-plans skill                             │
-│   │                                                     │
-│   ├── 阶段 6：实现                                        │
-│   │   启动通知：轻量确认（非审批 Gate）                       │
-│   │   → exec-plan-runner skill（阶段 6-8 自主闭环）         │
-│   │                                                     │
-│   ├── 阶段 7：质量审查                                     │
-│   │   → requesting-code-review skill                    │
-│   │                                                     │
-│   └── 阶段 8：文档同步                                     │
-│       → dev-docs-maintain skill                         │
+│   writing-plans skill                                   │
+│   输入：spec 文档 或 用户描述                               │
+│   产出：docs/exec-plans/active/YYYY-MM-DD-title/         │
+│           plan.md + context.md + tasks.md               │
+│   gate：tech-plan-reviewer 子代理审查                     │
+└─────────────────────┬───────────────────────────────────┘
+                      │ exec-plan 三文档
+                      ▼
+┌─────────────────────────────────────────────────────────┐
+│                 实现阶段                                  │
+│                                                         │
+│   exec-plan-runner skill（状态机自主闭环）                  │
+│   ├── BOOTSTRAP：建立隔离 worktree                        │
+│   ├── EXECUTING：依赖驱动批次并行（TDD 子代理，最大 3）       │
+│   ├── REVIEWING：代码审查子代理（风险分级）                  │
+│   ├── VERIFYING：verification-before-completion          │
+│   └── FINALIZING：finishing-a-development-branch        │
+└─────────────────────┬───────────────────────────────────┘
+                      │
+                      ▼
+┌─────────────────────────────────────────────────────────┐
+│                 收尾阶段                                  │
+│                                                         │
+│   finishing-a-development-branch → dev-docs-maintain    │
 └─────────────────────────────────────────────────────────┘
 
 调试路径（独立入口）：
    systematic-debugging skill
-       └── → test-driven-development skill
+       └── [status=可修复] → test-driven-development skill
                └── → verification-before-completion skill
+       └── [status=需升级] → discuss 或 writing-plans
 ```
 
 ---
 
 ## 各 Skill 详解
 
-### discuss — 设计探索
+### discuss — 需求探索
 
 **触发：** 需求模糊、有多种可行方案、风险较高的架构决策。
 
@@ -73,377 +77,203 @@
 **核心流程：**
 1. 批量澄清问题（按主题分批，不一问一答）
 2. 强制呈现 2-3 个方案对比，含权衡和推荐
-3. 产出 spec 草稿
-4. 启动 `tech-plan-reviewer` 子代理审查（最多 3 轮）
+3. 产出 spec 草稿（使用 `references/spec-template.md`）
+4. 启动 `spec-reviewer` 子代理审查（最多 3 轮）
 5. 用户确认 → spec 状态标记为 `accepted`
 
 **产出：** `docs/specs/YYYY-MM-DD-<topic>.md`
 
-**交棒给：** `feature-dev` skill 或 `writing-plans` skill（如果架构已足够清晰）
+**交棒给：** `writing-plans`（spec 批准后）
 
 **不做：** 不写任何代码，不创建 exec-plan。spec 未批准前的任何实现动作均被 HARD-GATE 阻止。
 
 ---
 
-### feature-dev — 功能开发编排
-
-**触发：** 开始开发一个新功能。
-
-**输入：** 功能描述（字符串）或已批准的 spec 文档路径
-
-**本 Skill 不执行任何具体工作** —— 它只是编排层，负责：
-- 确定当前处于哪个阶段
-- 在 gate 点等待人类决策
-- 将具体工作委派给对应 Skill
-
-**阶段协调逻辑：**
-
-```
-已有 spec 文档？
-├── 是 → 加载 spec，跳过阶段 1 直接到阶段 2
-└── 否 → 阶段 1：加载 AGENTS.md + 相关 docs，澄清需求
-
-阶段 2：并行 explore 子代理（理解现有代码）
-阶段 3：澄清性问题（分批）
-
-gate ✋ 阶段 3 结束后等待用户确认
-
-阶段 4：并行 code-architect 子代理 → 呈现方案对比
-
-gate ✋ 等待用户选择方案
-
-预估变更 > 5 个文件？
-├── 是 → 阶段 5：writing-plans skill 创建 exec-plan
-└── 否 → 跳过阶段 5
-
-启动通知 阶段 6 开始前轻量确认（"Exec-plan 已就绪，开始执行？"）
-
-阶段 6：exec-plan-runner skill（或直接实现）
-阶段 7：requesting-code-review skill
-阶段 8：dev-docs-maintain skill
-```
-
-**关键设计决策（DD-006）：** 规划阶段两个人工 Gate（选方案、阶段 3 确认）锁定方向；实现阶段改为轻量启动通知（非强制 Gate），worktree 沙盒提供破坏性操作隔离，Agent-to-Agent 审查保障质量，3 轮失败时才 Escalate。
-
----
-
 ### writing-plans — 实现计划创建
 
-**触发：** `feature-dev` 阶段 5 委派，或用户直接要求创建 exec-plan，或 `dev-docs` skill 路由。
+**触发：** 用户要求创建 exec-plan，discuss 完成后，或 `dev-docs` skill 路由。
 
-**输入：** spec 文档 + 选定的架构方案 + 已有的代码库上下文
+**输入：** spec 文档 + 相关代码库上下文
 
 **核心流程：**
-1. 读取 spec 和相关代码文件（利用 `feature-dev` 阶段 2 已建立的上下文）
-2. 拆解为 TDD 结构任务（每步 2-5 分钟）
-3. 每个任务包含：完整代码片段 + 精确命令 + 验证步骤
+1. 读取 spec 和相关代码文件
+2. 拆解为三文档 exec-plan（plan.md / context.md / tasks.md）
+3. 每个任务包含：目标、依赖、验收标准、实现提示
 4. 启动 `tech-plan-reviewer` 子代理审查（最多 3 轮）
 5. 提供执行选项（推荐 `exec-plan-runner`）
 
-**产出：**
-- 小任务：`docs/exec-plans/active/YYYY-MM-DD-title.md`
-- 大需求：`docs/exec-plans/active/YYYY-MM-DD-title/`（含 README + design + tasks）
+**产出：** `docs/exec-plans/active/YYYY-MM-DD-title/plan.md + context.md + tasks.md`
 
-**任务格式（每个任务）：**
-```markdown
-### Task N: [任务名称]
-
-**目标：** [一句话说明]
-
-**测试（先写）：**
-```[lang]
-[完整测试代码]
-```
-
-**实现：**
-```[lang]
-[完整实现代码]
-```
-
-**验证：**
-```bash
-[可执行命令]
-```
-```
-
-**交棒给：** `exec-plan-runner` skill
+**交棒给：** `exec-plan-runner`
 
 ---
 
-### exec-plan-runner — 计划执行
+### exec-plan-runner — 执行编排
 
-**触发：** 有已创建的 exec-plan，需要执行。
+**触发：** writing-plans 交棒，或用户手动恢复执行。
 
-**输入：** `docs/exec-plans/active/` 中的计划文件
+**状态机：** BOOTSTRAP → EXECUTING → REVIEWING → VERIFYING → FINALIZING → DONE
 
-**核心架构：主代理只做编排，绝不自己写代码。**
+**核心流程：**
+1. BOOTSTRAP：读取三文档，建立隔离 worktree
+2. EXECUTING：拓扑排序 tasks，依赖就绪后按批次并行派发实现子代理
+3. REVIEWING：批次完成后基于风险分级派发审查子代理
+4. VERIFYING：全量调用 `verification-before-completion`
+5. FINALIZING：调用 `finishing-a-development-branch`，归档 exec-plan
 
-```
-Step 1: 读取 exec-plan → 分析任务依赖关系
-Step 2: 划分 batch（可并行的任务一批）
-Step 3: 每个 batch：
-        a) 并行启动实现子代理（每任务一个，最多 3 并发）
-           子代理使用 test-driven-development skill
-        b) 等待所有子代理返回
-        c) 并行启动审查子代理（两阶段）：
-           - 规格符合性审查（spec-reviewer-prompt.md）
-           - 代码质量审查（code-quality-reviewer-prompt.md）
-        d) 发现问题 → 启动新修复子代理（不重用旧子代理）
-Step 4: 更新 exec-plan 进度标记
-Step 5: 循环 Step 3-4 直到所有任务完成
-Step 6: 启动验证子代理（verification-before-completion skill）
-```
+**产出：** 实现代码变更 + Session Log + 归档 exec-plan
 
-**子代理是一次性的：** 主代理不与同一子代理进行多轮对话。每次需要修复都启动一个新的子代理，将问题描述和上下文完整传入。
-
-**并行调度规则：**
-- 修改同一文件的任务 → 有依赖，串行
-- 操作不同模块且无数据依赖 → 可并行（最多 3 并发）
-- 不确定时 → 视为有依赖（安全优先）
-
-**恢复模式：** exec-plan 中有 `[x]` 标记时，先验证已完成产出有效，再从中断点继续。
-
-**Escalation（停止，等待人类）：**
-- 修复子代理反复失败（3 轮审查修复循环耗尽）
-
-自主处理（无需 Escalate）：任务歧义（自主判断最合理解读）、破坏性变更（worktree 沙盒隔离）。
+**调用链：** TDD 子代理 → `receiving-code-review` → `verification-before-completion` → `finishing-a-development-branch` → `dev-docs-maintain`
 
 ---
 
-### dev-docs — 文档路由器
+### test-driven-development — 增量 TDD 实现
 
-**触发：** 需要创建任何类型的 docs/ 文档。
+**触发：** 由 exec-plan-runner 派发任务卡，或用户直接触发。
 
-**核心逻辑：识别类型 → 路由。**
+**铁律：** 没有跑通的目标测试就没有声称完成。
 
-```
-用户请求
-├── exec-plan 类型（计划/重构/迁移/实现）
-│   └── 委派给 writing-plans skill，原始需求完整传递
-└── 其他类型 → 直接处理
-    ├── architecture → docs/architecture.md 或 docs/domain/
-    ├── arch-decision → docs/arch-decisions/DD-NNN-title.md
-    ├── domain → docs/domain/[name].md
-    ├── development → docs/development.md
-    └── reference → docs/references/[name].md
-```
+**核心流程：** 写测试（RED）→ 最小实现通过（GREEN）→ 重构（REFACTOR）→ 增量验证
 
-非 exec-plan 文档流程：
-1. 启动 `explore` 子代理分析相关代码
-2. 按模板撰写文档（含 `<!-- verified: YYYY-MM-DD -->` 元信息）
-3. 更新 AGENTS.md 导航指针
+**产出：** 实现代码 + 可运行通过的目标测试
 
-**关键职责：** dev-docs 确保文档类型路由正确，但不重复 writing-plans 的计划创建逻辑。
+**交棒给：** `verification-before-completion`（全量回归验证）
 
 ---
 
-### systematic-debugging — 系统化调试
+### systematic-debugging — 根因优先调试
 
-**触发：** 遇到 bug、测试失败、意外行为。独立入口，不经过 feature-dev。
+**触发：** bug、测试失败、意外行为。
 
-**铁律：** 没有根本原因分析就没有修复。随机尝试修复是反模式。
+**铁律：** 证据充分前不输出修复结论。
 
-**四阶段协调：**
+**核心流程：** 现象隔离 → 假设生成 → 假设验证 → 根因确认
 
-```
-阶段 1：根本原因调查（必须完成才能继续）
-├── 读错误信息（完整，含堆栈）
-├── 稳定复现（不可复现 → 收集更多数据）
-├── 检查最近变更（git diff、新依赖）
-└── 多组件系统：在每层边界添加诊断日志，一次运行收集数据
+**输出结论：** `status: 调查中 / 假设已验证 / 可修复 / 已阻塞 / 需升级`
 
-阶段 2：模式分析
-├── 找同类正常工作的代码
-└── 列出工作代码与损坏代码的所有差异
-
-阶段 3：假设验证
-├── 形成单一具体假设（写下来）
-└── 最小化测试（一次一个变量）
-
-阶段 4：实现修复
-├── → test-driven-development skill（先写失败测试）
-├── 单一修复（不捆绑重构）
-└── → verification-before-completion skill（验证）
-
-失败次数 ≥ 3？
-└── 停止，质疑架构，不要继续修症状
-```
-
-**支撑文件：**
-- `root-cause-tracing.md` — 向后追踪调用栈定位原始触发器
-- `condition-based-waiting.md` + `condition-based-waiting-example.ts` — 替换任意超时
-- `defense-in-depth.md` — 在根本原因之上多层防御
-- `find-polluter.sh` — 定位测试污染来源
+**交棒给：**
+- `status=可修复` → `test-driven-development`
+- `status=需升级` → `discuss` 或 `writing-plans`
 
 ---
 
-### test-driven-development — TDD 执行
+### requesting-code-review — 全量审查编排
 
-**触发：** 实现任何功能前（由 exec-plan-runner 子代理或 systematic-debugging 触发）。
+**触发：** 实现完成后，由 exec-plan-runner 或用户直接触发。
 
-**流程：**
-```
-RED：写一个失败的测试（针对要实现的行为）
-     ↓ 运行验证失败（不跳过这步）
-GREEN：写最少的代码让测试通过
-     ↓ 运行验证通过
-REFACTOR：清理，保持测试通过
-     ↓ commit
-```
+**核心流程：**
+1. 评估变更风险等级（低/中 = 单审，高 = 双审并行）
+2. 按风险分级派发审查子代理（使用 `references/code-reviewer.md` prompt）
+3. 汇总结构化审查结论
 
-**与 exec-plan-runner 的协调：** exec-plan-runner 的实现子代理接收到任务时，任务描述中包含完整的测试代码（writing-plans 已写好），子代理直接从 RED 阶段开始。
+**输出：** `status: 通过 / 通过_含建议 / 阻塞 / 需澄清 + blocking_issues + next_action`
 
-**反模式参考：** `testing-anti-patterns.md`（5 类常见 TDD 反模式）
+**交棒给：** `receiving-code-review` → `verification-before-completion` → `dev-docs-maintain`
 
 ---
 
-### requesting-code-review — 代码审查编排
+### receiving-code-review — 审查反馈评估
 
-**触发：** feature-dev 阶段 7（实现完成后），或手动发起审查。
+**触发：** 收到代码审查反馈时。
 
-**流程：**
-1. 收集代码变更上下文（diff、相关文件、功能背景）
-2. 启动 `code-reviewer` 子代理（按 `code-reviewer.md` 模板）
-3. 汇总发现，按严重程度分级（P0/P1/P2）
-4. 呈现给用户，等待处理决策
+**铁律：** 基于代码事实做技术判断，非情绪化接受或拒绝。
 
-**与 exec-plan-runner 的区别：** exec-plan-runner 内部有自己的代码审查循环（规格符合性 + 代码质量），针对每个 batch 的实现。`requesting-code-review` 是面向整个功能的全量代码审查，发生在实现完成之后。
+**输出：** 逐条决策（采纳/部分采纳/驳回/需澄清）+ blocking_issues + next_action
+
+**参考：** `references/response-examples.md`
 
 ---
 
 ### verification-before-completion — 完成前验证
 
-**触发：** 任何声称"完成"之前，由 systematic-debugging 阶段 4 或 exec-plan-runner 最终步骤触发。
+**触发：** 任何"声称完成"之前。
 
-**核心规则：**
-- 没有运行验证命令 → 不得声称测试通过
-- 没有截图/输出 → 不得声称 UI 正常
-- 没有 lint 输出 → 不得声称无错误
-- 验证必须是新鲜的（本次 session 运行的），不接受"之前运行过"
+**铁律：** 没有本轮可验证证据（命令/退出码/时间戳/摘要）不得声称完成。
 
-**与其他 Skill 的关系：** 这是工作流的最终 gate，任何 Skill 在声称完成时都应触发此 Skill 的原则（即便不显式调用，也应遵循其规则）。
+**输出：** `status: 通过 / 部分通过 / 阻塞 + evidence + blocking_issues`
+
+**交棒给：** `finishing-a-development-branch`（status=通过后）
+
+---
+
+### finishing-a-development-branch — 分支处置
+
+**触发：** 由 exec-plan-runner（FINALIZING 阶段）或 verification 完成后调用。
+
+**四类选项：**
+- Merge：直接合并到目标分支
+- PR：创建 Pull Request
+- 保留：保留 worktree 供后续使用
+- 丢弃：删除 worktree 和分支（高风险，需明确确认）
+
+**输出：** `selected_option + cleanup_result + advisories`
 
 ---
 
 ### dispatching-parallel-agents — 并行调度
 
-**触发：** 有 2 个以上相互独立、无共享状态的任务需要同时处理。
+**约束：** 单批次最大并行度 3，仅当任务彼此独立（无共享改动面、无顺序依赖）时才并行。
 
-**调度规则：**
-```
-任务 A 和任务 B 相互独立？
-├── 是（不同文件、不同模块、无数据依赖）→ 并行启动
-└── 否（共享文件、有顺序依赖）→ 串行
+**输出：** 各子代理结构化结果汇总（status: success/partial/blocked/failed）
 
-并发上限：3 个（超过分批排队）
-```
+**参考文件：** `task-card-template.md`、`result-contract.md`、`conflict-resolution-rubric.md`
 
-**与 exec-plan-runner 的区别：** exec-plan-runner 内联了并行调度逻辑（专用于 exec-plan 执行上下文）。`dispatching-parallel-agents` 是通用的并行调度 Skill，用于 exec-plan 之外的场景（如 feature-dev 阶段 2 并行探索、阶段 4 并行架构设计）。
+---
+
+### dev-docs — 文档路由器
+
+**disable-model-invocation: true**（直接执行，不召唤新代理）
+
+**支持六种文档类型：** architecture、arch-decision、exec-plan、domain、development、reference
+
+**路由逻辑：** exec-plan 类型 → 委派 `writing-plans`；其余类型 → 直接写入对应 docs/ 路径（含 verified/scope 元信息）
 
 ---
 
 ### dev-docs-maintain — 文档维护
 
-**触发：** 重大功能完成后，或 exec-plan 归档时（feature-dev 阶段 8）。
+**disable-model-invocation: true**（直接执行，不召唤新代理）
 
-**健康检查维度：**
-```
-结构完整性：
-├── AGENTS.md 行数 ≤ 200
-├── 所有导航指针指向实际存在的文件
-└── exec-plans/completed 已归档完成的计划
+**触发：** 手动调用，或由 exec-plan-runner / finishing-a-development-branch 在收尾时触发。
 
-新鲜度（verified 时间戳）：
-├── > 30 天 → ⚠️ 需要验证
-└── > 90 天 → ❌ 需要修复
+**核心流程：** 扫描 docs/ → 对照实际代码状态 → 识别过期/缺失/失效内容 → 修复
 
-内容准确性（对照代码）：
-└── 启动 explore 子代理验证文档描述与代码现状是否一致
-```
-
-**修复优先级：**
-- **P0**（立即）：错误命令、不存在的模块引用
-- **P1**（当次）：新增模块未记录、新约定未文档化
-- **P2**（记录 TODO）：格式不统一、缺少图表
+**输出：** 文档健康报告（修复项表格 + 待处理 P2 列表）
 
 ---
 
 ### init-harness-engineering — 项目初始化
 
-**触发：** 新项目首次接入，或已有项目文档混乱需要重组。
+**disable-model-invocation: true**（直接执行）
 
-**流程：**
-```
-Phase 1: 并行 explore 子代理 × 2-3，扫描项目结构
-         ├── 技术栈、框架、构建工具
-         ├── 现有文档（README、CHANGELOG、注释）
-         └── 代码结构、模块边界、测试方式
+**输出：** AGENTS.md（≤200 行）+ docs/architecture.md + docs/development.md
 
-Phase 2: 构建 docs/ 知识库
-         按项目复杂度裁剪，创建必要文档
-
-Phase 3: 生成 AGENTS.md
-         精简结构，≤ 200 行，指针指向 docs/
-
-Phase 4: 验证
-         行数检查 + 指针有效性 + 命令可执行性
-```
-
-**产出：** 结构化的 `docs/` 目录 + `AGENTS.md`，建立完整的 Harness Engineering 知识体系。
+**交棒给：** `dev-docs-maintain`
 
 ---
 
-### harness-engineering-review — 实践审查
+### harness-engineering-review — 工作流审查
 
-**触发：** 需要评估项目 Agent 工作流质量，或作为定期健康检查。
+**七个审查维度：**
+1. AGENTS.md 结构与质量
+2. Agent 可见性（知识库导航）
+3. 约束机制化程度
+4. 反馈循环完整性
+5. 知识库维护实践
+6. 技术债管理
+7. 代码模式一致性
 
-**六个审查维度：**
-
-| 维度 | 核心问题 |
-|------|----------|
-| AGENTS.md 结构 | 是否 ≤ 200 行？是否是目录而非百科全书？ |
-| Agent 可见性 | 重要决策是否在仓库中版本化？ |
-| 约束机制化 | 规范靠 Linter/Test 还是 Prompt 口头约定？ |
-| 反馈循环质量 | Agent 能否自运行应用、捕获错误、验证修复？ |
-| 知识维护 | 是否有机制防止文档腐化？ |
-| 技术债管理 | 是否有"黄金原则"防止模式漂移？ |
-
----
-
-## 产出物流转图
-
-```
-用户需求
-    │
-    ▼
-docs/specs/*.md          ← discuss 产出
-    │
-    ▼
-docs/exec-plans/active/  ← writing-plans 产出
-    │
-    ▼
-代码变更（git diff）      ← exec-plan-runner 子代理产出
-    │
-    ▼
-代码审查发现              ← requesting-code-review 产出
-    │
-    ▼
-docs/ 更新               ← dev-docs-maintain 产出
-    │
-    ▼
-docs/exec-plans/completed/ ← 归档
-```
+**输出：** P0/P1/P2 分级报告 + blocking_issues + advisories
 
 ---
 
 ## 反模式
 
-| 反模式 | 问题 | 正确做法 |
-|--------|------|----------|
-| 跳过 discuss，直接 feature-dev | 架构决策不充分，执行中反复返工 | 复杂需求先用 discuss |
-| 跳过规划 Gate 直接推进实现 | Agent 在未锁定方向时浪费资源 | 两个规划 Gate（选方案、阶段 3 确认）必须停顿；实现阶段启动通知即可 |
-| exec-plan-runner 主代理自己写代码 | 上下文污染，无法有效追踪 | 主代理只编排，所有实现交给子代理 |
-| 重用子代理修复问题 | 子代理带着错误上下文继续工作 | 每次修复启动新子代理，完整传入问题描述 |
-| 随机修复 bug | 掩盖根本原因，制造新问题 | systematic-debugging 四阶段，先找根因 |
-| 未运行命令就声称完成 | AI 幻觉，产出 AI slop | verification-before-completion 的证据优先原则 |
-| AGENTS.md 写成百科全书 | 上下文臃肿，重点丢失 | 精简 AGENTS.md + docs/ 分层 |
+| 反模式 | 说明 |
+|--------|------|
+| 无证据声称完成 | 没有运行命令/退出码/时间戳，不得说"完成了" |
+| 猜测根因 | 没有假设验证证据前不能输出"根因是 X" |
+| 重用子代理 | 子代理是一次性的，不得跨任务复用 |
+| 跨层反向依赖 | 下层 Skill 不得调用上层 Skill |
+| 超限并行 | 并行度超过 3 必须分批 |
+| 无测试声称通过 | TDD 铁律：没有跑通的目标测试 = 没有完成 |

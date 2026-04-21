@@ -25,7 +25,6 @@ Three principles from Harness Engineering:
 
 | Skill | Purpose |
 |-------|---------|
-| `feature-dev` | Eight-phase guided feature development (thin orchestrator connecting all other skills) |
 | `discuss` | Design exploration before coding — spec doc with 2-3 approach comparison and spec reviewer loop |
 | `writing-plans` | Convert spec/design into TDD-structured exec-plans with complete code snippets |
 | `exec-plan-runner` | Execute exec-plans via one-shot subagents, parallel batches, two-phase code review |
@@ -39,18 +38,20 @@ Three principles from Harness Engineering:
 | `verification-before-completion` | Evidence-first verification — no completion claims without fresh proof |
 | `dispatching-parallel-agents` | Schedule independent tasks as parallel subagents |
 | `harness-engineering-review` | Audit a project's agent workflow against Harness Engineering best practices |
+| `finishing-a-development-branch` | Wrap up a completed branch (merge/PR/keep/discard) |
 
 ### Workflow
 
 ```
 discuss skill          ← optional: design exploration → spec doc
     ↓ (spec approved)
-feature-dev skill
-    ├── Phase 1-3: Context + Codebase exploration + Clarification
-    ├── Phase 4:   Architecture design (human selects)
-    ├── Phase 5:   writing-plans skill → exec-plan
-    ├── Phase 6:   exec-plan-runner skill (TDD subagents, parallel)
-    ├── Phase 7:   requesting-code-review skill
+writing-plans skill    ← create TDD-structured exec-plan
+    ↓
+exec-plan-runner skill ← TDD subagents, parallel
+    ↓
+requesting-code-review ← code review
+    ↓
+dev-docs-maintain      ← doc sync
     └── Phase 8:   dev-docs-maintain skill
 
 Bug / test failure → systematic-debugging skill

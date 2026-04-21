@@ -5,12 +5,12 @@ AI 编码 Agent 工作流插件系统，融合 superpowers + Harness Engineering
 ## 快速参考
 
 - **类型**: AI Agent Skill/Prompt 工程
-- **Skills**: 16 个可复用 Skill
+- **Skills**: 14 个可复用 Skill
 - **支持平台**: Claude Code, Cursor, Factory Droid
 
 ## 架构概览
 
-五层架构：编排层 → 规划层 → 实现层 → 审查层 → 基础设施层。详见 [docs/architecture.md](docs/architecture.md)。
+四层架构：规划层 → 实现层 → 审查层 → 基础设施层。详见 [docs/architecture.md](docs/architecture.md)。
 
 ## 知识库导航
 
@@ -20,8 +20,8 @@ AI 编码 Agent 工作流插件系统，融合 superpowers + Harness Engineering
 | 开发指南 | [docs/development.md](docs/development.md) | 环境搭建、Skill 开发、文件命名 |
 | 工作流机制 | [docs/workflow.md](docs/workflow.md) | Skill 协调、产出物流转、反模式 |
 | Harness 体系 | [docs/harness-engineering.md](docs/harness-engineering.md) | 设计哲学、知识库结构、标准工作流 |
+| Skill 设计 | [docs/skill-and-harness-design.md](docs/skill-and-harness-design.md) | Skill 结构规范、Harness 设计原则 |
 | 设计决策 | [docs/arch-decisions/](docs/arch-decisions/index.md) | 重要技术决策索引 |
-| Eval 框架 | [docs/eval-framework.md](docs/eval-framework.md) | Skill 执行质量评估、指标收集协议 |
 | 执行计划 | [docs/exec-plans/](docs/exec-plans/) | active/ 进行中，completed/ 已归档 |
 | Spec 文档 | [docs/specs/](docs/specs/) | 经过审查的需求规格 |
 
@@ -30,7 +30,7 @@ AI 编码 Agent 工作流插件系统，融合 superpowers + Harness Engineering
 ```
 discuss skill [需求]      → docs/specs/*.md
     ↓
-/feature-dev [功能]       → 架构设计 → exec-plan
+writing-plans             → exec-plan
     ↓
 exec-plan-runner          → TDD 子代理并行实现
     ↓
@@ -45,7 +45,6 @@ dev-docs-maintain         → 文档同步
 
 | Skill | 用途 | 触发词 |
 |-------|------|--------|
-| `feature-dev` | 引导式开发 | '开发功能', '新功能' |
 | `discuss` | 设计探索，产出 spec | '需求讨论', '方案对比' |
 | `writing-plans` | 创建 TDD 结构 exec-plan | '创建实现计划', 'exec-plan' |
 | `exec-plan-runner` | 执行 exec-plan | 恢复执行 |
@@ -59,7 +58,6 @@ dev-docs-maintain         → 文档同步
 | `dispatching-parallel-agents` | 并行调度 | '并行执行', 'parallel agents' |
 | `init-harness-engineering` | 项目初始化 | 手动调用 |
 | `harness-engineering-review` | 实践审查 | 'agent最佳实践' |
-| `using-git-worktrees` | 建立隔离 worktree（exec-plan-runner 自动调用） | 手动调用 |
 | `finishing-a-development-branch` | 分支收尾：merge/PR/保留/丢弃（exec-plan-runner 自动调用） | 手动调用 |
 
 ## 约束（硬规则）
@@ -68,7 +66,7 @@ dev-docs-maintain         → 文档同步
 |------|------|
 | 依赖方向 | 只能从上层指向下层，禁止反向 |
 | 子代理一次性 | 不重用子代理，每次启动新代理 |
-| Gate 强制等待 | discuss spec 批准、feature-dev 方案选择（规划 Gate）；实现阶段改为轻量启动通知（DD-006） |
+| Gate 强制等待 | discuss spec 批准（规划 Gate）；实现阶段改为轻量启动通知（DD-006） |
 | 证据优先 | 没有运行验证不得声称完成 |
 | 根因优先 | 没有根本原因分析没有修复 |
 | 并发限制 | 最大并行度 3 |
@@ -86,7 +84,7 @@ dev-docs-maintain         → 文档同步
 - Skill 主文件: `SKILL.md` (大写)
 - 设计决策: `DD-NNN-title.md`
 - Spec: `YYYY-MM-DD-topic.md`
-- Exec-plan: `YYYY-MM-DD-title.md`
+- Exec-plan: `YYYY-MM-DD-title/`
 
 ## 工作流约定
 

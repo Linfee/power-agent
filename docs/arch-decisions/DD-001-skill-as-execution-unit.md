@@ -1,4 +1,4 @@
-<!-- verified: 2026-03-25 -->
+<!-- verified: 2026-04-21 -->
 <!-- scope: architecture -->
 <!-- status: accepted -->
 
@@ -30,4 +30,4 @@
 
 - Skill 数量增长需要清晰的分层和导航
 - 需要定义 Skill 间的产出物流转协议
-- 编排层（feature-dev）负责串联各 Skill
+- 编排层由 writing-plans + exec-plan-runner 直接串联

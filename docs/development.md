@@ -1,4 +1,4 @@
-<!-- verified: 2026-03-25 -->
+<!-- verified: 2026-04-21 -->
 <!-- scope: development -->
 
 # 开发指南
@@ -16,43 +16,34 @@ Power-Agent 是一个 AI 编码 Agent 工作流插件系统，以 Markdown 文�
 
 ```
 power-agent/
-├── .claude-plugin/           # Claude Code 插件配置
-│   └── plugin.json
-├── .cursor-plugin/           # Cursor 插件配置
-│   └── plugin.json
-├── .factory-plugin/          # Factory 插件配置
-│   └── plugin.json
 ├── docs/                     # 项目文档
 │   ├── architecture.md       # 系统架构
 │   ├── development.md        # 本文档
-│   ├── harness-engineering.md
-│   ├── workflow.md
-│   ├── arch-decisions/     # 设计决策
+│   ├── workflow.md           # 工作机制与 Skill 协调
+│   ├── arch-decisions/       # 设计决策（DD-NNN-title.md）
 │   ├── exec-plans/           # 执行计划
-│   └── specs/                # Spec 文档
-├── skills/                   # Skill 定义（16个）
-│   ├── feature-dev/
-│   ├── discuss/
-│   ├── writing-plans/
-│   ├── exec-plan-runner/
-│   └── ...
-├── README.md                 # 中文主文档
-└── README-en.md              # 英文文档
+│   │   ├── active/           # 进行中
+│   │   └── completed/        # 已归档
+│   └── specs/                # Spec 文档（YYYY-MM-DD-topic.md）
+├── skills/                   # Skill 定义（14 个）
+│   └── <skill-name>/
+│       ├── SKILL.md          # 核心 skill 定义（必须）
+│       └── references/       # 支撑文档、模板、prompt
+├── AGENTS.md                 # Agent 快速参考（≤200 行）
+├── VERSION                   # 版本号
+└── scripts/
+    └── sync-version.sh       # 版本同步脚本
 ```
 
 ## Skill 开发
 
 ### Skill 结构
 
-每个 Skill 遵循统一结构：
-
 ```
 skills/
 └── <skill-name>/
     ├── SKILL.md              # 核心 skill 定义（必须）
-    ├── <辅助文档>.md         # 按需的支撑文档
-    ├── scripts/              # 按需的脚本工具
-    └── templates/            # 按需的模板文件
+    └── references/           # 按需的支撑文档、模板、子代理 prompt
 ```
 
 ### SKILL.md 格式
@@ -62,7 +53,8 @@ skills/
 name: [skill-name]
 description: [用途描述，中文]
 triggers: [触发关键词，逗号分隔]
-disable-model-invocation: [true|false]  # 可选
+version: [x.y.z]
+disable-model-invocation: [true|false]  # 可选，默认 false
 ---
 
 # [Skill 标题]
@@ -71,86 +63,54 @@ disable-model-invocation: [true|false]  # 可选
 
 ---
 
-## Step 1: [步骤名]
+## Step N: [步骤名]
 ...
 
 ## 产出
 ## 交棒给
 ## 禁止事项
-## 依赖 Skills
 ```
 
-### 文件命名约定
+### 提交前版本同步
 
-| 类型 | 约定 | 示例 |
-|------|------|------|
-| Skill 主文件 | `SKILL.md` (大写) | `/skills/feature-dev/SKILL.md` |
-| 辅助文档 | 小写 + 连字符 | `spec-reviewer-prompt.md` |
-| 设计决策 | `DD-NNN-title.md` | `DD-001-use-postgres.md` |
-| Spec 文档 | `YYYY-MM-DD-topic.md` | `2026-03-25-auth-system.md` |
-| Exec-plan | `YYYY-MM-DD-title.md` | `2026-03-25-add-user-api.md` |
+修改 Skill 内容后，提交前必须：
 
-### 文档元信息
+```bash
+# 1. 更新 VERSION 文件
+# 2. 运行同步脚本
+bash scripts/sync-version.sh
+# 3. 确认输出"版本同步完成"
+```
 
-所有文档必须包含顶部元信息：
+## 文档规范
+
+### 元信息（所有文档必须包含）
 
 ```markdown
 <!-- verified: YYYY-MM-DD -->
-<!-- scope: [architecture|frontend|backend|security|...] -->
-<!-- status: [proposed|accepted|superseded] -->  <!-- 仅设计决策 -->
+<!-- scope: [范围] -->
 ```
 
-## 常用 Skill 入口
+### 命名约定
 
-| 场景 | 命令 |
+| 类型 | 格式 |
 |------|------|
-| 功能开发 | `/feature-dev [功能描述]` |
-| 需求讨论 | `discuss` skill |
-| 创建 exec-plan | `writing-plans` skill |
-| 执行 exec-plan | `exec-plan-runner` skill |
-| 调试 | `systematic-debugging` skill |
-| 文档维护 | `dev-docs-maintain` skill |
+| Skill 主文件 | `SKILL.md`（大写） |
+| 设计决策 | `DD-NNN-title.md` |
+| Spec | `YYYY-MM-DD-topic.md` |
+| Exec-plan 目录 | `YYYY-MM-DD-title/` |
 
-## 版本控制
+### 时间戳维护
 
-- 使用 Git
-- 主分支：`main`
-- 提交前确保文档 verified 时间戳更新
+- verified 超过 30 天：需验证内容是否仍准确
+- verified 超过 90 天：必须修复或更新
 
-## 贡献流程
+## 约束（硬规则）
 
-1. 创建功能分支
-2. 开发 Skill 或修改文档
-3. 更新相关 docs/ 文档
-4. 提交变更
-5. 合并到 main
-
-## 上游追踪
-
-| 上游项目 | 版本 | 来源 |
-|----------|------|------|
-| superpowers | v5.0.5 | https://github.com/obra/superpowers |
-| Harness Engineering | 2026年2月 | https://openai.com/index/harness-engineering/ |
-
----
-
-## 版本管理
-
-### Skill 版本机制
-
-所有 `skills/*/SKILL.md` 的 frontmatter 包含 `version` 字段，与 `VERSION` 文件保持同步。全局版本号在 `VERSION` 文件中维护（语义化版本：`MAJOR.MINOR.PATCH`）。
-
-### 提交流程（修改 Skill 内容后）
-
-1. 修改 `VERSION` 文件中的版本号
-2. 运行 `bash scripts/sync-version.sh` 同步所有 SKILL.md
-3. 确认输出包含"✅ 版本同步完成"
-4. 将 `VERSION`、受影响的 `SKILL.md` 文件一起提交
-
-### 版本号规范
-
-| 变更类型 | 版本升级 | 示例 |
-|----------|---------|------|
-| 破坏性变更（移除 Gate、重构流程） | MAJOR | 1.0.0 → 2.0.0 |
-| 新增功能（新章节、新机制） | MINOR | 1.0.0 → 1.1.0 |
-| 文字修正、描述优化 | PATCH | 1.0.0 → 1.0.1 |
+| 规则 | 说明 |
+|------|------|
+| 依赖方向 | 只能从上层指向下层，禁止反向 |
+| 子代理一次性 | 不重用子代理，每次启动新代理 |
+| 并发限制 | 最大并行度 3 |
+| 证据优先 | 没有运行验证不得声称完成 |
+| 根因优先 | 没有根本原因分析没有修复 |

@@ -29,7 +29,6 @@
 
 | Skill | 用途 |
 |-------|------|
-| `feature-dev` | 引导式功能开发（薄编排层，串联其他所有 Skill） |
 | `discuss` | 编码前的设计探索——含 2-3 方案对比和 Spec 审查循环，产出经批准的 spec 文档 |
 | `writing-plans` | 将 spec/设计转化为 TDD 结构的 exec-plan，含完整代码片段 |
 | `exec-plan-runner` | 通过一次性子代理并行批次执行 exec-plan，含两阶段代码审查 |
@@ -43,19 +42,20 @@
 | `verification-before-completion` | 证据优先验证——没有新鲜证据不得声称完成 |
 | `dispatching-parallel-agents` | 将独立任务调度为并行子代理 |
 | `harness-engineering-review` | 对照 Harness Engineering 最佳实践审查项目 Agent 工作流 |
+| `finishing-a-development-branch` | 实现完成后的分支收尾（merge/PR/保留/丢弃） |
 
 ### 完整工作流
 
 ```
 discuss skill          ← 设计探索 → spec 文档
     ↓（spec 批准后）
-feature-dev skill
-    ├── 阶段 1-3：上下文建立 + 代码库探索 + 澄清（人工确认）
-    ├── 阶段 4：架构设计（人工选方案）
-    ├── 阶段 5：writing-plans skill → exec-plan
-    ├── 阶段 6：exec-plan-runner skill（TDD 子代理，并行）
-    ├── 阶段 7：requesting-code-review skill
-    └── 阶段 8：dev-docs-maintain skill
+writing-plans skill    ← 创建 TDD 结构 exec-plan
+    ↓
+exec-plan-runner skill ← TDD 子代理并行实现
+    ↓
+requesting-code-review ← 代码审查
+    ↓
+dev-docs-maintain      ← 文档同步
 
 Bug / 测试失败 → systematic-debugging skill
                      └── → test-driven-development + verification-before-completion
@@ -184,7 +184,7 @@ claude plugin install power-agent@power-agent --scope project
 > "A recurring 'doc-gardening' agent scans for stale or obsolete documentation that does not reflect the real code behavior and opens fix-up pull requests."
 > — §We made repository knowledge the system of record
 
-**本项目状态：** `dev-docs-maintain` skill 覆盖了 doc gardening 的逻辑（新鲜度检查、内容对照代码验证、P0/P1/P2 修复优先级），但它是**手动触发的 skill**，需要用户或 feature-dev Phase 8 显式调用。博客描述的是在 CI 中定时自动运行、自动开 PR 的后台任务，两者的可靠性和覆盖度有根本差异。
+**本项目状态：** `dev-docs-maintain` skill 覆盖了 doc gardening 的逻辑（新鲜度检查、内容对照代码验证、P0/P1/P2 修复优先级），但它是**手动触发的 skill**，由 exec-plan-runner 归档时或用户显式调用。博客描述的是在 CI 中定时自动运行、自动开 PR 的后台任务，两者的可靠性和覆盖度有根本差异。
 
 ---
 
@@ -193,7 +193,7 @@ claude plugin install power-agent@power-agent --scope project
 > "Humans may review pull requests, but aren't required to. Over time, we've pushed almost all review effort towards being handled agent-to-agent."
 > — §Redefining the role of the engineer
 
-**本项目状态：** `requesting-code-review` skill 通过 subagent 执行结构化代码审查，`exec-plan-runner` 在每个 batch 后自动启动两阶段审查（规格符合性 + 代码质量）。但 `feature-dev` Phase 7 仍将人工决策（"询问用户如何处理发现"）作为必须 gate，未给出随时间减少人工介入的路径。
+**本项目状态：** `requesting-code-review` skill 通过 subagent 执行结构化代码审查，`exec-plan-runner` 在每个 batch 后自动启动两阶段审查（规格符合性 + 代码质量）。审查结果仍将人工决策作为 gate，未给出随时间减少人工介入的路径。
 
 ---
 
@@ -202,7 +202,7 @@ claude plugin install power-agent@power-agent --scope project
 > "Ephemeral lightweight plans are used for small changes, while complex work is captured in execution plans."
 > — §We made repository knowledge the system of record
 
-**本项目状态：** `writing-plans` skill 区分了单文件（小任务）和目录结构（大需求）两种输出格式，`feature-dev` 以 ">5 个文件变更"作为是否创建 exec-plan 的阈值。但没有明确的"临时计划"概念和对应的轻量格式，阈值设置也可能对中等复杂度的变更造成过重的开销。
+**本项目状态：** `writing-plans` skill 区分了单文件（小任务）和目录结构（大需求）两种输出格式。但没有明确的"临时计划"概念和对应的轻量格式，可能对中等复杂度的变更造成过重的开销。
 
 ---
 
@@ -307,7 +307,7 @@ Golden principles 是团队对代码风格的具体约定（如"优先使用共�
 
 博客描述的完整循环是：agent 开 PR → agent 响应 review 评论 → agent 修复 CI 失败 → agent 判断可以 merge 时自动合并。人类只是在需要判断时介入。
 
-**本项目状态：** `feature-dev` 的八个阶段在 exec-plan-runner 执行完成后即结束，没有覆盖 PR 开启、review 响应、CI 修复、merge 这些后续环节。`requesting-code-review` 和 `receiving-code-review` 处理的是 review 内容本身，不是 PR 生命周期管理。
+**本项目状态：** `exec-plan-runner` 执行完成后即结束，没有覆盖 PR 开启、review 响应、CI 修复、merge 这些后续环节。`requesting-code-review` 和 `receiving-code-review` 处理的是 review 内容本身，不是 PR 生命周期管理。
 
 **路线图：** 增加 `pr-lifecycle` skill，覆盖从"实现完成"到"PR 合并"的完整流程：开 PR、响应 review 评论、处理 CI 失败、确认 merge。
 

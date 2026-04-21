@@ -1,8 +1,9 @@
 ---
 name: dev-docs-maintain
-description: 扫描并维护 docs/ 知识库，识别过期、缺失或失效内容并修复。适合手动调用 `/dev-docs-maintain [聚焦范围]`，如 `architecture` 或 `仅检查 arch-decisions`。
-disable-model-invocation: true
-version: 1.0.0
+description: |-
+  扫描并维护 docs/ 知识库，识别过期、缺失或失效内容并修复。
+  适合手动调用 `/dev-docs-maintain [聚焦范围]`，如 `architecture` 或 `仅检查 arch-decisions`。
+version: 1.2.0
 ---
 
 # 文档园丁（Doc Gardening）
@@ -11,79 +12,53 @@ version: 1.0.0
 
 **核心理念：** 文档腐化是不可避免的。定期修剪比一次性大清理高效得多。
 
+## 模式
+
+- `check-only`：只检查并输出问题，不写文件。
+- `fix-safe`：仅修复 P0/P1 的明确错误。
+- `full-maintain`：在 `fix-safe` 基础上可执行归档与索引同步。
+
+未显式指定时默认 `fix-safe`。
+
+## 优先级定义
+
+- **P0**：文档存在错误信息或导航指针失效，直接影响 Agent 执行。
+- **P1**：内容已过期或与代码现状不符，影响理解但不致命。
+- **P2**：缺失内容或可补充完善，不影响现有执行。
+
 ## 执行流程
 
-### Step 0: 确定聚焦范围
+1. **确定范围**
+   - 用户指定范围优先；未指定时仅做最小自动推断（文档新鲜度 + 最近变更）。
+2. **健康检查**
+   - 结构完整性：必须项文件是否存在（`AGENTS.md`、`docs/architecture.md`、`docs/development.md`）
+   - `verified` 新鲜度：> 30 天需验证标记（P1），> 90 天视为失效须修复（P0）
+   - 导航指针有效性：`AGENTS.md` 中所有文件路径可解析（失效为 P0）
+3. **代码对照验证**
+   - 对照 `architecture/development/domain` 文档与代码现状，输出带路径与行号证据。
+4. **按模式执行**
+   - `check-only`：跳过写入。
+   - `fix-safe`：只修 P0/P1。
+   - `full-maintain`：可追加 exec-plan 归档与 arch-decision 索引状态同步。
+5. **报告**
+   - 输出统一 contract 与修复摘要。
 
-如果用户未提供参数，按以下优先级自动推断聚焦范围：
-1. 检查 `docs/exec-plans/active/` — 如果有活跃的 exec-plan，优先维护其涉及的领域
-2. 检查 git 近期变更（`git log --oneline -20` + `git diff --stat HEAD~10`） — 识别近期改动集中的模块
-3. 检查文档新鲜度 — 优先处理 verified 时间最久的文档
-4. 以上均无明确信号时，执行全量扫描
+### 输出 contract
 
-将推断结果简要告知用户后继续执行。
-
-### Step 1: 健康检查
-
-扫描以下内容并生成健康报告：
-
-**结构完整性：**
-- [ ] `AGENTS.md` 存在且 ≤ 200 行
-- [ ] `docs/` 目录存在
-- [ ] `docs/architecture.md` 存在
-- [ ] `docs/development.md` 存在
-- [ ] `AGENTS.md` 中的导航指针全部指向有效文件
-
-**文档新鲜度：**
-- 读取每个文档的 `<!-- verified: YYYY-MM-DD -->` 元信息
-- 标记超过 30 天未验证的文档为 ⚠️ 待检查
-- 标记超过 90 天未验证的文档为 ❌ 可能过期
-
-**执行计划状态：**
-- `docs/exec-plans/active/` 中是否有已完成但未归档的计划
-- 是否有长期未更新的活跃计划
-
-### Step 2: 代码对照验证
-
-并行启动 explore 子代理，将文档描述与实际代码对照：
-
-**代理任务：**
-- 对照 `docs/architecture.md` 中描述的模块划分，检查是否有新增/移除/重组的模块
-- 对照 `docs/development.md` 中的命令，检查是否仍然可用
-- 对照 `docs/domain/` 下各文档，检查所描述的约定是否与代码一致
-- 检查 `AGENTS.md` 中的构建/测试/lint 命令是否仍然正确
-
-**每个子代理返回：**
-- 与代码不一致的文档内容（引用具体文件路径和行号）
-- 代码中新增但文档未覆盖的重要模块/组件
-- 文档中提到但代码已删除/重命名的内容
-
-### Step 3: 修复
-
-根据验证结果，按优先级修复：
-
-**P0 — 立即修复（不准确的信息会误导 Agent）：**
-- AGENTS.md 中的错误命令或指针
-- architecture.md 中已不存在的模块
-- development.md 中失效的构建/测试命令
-
-**P1 — 当次修复（信息缺失会导致 Agent 缺乏上下文）：**
-- 新增模块未记录在 architecture.md
-- 新引入的重要约定未记录
-- 过期的设计决策未标记为 superseded
-
-**P2 — 记录 TODO（改进项，不阻塞）：**
-- 文档格式不统一
-- 缺少 Mermaid 架构图
-- 缺少 verified 元信息
-
-### Step 4: 归档与清理
-
-- 将 `docs/exec-plans/active/` 中已完成的计划移动到 `docs/exec-plans/completed/`
-- 更新已修复文档的 `<!-- verified: YYYY-MM-DD -->` 时间戳
-- 更新 `docs/arch-decisions/index.md` 中的验证状态
-
-### Step 5: 报告
+```yaml
+status: DONE | DONE_WITH_CONCERNS | BLOCKED
+evidence:
+  - type: file | diff | command
+    ref: <path|command>
+blocking_issues:
+  - id: DOCM-xxx
+    reason: <why>
+advisories:
+  - <non-blocking suggestion>
+next_action:
+  type: proceed | rerun | clarify
+  owner: user | orchestrator
+```
 
 输出简洁的修复报告：
 
@@ -111,4 +86,5 @@ version: 1.0.0
 
 - 建议每次重大功能完成后运行一次
 - 可配合 exec-plan 完成时运行，确保文档同步
+- 通常由 exec-plan-runner 或 finishing-a-development-branch 的 docs 更新提醒触发，而不是完全依赖用户记忆
 - 如果只想检查不修复，在参数中说明"仅检查"

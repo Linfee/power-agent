@@ -1,135 +1,92 @@
 ---
 name: verification-before-completion
-description: "在声称工作完成之前使用，强制运行验证命令并确认输出。没有新鲜验证证据就没有完成声明。Triggers: 验证完成, 完成前验证, 声称通过, verification."
-version: 1.0.0
+description: |-
+  在声称工作完成之前使用，核验“完成声明”是否有本轮可验证证据支撑。
+  通过结构化输出返回验证结论；不固定 lint/test/build 菜单，按任务类型选择最小充分验证。
+  Triggers: 验证完成, 完成前验证, 声称通过, verification.
+version: 1.2.0
 ---
 
 # 完成前验证
 
-声称工作完成而不验证是不诚实，不是效率。
-
-**铁律：**
-```
-没有新鲜验证证据，不得声称完成
-```
+在任何“已完成 / 已修复 / 已通过”声明前，先完成证据核验。
 
 ---
 
-## 验证关卡
+## verification-before-completion
 
-在声称任何状态或表达满意之前：
-
-```
-1. 识别：什么命令能证明这个声明？
-2. 运行：执行完整命令（新鲜的，本次消息中运行）
-3. 阅读：完整输出，检查退出码，计数失败数
-4. 验证：输出确认声明？
-   - 否 → 陈述实际状态及证据
-   - 是 → 陈述声明及证据
-5. 只有然后 → 做出声明
-```
-
-**跳过任何步骤 = 虚假声明，不是验证。**
+完成前验证 Skill（completion verifier），负责：
+- 判断完成声明是否被验证证据支持
+- 输出可被编排层消费的结构化结论
+- 在证据不足时明确阻塞原因与下一步动作
 
 ---
 
-## 常见失败模式
+## Objective
 
-| 声明 | 需要 | 不足够 |
-|------|------|--------|
-| 测试通过 | 测试命令输出：0 failed | 之前的运行、"应该通过" |
-| Linter 干净 | Linter 输出：0 errors | 部分检查、推断 |
-| 构建成功 | Build 命令：exit 0 | Linter 通过、日志看起来正常 |
-| Bug 已修复 | 测试原始症状：PASS | 代码已改、假设已修复 |
-| 子代理已完成 | VCS diff 显示变更 | 子代理报告"成功" |
+### 做什么
+- 对“声明”执行证据核验，而不是复述信心判断
+- 要求证据与本轮改动范围相关，且为新鲜运行结果
+- 输出统一 contract：`status / evidence / blocking_issues / advisories / next_action`
+
+### 不做什么
+- 不把 `lint → test → build` 写成唯一流程
+- 不在主 Skill 中内嵌工具探测命令和长命令菜单
+- 不替代 `requesting-code-review` 的审查职责
+- 不替代 `dev-docs-maintain` 的文档维护职责
 
 ---
 
-## 标准验证序列
+## Context & Tools
 
-```bash
-# 1. Lint
-[项目的 lint 命令]
-# 预期：0 errors
+### 最小输入
+- 本轮声明内容（宣称“完成了什么”）
+- 本轮改动范围（文件或模块）
+- 最近验证记录（命令、退出码、时间戳、摘要）
+- 任务类型（代码实现 / 配置变更 / 文档变更）
 
-# 2. 全量测试
-[项目的完整测试命令]
-# 预期：0 failed
+缺失信息按需读取，不预加载大段上下文。
 
-# 3. Build（如适用）
-[项目的 build 命令]
-# 预期：exit 0
+### 参考资料
+- 验证路径建议：`references/verification-playbook.md`
+- 输出协议示例：`references/output-contract-examples.md`
 
-# 4. 对照完成标准逐项检查
-# 对照 exec-plan 的验收标准，逐项确认
+---
+
+## Constraints & Format
+
+### 核验约束
+- 没有证据，`status` 不能是 `DONE`
+- 证据过期或与改动范围不匹配时，必须标记阻塞
+- 只要存在阻塞项，不得给出”可以声称完成”的结论
+
+### 输出 contract（必须遵循）
+```yaml
+status: DONE | PARTIAL | BLOCKED
+commit_sha: string  # 验证时 HEAD commit sha，供下游分支收尾 skill 消费
+evidence:
+  - type: 测试 | 检查 | 构建 | 人工核对 | 其他
+    command: string
+    exit_code: integer
+    timestamp: string
+    scope: 变更文件 | 目标模块 | 全仓库
+    summary: string
+blocking_issues:
+  - code: 无证据 | 证据过期 | 检查失败 | 范围不匹配
+    message: string
+    required_action: string
+advisories:
+  - string
+next_action:
+  owner: 代理 | 用户
+  action: string
 ```
 
----
+### 判定规则
+- `status=DONE`：至少一条相关且成功的证据，且 `blocking_issues=[]`
+- `status=PARTIAL`：有证据但不完整，或存在非致命缺口
+- `status=BLOCKED`：无证据、证据失败、或证据与声明不匹配
 
-## 环境感知验证策略
-
-验证开始前先检测可用工具，按项目类型选择验证手段：
-
-| 项目类型 | 基础验证（必须） | 增强验证（工具可用时） |
-|----------|-----------------|----------------------|
-| CLI/库 | lint + unit test + build | 集成测试、示例脚本运行 |
-| API/后端 | lint + unit test + build | curl/httpie 端到端请求、日志检查 |
-| Web UI | lint + unit test + build | 浏览器自动化（截图对比、DOM 断言） |
-| 全栈 | lint + unit test + build | API 验证 + 浏览器验证 |
-
-**工具检测（验证前执行）：**
-
-```bash
-which curl httpie playwright puppeteer 2>/dev/null || true
-```
-
-工具不可用时 → 回退到基础验证，在报告中注明"增强验证不可用（缺少 [工具名]）"。
-
----
-
-## 红旗 — 立即停止
-
-- 使用"应该"、"可能"、"似乎"描述结果
-- 验证前表达满意（"完成了"、"太好了"、"完美"）
-- 信任子代理的成功报告而不独立验证
-- 依赖部分验证（"lint 通过了就行"）
-
----
-
-## 合理化借口（一律拒绝）
-
-| 借口 | 现实 |
-|------|------|
-| "现在应该能工作了" | 运行验证 |
-| "我有信心" | 信心 ≠ 证据 |
-| "子代理说成功了" | 独立验证 |
-| "部分检查够了" | 部分证明不了什么 |
-| "Linter 通过了" | Linter ≠ 编译器 ≠ 测试 |
-
----
-
-## 报告格式
-
-```
-## 验证结果
-
-**Lint：**
-命令：[实际运行的命令]
-输出：[结果摘要]
-结论：✅ 0 errors | ❌ N errors
-
-**测试：**
-命令：[实际运行的命令]
-输出：[结果摘要]
-结论：✅ 全部通过 | ❌ N failed
-
-**Build：**（如适用）
-结论：✅ exit 0 | ❌ 失败
-
-**完成标准对照：**
-- [x] 标准 1：[验证结果]
-- [x] 标准 2：[验证结果]
-- [ ] 标准 3：[未满足，原因]
-
-**最终结论：** 全部验证通过，可以声称完成 | [N] 项未通过，需要修复
-```
+### 编排层消费规则
+- 仅当 `status=DONE` 且 `blocking_issues` 为空时，允许声称完成
+- 当 `status=PARTIAL|BLOCKED` 时，必须按 `next_action` 继续执行

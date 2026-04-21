@@ -1,315 +1,253 @@
 ---
 name: exec-plan-runner
-description: 自主执行或恢复执行 exec-plan：分析任务依赖、最大化并行调度子代理、TDD 驱动实现、批次后代码审查、最终验证。支持从中断的 exec-plan 恢复继续。当需要执行 docs/exec-plans/ 中的计划、或继续未完成的计划时使用。
-version: 1.0.0
+description: |-
+  自主执行或恢复执行 exec-plan：依赖驱动批次执行、并行实现、冲突检测、审查修复收敛、全量验证、分支收尾与归档。
+version: 1.2.0
 ---
 
 # Exec-Plan Runner
 
-自主执行 exec-plan，最大化并行度，持续更新进度。
-
-**核心理念：** 主代理只做规划、编排、协调——**绝不自己写代码**。所有实现由子代理完成。子代理是一次性的，主代理不重复和同一子代理对话，修复问题时启动新子代理。
-
-## 整体流程
-
-```
-建立工作环境（worktree）→ 加载计划 → 依赖分析 → 划分 batch
-    ↓
-[对每个 batch]
-    ├─ 并行启动实现子代理（每任务一个）
-    ├─ 等待所有返回 → 处理阻塞/问题
-    ├─ 并行启动代码审查子代理
-    ├─ 若有问题 → 并行启动修复子代理 → 重新审查
-    ├─ 更新 exec-plan 进度
-    ↓
-[所有 batch 完成]
-    └─ 启动验证子代理 → 分支收尾 → 归档
-```
+作为 exec-plan 执行编排器，负责加载与恢复、依赖分析、批次调度、审查收敛、验证与收尾。
 
 ---
 
-## Step 0: 建立工作环境
+## Scope
 
-无条件调用 `using-git-worktrees` skill，由该 skill 自行决策是否需要创建 worktree（已在 worktree 中、AGENTS.md 全局禁用等情况会自动跳过）。
+### 要做什么
 
-**Branch name 来源优先级：**
-1. exec-plan frontmatter 声明（`branch: feat/xxx`）
-2. 询问用户
-
-建立 worktree 后在该路径执行所有后续步骤。
-
----
-
-## Bootstrap（每次会话开始，无条件执行）
-
-在执行 Step 1 之前，强制完成以下序列：
-
-1. 读取 exec-plan 的 `## Session Log` section（如存在，了解上次进度）
-2. `git log --oneline -10`（确认工作树状态）
-3. 运行项目基本健康检查（lint + 核心测试套件）
-4. 若健康检查失败 → 先修复再继续，不在破损基线上工作
-5. 确认恢复点，输出一句话摘要（例："基线健康，从 Batch 2 Task D 恢复"）
+- 使用状态机执行或恢复执行 exec-plan
+- 将子代理返回统一为结构化 contract
+- 在并行批次后执行冲突检测，再进入审查
+- 用收敛判据控制审查-修复循环
+- 支持执行中需求变更（Plan Amendment）
+- 采用分层上下文策略，控制上下文预算
 
 ---
 
-## Step 1: 加载、恢复检测与分析
+## State Machine
 
-1. 读取 exec-plan 文件（单文件或目录中的 README.md + tasks.md）
-2. 读取项目 AGENTS.md 了解代码规范和约束
-3. **恢复检测：** 扫描进度标记（`[x]` / `[ ]`）和"当前状态" section
-   - 有已完成任务 → 进入**恢复模式**：读取 Session Log → git log → exec-plan checkbox 三者交叉验证后确定恢复点，从中断点继续
-4. 提取所有**未完成**任务全文，构建依赖图，划分 batch
+主状态：
+`BOOTSTRAP -> READY -> EXECUTING -> VERIFYING -> FINALIZING -> DONE`
 
-**依赖分析原则：**
-- 修改同一文件的任务 → 有依赖，串行
-- 上游产出是下游输入的 → 有依赖
-- 操作不同模块且无数据依赖 → 可并行
-- 不确定时视为有依赖（安全优先）
+异常状态：
+`ESCALATED`
 
-**Batch 划分示例：**
-```
-Batch 1 (并行): [Task A: 用户模型] [Task B: 权限模型] [Task C: 配置模块]
-Batch 2 (并行): [Task D: 用户API (依赖A)] [Task E: 权限API (依赖B)]
-Batch 3 (串行): [Task F: 集成测试 (依赖D,E)]
-```
+子代理异常结果状态：
+`UNKNOWN`（超时、输出不可解析、异常终止）
 
-若 exec-plan 有关键缺陷（任务模糊、缺少验收标准、存在矛盾）→ 向用户提出问题，不盲目开始。
-
----
-
-## Step 2: 逐批执行
-
-### 2a. 并行启动实现子代理
-
-batch 内无依赖的任务**同时启动**，每个任务一个子代理（如果用户约定了最大并行度，不要超过它）。
-
-**为每个实现子代理组装完整上下文包：**
-
-```
-Task 工具：
-  description: "Implement [Task Name]"
-  prompt: |
-    你是一个实现工程师。**你必须使用 test-driven-development skill** 完成所有实现。
-
-    ## 整体背景
-    [exec-plan 摘要：目标、架构、技术栈]
-    当前执行阶段：Batch N / 共 M 个 batch
-    本任务在计划中的位置：[任务编号和名称]
-
-    ## 你的任务（完整内容）
-    [任务全文，包含 TDD 步骤、文件路径、代码片段、命令]
-
-    ## 关键上下文
-    [来自 AGENTS.md 的代码规范]
-    [相关文件路径和关键代码片段]
-    [测试运行命令]
-
-    ## 要求
-    - 严格遵循 TDD（先写失败测试，再实现，再验证通过）
-    - 实现后运行全量测试，确认无回归
-    - Commit 所有变更
-    - 不要修改本任务范围之外的代码
-
-    ## 报告格式
-    完成后报告：
-    - 状态：DONE | DONE_WITH_CONCERNS | BLOCKED
-    - 创建/修改的文件列表
-    - 测试结果摘要
-    - 若 DONE_WITH_CONCERNS：描述疑虑
-    - 若 BLOCKED：描述阻塞原因
-
-    ## 输出粒度: detailed
-    返回完整信息，包含文件列表、关键代码片段、命令输出、推理过程。
-```
-
-**子代理状态处理：**
-
-| 状态                 | 处理方式                                                                                                   |
-| -------------------- | ---------------------------------------------------------------------------------------------------------- |
-| `DONE`               | 进入代码审查                                                                                               |
-| `DONE_WITH_CONCERNS` | 评估疑虑：若影响正确性，先解决再审查；若是观察性的，记录后进入审查                                         |
-| `BLOCKED`            | 分析原因：上下文不足 → 启动新子代理补充上下文重试；任务太大 → 拆分后重新启动；计划有问题 → Escalate 给用户 |
-
-**注意：** 子代理是一次性的。若需修复，启动**新子代理**，提供具体指令和额外上下文，不要尝试重联旧子代理。
-
-### 2b. 并行启动代码审查子代理
-
-所有实现子代理返回 DONE 后，并行启动审查子代理（可一任务一个，或一批一个）：
-
-```
-Task 工具：
-  description: "Code review [Task Name]"
-  prompt: |
-    你是一个代码审查员。使用 receiving-code-review skill 进行评估。
-
-    ## 审查范围
-    [任务名称和实现目标]
-
-    ## 对应规格
-    [任务在 exec-plan 中的验收标准]
-
-    ## 代码变更
-    Git 命令获取 diff：
-    git diff [BASE_SHA]..[HEAD_SHA]
-    涉及文件：[文件列表]
-
-    ## 审查维度
-    1. 规格符合性：是否覆盖所有需求，有无过度实现
-    2. 代码质量：DRY、可读性、错误处理、测试充分性
-
-    ## 报告格式
-    **规格符合性：** ✅ 通过 | ❌ 问题
-    **代码质量：** ✅ 通过 | ⚠️ 建议 | ❌ 问题
-    **Issues（如有）：** [具体问题 + 影响]
-    **建议（Advisory）：** [非阻塞建议]
-
-    ## 输出粒度控制
-    - 审查通过（无 Issues）时：仅返回结论性信息，省略中间推理（concise）
-    - 发现阻塞问题时：返回完整问题描述和定位（detailed）
-```
-
-**审查结果处理：**
-- 无阻塞问题 → 进入 Step 2c
-- 有阻塞问题 → 启动**新修复子代理**（提供审查结论 + 修复指令）→ 再次启动审查子代理
-- 修复循环最多 3 轮；超过则 Escalate 给用户
-
-### 2c. 更新 Exec-Plan 进度与 Session Log
-
-每个 batch 完成后立即更新 exec-plan 文件：
-
-**1. 更新 checkbox 进度（`[x]`）**
-
-**2. 向 `## Session Log` section 追加一条记录（最新在最上方）：**
-
-参考模板格式：`skills/exec-plan-runner/progress-log-template.md`
+### 状态持久化（写入 exec-plan）
 
 ```markdown
-### [YYYY-MM-DD HH:MM] Batch N 完成
-- **已完成**: Task A (`path/to/file`), Task B (`path/to/other`)
-- **遇到的问题**: [描述 + 如何解决，或标注未解决]
-- **已验证假设**: [什么被证实/证伪]
-- **下一步**: Batch N+1，从 Task X 开始
-- **环境状态**: lint ✅ | tests ✅ (N passed) | build ✅
+<!-- runner-state: EXECUTING -->
+<!-- runner-batch: 2/4 -->
+<!-- runner-phase: implement|conflict_check|review|fix -->
+<!-- runner-fix-round: 1/3 -->
 ```
 
----
-
-## Step 3: 全量验证
-
-所有 batch 完成后，启动专用**验证子代理**：
-
-```
-Task 工具：
-  description: "Final verification"
-  prompt: |
-    你是一个验证工程师。使用 verification-before-completion skill。
-
-    ## 验证目标
-    [exec-plan 完成标准列表]
-
-    ## 要运行的命令
-    [lint 命令]
-    [完整测试套件命令]
-    [build 命令（如适用）]
-
-    ## 报告格式
-    对每个验证命令：
-    - 命令：[实际运行的命令]
-    - 输出摘要：[结果]
-    - 结论：✅ 通过 | ❌ 失败
-
-    最终结论：全部通过 | [N] 项失败
-    失败详情：[具体错误，供主代理决策]
-```
-
-若验证失败 → 启动新修复子代理解决具体错误 → 重新启动验证子代理。
+恢复时优先读取上述标记与 Session Log 的“下一步”。
 
 ---
 
-## Step 4: 分支收尾
+## State Transitions
 
-所有 batch 完成且全量验证通过后，使用 `finishing-a-development-branch` skill：
+- `BOOTSTRAP -> READY`
+  - worktree 已建立
+  - 恢复点可判定
+  - 基线检查可用（命令成功或已确认可继续）
 
-1. 再次确认测试通过（finishing 自带安全验证）
-2. 向用户呈现 4 选项（Gate，等待明确决策）：
-   - 1. merge to base branch（本地合并）
-   - 2. push + create PR
-   - 3. keep as-is（保留分支，稍后处理）
-   - 4. discard（需输入 'discard' 确认）
-3. 按选择清理 worktree（选项 1/4 清理，选项 2/3 保留）
+- `BOOTSTRAP -> ESCALATED`
+  - 基线检查持续失败且无法定位可执行路径
+
+- `READY -> EXECUTING`
+  - 依赖图与 batch 划分完成
+  - 无致命 plan 缺陷
+
+- `READY -> ESCALATED`
+  - plan 存在致命缺陷（任务矛盾、关键验收缺失、边界冲突）
+
+- `EXECUTING -> EXECUTING`
+  - 当前 batch 完成但仍有后续 batch
+
+- `EXECUTING -> VERIFYING`
+  - 所有 batch 完成，且审查阻塞问题已清零
+
+- `EXECUTING -> ESCALATED`
+  - 同类阻塞问题连续出现且无收敛
+  - plan 前提失效（超出预期关键范围）
+
+- `VERIFYING -> FINALIZING`
+  - 全量验证通过
+
+- `VERIFYING -> EXECUTING`
+  - 验证失败且可修复（作为追加修复批次回流）
+
+- `VERIFYING -> ESCALATED`
+  - 验证反复失败且无法收敛
+
+- `FINALIZING -> DONE`
+  - 分支处置完成
+  - 归档完成
 
 ---
 
-## Step 5: 归档
+## Unified Contract
 
-1. 将 exec-plan 文件从 `docs/exec-plans/active/` 移动到 `completed/`
-2. 向用户输出简洁总结：
-   - 全部任务完成情况
-   - 验证结果（带命令输出证据）
-   - 实现过程中的关键决策
-   - 建议：是否需要同步 docs/（architecture、domain 等）
+所有实现/审查/修复/验证子代理统一返回：
 
----
-
-## Step 6: Eval 数据收集
-
-归档完成后，自动采集执行指标并写入 exec-plan 文件尾部：
-
-```markdown
-<!-- eval: YYYY-MM-DD -->
-<!-- skill: exec-plan-runner -->
-<!-- skill-version: [从 frontmatter version 字段读取] -->
-<!-- project: [从 git remote URL 或目录名推断] -->
-
-## Eval 记录
-- 任务完成率: N/N
-- Batch 数: N
-- 修复循环: N 次
-- Escalation: 0
-- 耗时: Nmin
+```yaml
+status: DONE | DONE_WITH_CONCERNS | BLOCKED | UNKNOWN
+evidence:
+  - type: command | diff | test | review
+    ref: <path|sha|command>
+blocking_issues:
+  - id: BI-xxx
+    reason: <why>
+    scope: <impact>
+advisories:
+  - <non-blocking suggestion>
+next_action:
+  type: retry | split | proceed | escalate
+  owner: orchestrator | implementer | reviewer | verifier
 ```
 
-然后向用户提问：
-> 快速反馈：
-> 1. 整体效果？ [满意 / 一般 / 不满意]
-> 2. 备注？（可选，直接回车跳过）
-
-用户跳过时仍写入自动指标，标注 `feedback: skipped`。
+规则：
+- `DONE` / `DONE_WITH_CONCERNS`：默认 concise
+- `BLOCKED` / `UNKNOWN`：必须 detailed，并附最小复现证据
 
 ---
 
-## Escalation 规则（唯一触发条件）
+## EXECUTING 内部流程
 
-**修复子代理反复失败（3 轮审查修复循环耗尽）且无法定位根因** → 停止执行，向用户请示。
+`implement -> conflict_check -> review -> (fix -> review)*`
 
-**无需 Escalate（自主处理）：**
-- 任务描述有歧义 → Agent 自主判断最合理解读
-- 需要引入破坏性变更 → worktree 沙盒已隔离，自主处理
-- exec-plan 前提假设局部不成立 → 记录到 Session Log，继续执行其余任务
-- 实现细节选择（库函数选择、命名等）
-- 可通过重试或换方向解决的临时失败
-- lint 警告修复
+### 1) implement
+
+- 按 batch 并行启动实现子代理（并行度遵循项目约束）
+- 子代理使用 `test-driven-development`
+- 返回 `DONE | DONE_WITH_CONCERNS | BLOCKED | UNKNOWN`
+
+`BLOCKED/UNKNOWN` 处理：
+- 先检查工作树残留（`git status` / `git diff`）
+- 判定重试路径：补充上下文重试 / 任务拆分 / 升级
+
+### 2) conflict_check（新增强制节点）
+
+在进入审查前执行：
+- 检测同批次多子代理是否触碰同文件/共享出口文件
+- 文本冲突：进入合并处理
+- 语义冲突（无文本冲突但测试失败）：退化为串行重排
+
+### 3) review
+
+- 并行启动审查子代理（规格符合性 + 代码质量）
+- 子代理使用 `receiving-code-review`
+
+### 4) fix + 收敛判据
+
+有阻塞问题时进入修复回路：
+- 启动新的修复子代理，不重用旧子代理
+- 每轮修复后回到 review
+
+收敛判据（替代纯固定轮次）：
+- 若同类 `blocking_issues` 连续出现 >= 2 轮且无新证据，判定不收敛 -> `ESCALATED`
+- 若问题数量/严重度持续下降，可继续修复回路
+- 仍保留上限保护：修复回路最多 3 轮
 
 ---
 
-## 禁止事项
+## Plan Amendment（执行中变更协议）
 
-- 主代理自己写代码（违反核心理念）
-- 并行调度有依赖关系的任务
-- 重用同一子代理（子代理是一次性的）
-- 子代理未验证就声称完成
-- 未更新 exec-plan 就进入下一 batch
-- 修改 exec-plan 范围之外的代码
+当用户在执行中追加/修改需求：
+
+1. 暂停新 batch 派发
+2. 记录变更到 Session Log（变更内容、影响范围、时间）
+3. 重新计算依赖图与 batch 划分
+4. 生成新的恢复点并继续
+
+已在跑的子代理：
+- 允许完成后再判定是否保留产出
+- 未启动任务按新 plan 重排
 
 ---
 
-## 依赖 Skills
+## Layered Context Strategy
 
-**主代理使用：**
-- `using-git-worktrees` — Step 0 建立隔离 worktree
-- `finishing-a-development-branch` — Step 4 分支收尾与清理
+- **L1 (default/minimal)**：任务目标、验收、约束、相关文件路径
+- **L2 (targeted)**：补单一缺口（关键接口/失败日志/必要片段）
+- **L3 (detailed)**：仅用于 `BLOCKED/UNKNOWN` 或关键冲突诊断
 
-**子代理应使用：**
-- `test-driven-development` — 实现子代理必须遵循 TDD
-- `receiving-code-review` — 审查子代理评估代码的准则
-- `verification-before-completion` — 验证子代理的执行标准
+原则：
+- 默认不下发“任务全文 + 大段代码 + 全量命令输出”组合包
+- 成功路径尽量 concise，阻塞路径再扩展上下文
+
+---
+
+## VERIFYING / FINALIZING / ARCHIVE
+
+### VERIFYING
+
+- 启动验证子代理（`verification-before-completion`）
+- 输出验证矩阵（命令、摘要、结论）
+- 失败可回流到 `EXECUTING` 形成追加修复批次
+
+### FINALIZING
+
+- 使用 `finishing-a-development-branch`
+- 走用户决策 Gate（merge / PR / keep / discard）
+
+### ARCHIVE
+
+- 将 exec-plan 从 `docs/exec-plans/active/` 移动到 `completed/`
+- 记录执行摘要与后续文档同步建议
+
+---
+
+## Escalation Triggers
+
+以下触发 `ESCALATED`：
+- plan 致命缺陷
+- 修复回路不收敛
+- 验证不可恢复
+- plan 前提失效导致超范围影响
+
+升级输出必须包含：
+- 事实摘要
+- 已尝试恢复动作
+- 可选决策（replan / retry / abort）
+
+---
+
+## Reference Prompts Usage
+
+以下 references 按状态与触发条件使用，不是固定顺序脚本。
+
+- `manual-worktree-setup.md`（`references/manual-worktree-setup.md`）
+  - 状态：`BOOTSTRAP`
+  - 触发：`EnterWorktree` 不可用或工具受限
+  - 用途：手动建立 worktree
+
+- `implementer-prompt.md`（`references/implementer-prompt.md`）
+  - 状态：`EXECUTING / implement`
+  - 触发：启动实现子代理
+  - 用途：约束实现范围、测试策略与结构化回报
+
+- `spec-reviewer-prompt.md`（`references/spec-reviewer-prompt.md`）
+  - 状态：`EXECUTING / review`
+  - 触发：需要判定是否满足计划验收标准
+  - 用途：规格符合性审查（是否做对）
+
+- `code-quality-reviewer-prompt.md`（`references/code-quality-reviewer-prompt.md`）
+  - 状态：`EXECUTING / review`
+  - 触发：规格审查通过后，或与规格审查并行执行
+  - 用途：代码质量审查（可读性、可维护性、实现质量）
+
+- `progress-log-template.md`（`references/progress-log-template.md`）
+  - 状态：跨状态
+  - 触发：batch 完成、进入 `ESCALATED` 前、Plan Amendment 后
+  - 用途：统一写入 Session Log，保证可恢复性
+
+使用规则：
+- 正常路径默认 `concise`
+- `BLOCKED/UNKNOWN` 或关键冲突时升级 `detailed`
+- 多个审查 prompt 可组合，但输出必须回填 `Unified Contract`
+

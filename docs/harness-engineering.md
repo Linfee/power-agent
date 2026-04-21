@@ -1,4 +1,4 @@
-<!-- verified: 2026-03-25 -->
+<!-- verified: 2026-04-21 -->
 <!-- scope: harness-engineering -->
 
 # Harness Engineering 体系设计
