@@ -2,7 +2,7 @@
 name: exec-plan-runner
 description: |-
   自主执行或恢复执行 exec-plan：依赖驱动批次执行、并行实现、冲突检测、审查修复收敛、全量验证、分支收尾与归档。
-version: 1.2.0
+version: 1.2.1
 ---
 
 # Exec-Plan Runner
@@ -16,7 +16,7 @@ version: 1.2.0
 ### 要做什么
 
 - 使用状态机执行或恢复执行 exec-plan
-- 将子代理返回统一为结构化 contract
+- 将子代理返回统一为人类可读的结构化结果
 - 在并行批次后执行冲突检测，再进入审查
 - 用收敛判据控制审查-修复循环
 - 支持执行中需求变更（Plan Amendment）
@@ -90,24 +90,28 @@ version: 1.2.0
 
 ---
 
-## Unified Contract
+## 统一结果格式
 
 所有实现/审查/修复/验证子代理统一返回：
 
-```yaml
-status: DONE | DONE_WITH_CONCERNS | BLOCKED | UNKNOWN
-evidence:
-  - type: command | diff | test | review
-    ref: <path|sha|command>
-blocking_issues:
-  - id: BI-xxx
-    reason: <why>
-    scope: <impact>
-advisories:
-  - <non-blocking suggestion>
-next_action:
-  type: retry | split | proceed | escalate
-  owner: orchestrator | implementer | reviewer | verifier
+```markdown
+## 子代理结果
+
+状态：DONE / DONE_WITH_CONCERNS / BLOCKED / UNKNOWN
+
+### 证据
+- [command / diff / test / review] <path、sha 或 command>
+
+### 阻塞项
+- BI-xxx：<阻塞原因>
+  - 影响范围：<impact>
+
+### 非阻塞建议
+- <建议内容>
+
+### 下一步
+- 动作：retry / split / proceed / escalate
+- 负责人：orchestrator / implementer / reviewer / verifier
 ```
 
 规则：
@@ -249,5 +253,5 @@ next_action:
 使用规则：
 - 正常路径默认 `concise`
 - `BLOCKED/UNKNOWN` 或关键冲突时升级 `detailed`
-- 多个审查 prompt 可组合，但输出必须回填 `Unified Contract`
+- 多个审查 prompt 可组合，但输出必须回填“统一结果格式”
 

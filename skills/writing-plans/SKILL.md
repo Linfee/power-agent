@@ -1,6 +1,6 @@
 ---
 name: writing-plans
-version: 1.2.0
+version: 1.2.1
 description: |-
   将需求/spec 转为可执行 exec-plan：聚焦目标、系统边界、关键技术方案、验收标准与依赖关系。
   默认不写实现代码与精确命令。仅在上下文不足时按需加载调查信息。

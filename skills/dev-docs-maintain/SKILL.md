@@ -3,7 +3,7 @@ name: dev-docs-maintain
 description: |-
   扫描并维护 docs/ 知识库，识别过期、缺失或失效内容并修复。
   适合手动调用 `/dev-docs-maintain [聚焦范围]`，如 `architecture` 或 `仅检查 arch-decisions`。
-version: 1.2.0
+version: 1.2.1
 ---
 
 # 文档园丁（Doc Gardening）
@@ -43,21 +43,27 @@ version: 1.2.0
 5. **报告**
    - 输出统一 contract 与修复摘要。
 
-### 输出 contract
+### 输出格式
 
-```yaml
-status: DONE | DONE_WITH_CONCERNS | BLOCKED
-evidence:
-  - type: file | diff | command
-    ref: <path|command>
-blocking_issues:
-  - id: DOCM-xxx
-    reason: <why>
-advisories:
-  - <non-blocking suggestion>
-next_action:
-  type: proceed | rerun | clarify
-  owner: user | orchestrator
+完成任务后，用便于阅读的 Markdown 小节输出结果，不使用 YAML：
+
+```markdown
+## 文档维护结果
+
+状态：DONE / DONE_WITH_CONCERNS / BLOCKED
+
+### 证据
+- [file / diff / command] <path 或 command>
+
+### 阻塞项
+- DOCM-xxx：<阻塞原因>
+
+### 非阻塞建议
+- <建议内容>
+
+### 下一步
+- 动作：proceed / rerun / clarify
+- 负责人：user / orchestrator
 ```
 
 输出简洁的修复报告：

@@ -3,7 +3,7 @@ name: finishing-a-development-branch
 description: |-
   在实现完成后，作为分支处置决策器输出收尾选项与结构化结果：merge/PR/保留/丢弃。
   依赖调用方提供验证证据；本 skill 不内嵌命令脚本。
-version: 1.2.0
+version: 1.2.1
 ---
 
 # Finishing a Development Branch
@@ -16,7 +16,7 @@ version: 1.2.0
 - 收集分支收尾所需的最小状态：当前分支、候选 base branch、工作区状态、验证证据。
 - 评估并展示 4 类处置路径：`本地合并` / `创建PR` / `保留分支` / `丢弃工作`。
 - 在高风险路径（`丢弃工作`）执行前要求明确确认。
-- 返回统一输出 contract，供编排层消费。
+- 返回统一且人类可读的收尾结果，供编排层消费。
 
 ### 不做什么
 - 不提供或硬编码 git/gh 命令执行菜单。
@@ -43,7 +43,7 @@ version: 1.2.0
 ### 规则优先级（高→低）
 1. 用户明确选择
 2. 安全确认（尤其是 `丢弃工作`）
-3. 输出 contract 完整性
+3. 输出格式完整性
 4. 默认建议策略
 
 ### 状态机
@@ -66,38 +66,48 @@ version: 1.2.0
 - 需要延后处理：`保留分支`。
 - 明确放弃工作：`丢弃工作`（必须确认）。
 
-### 输出 contract（必须完整）
-```yaml
-status: READY | BLOCKED | DONE | CANCELLED
-selected_option: 本地合并 | 创建PR | 保留分支 | 丢弃工作 | null
-evidence:
-  verification:
-    sha: string | null
-    passed: boolean | null
-    timestamp: string | null
-  branch_state:
-    current_branch: string | null
-    base_branch: string | null
-    ahead_behind: string | null
-  working_tree:
-    clean: boolean | null
-    untracked_count: number | null
-destructive_action:
-  required: boolean
-  confirmed: boolean
-  target_summary: string[]
-cleanup_result:
-  worktree: 已移除 | 已保留 | 不适用 | 失败
-blocking_issues:
-  - code: string
-    message: string
-    required_action: string
-advisories:
-  - level: 信息 | 警告
-    message: string
-next_action:
-  type: 用户确认 | 重新验证 | 打开PR | 完成
-  owner: 用户 | 代理
+### 输出格式（必须完整）
+
+完成任务后，用便于阅读的 Markdown 小节输出结果，不使用 YAML：
+
+```markdown
+## 分支收尾结果
+
+状态：READY / BLOCKED / DONE / CANCELLED
+选择：本地合并 / 创建PR / 保留分支 / 丢弃工作 / 未选择
+
+### 验证证据
+- commit：<sha 或 未提供>
+- 结果：通过 / 未通过 / 未提供
+- 时间：<timestamp 或 未提供>
+
+### 分支状态
+- 当前分支：<current_branch 或 未提供>
+- 目标基线：<base_branch 或 未提供>
+- ahead/behind：<ahead_behind 或 未提供>
+
+### 工作区状态
+- 工作区：clean / dirty / 未确认
+- 未跟踪文件数：<number 或 未确认>
+
+### 高风险操作
+- 是否需要确认：是 / 否
+- 是否已确认：是 / 否
+- 目标：<target_summary 列表；无则写“无”>
+
+### 清理结果
+- worktree：已移除 / 已保留 / 不适用 / 失败
+
+### 阻塞项
+- <code>：<message>
+  - 需要动作：<required_action>
+
+### 非阻塞建议
+- [信息 / 警告] <message>
+
+### 下一步
+- 动作：用户确认 / 重新验证 / 打开PR / 完成
+- 负责人：用户 / 代理
 ```
 
 ## References

@@ -3,7 +3,7 @@ name: requesting-code-review
 description: |-
   实现完成后使用，作为收尾阶段的全量代码审查编排器：基于风险分级派发审查子代理，结构化汇总结论并给出下一步动作。
   Triggers: 代码审查, code review, 请求审查, 合并前审查, 全量审查.
-version: 1.2.0
+version: 1.2.1
 ---
 
 # 请求代码审查
@@ -28,7 +28,7 @@ version: 1.2.0
 
 ### 做什么
 - 在收尾阶段发起全量审查（功能级别，不是 batch 级别）
-- 用统一输出 contract 生成可消费结果
+- 用统一且人类可读的输出格式生成可消费结果
 - 对阻塞问题给出明确下一步动作
 
 ### 不做什么
@@ -71,22 +71,29 @@ version: 1.2.0
 ### 冲突归并
 双审结果按 `references/conflict-resolution.md` 归并，取更严格结论并保留证据。
 
-### 输出 contract（必须遵循）
-```yaml
-status: DONE | DONE_WITH_ADVISORIES | BLOCKED | NEEDS_CLARIFICATION
-risk_level: 低风险 | 中风险 | 高风险
-evidence:
-  - source: string
-    locator: string
-    summary: string
-blocking_issues:
-  - severity: 严重 | 重要
-    issue: string
-    impact: string
-    required_fix: string
-advisories:
-  - suggestion: string
-next_action: 继续流程 | 启动修复子代理 | 重新审查 | 升级处理
+### 输出格式（必须遵循）
+
+完成审查编排后，用便于阅读的 Markdown 小节输出结果，不使用 YAML：
+
+```markdown
+## 代码审查结果
+
+状态：DONE / DONE_WITH_ADVISORIES / BLOCKED / NEEDS_CLARIFICATION
+风险等级：低风险 / 中风险 / 高风险
+
+### 证据
+- <source>（<locator>）：<summary>
+
+### 阻塞问题
+- [严重 / 重要] <issue>
+  - 影响：<impact>
+  - 必须修复：<required_fix>
+
+### 非阻塞建议
+- <suggestion>
+
+### 下一步
+- 继续流程 / 启动修复子代理 / 重新审查 / 升级处理
 ```
 
 ### 行动规则

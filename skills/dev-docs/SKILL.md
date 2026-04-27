@@ -3,7 +3,7 @@ name: dev-docs
 description: |-
   创建或更新 docs/ 下的开发文档，支持六种类型：architecture、arch-decision、exec-plan、domain、development、reference。
   收到 exec-plan 任务时委派给 writing-plans skill。Use when: 需要记录架构/决策/领域知识/开发指南，或创建实现计划。Triggers: 写文档, dev-docs, architecture, arch-decision, exec-plan, 架构文档, 决策记录, 领域文档.
-version: 1.2.0
+version: 1.2.1
 ---
 
 # 创建开发文档
@@ -65,21 +65,27 @@ version: 1.2.0
    - `arch-decision` 更新 `docs/arch-decisions/index.md`。
    - 仅当新增路径时更新 `AGENTS.md` 导航。
 
-### 输出 contract
+### 输出格式
 
-```yaml
-status: DONE | BLOCKED
-evidence:
-  - type: diff | file
-    ref: <file_path>
-blocking_issues:
-  - id: DOC-xxx
-    reason: <why>
-advisories:
-  - <non-blocking suggestion>
-next_action:
-  type: proceed | clarify
-  owner: user | orchestrator
+完成任务后，用便于阅读的 Markdown 小节输出结果，不使用 YAML：
+
+```markdown
+## 文档创建结果
+
+状态：DONE / BLOCKED
+
+### 证据
+- [diff / file] <file_path>
+
+### 阻塞项
+- DOC-xxx：<阻塞原因>
+
+### 非阻塞建议
+- <建议内容>
+
+### 下一步
+- 动作：proceed / clarify
+- 负责人：user / orchestrator
 ```
 
 ### 模板管理

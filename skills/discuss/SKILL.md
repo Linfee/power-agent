@@ -7,7 +7,7 @@ description: |-
   当任务已明确且改动很小（如单点 bugfix、文案微调、已有实现路径的局部修改）时，
   不应进入 discuss，应建议直接进入实现。
   Triggers: discuss, 需求讨论, 需求分析, 产品讨论, 设计探索, 功能范围, 用户故事, 验收标准, 方案取舍, brainstorming.
-version: 1.2.0
+version: 1.2.1
 ---
 
 # 产品需求探索（目标与约束导向）

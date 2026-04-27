@@ -3,7 +3,7 @@ name: dispatching-parallel-agents
 description: |-
   当任务可独立并行时，分发子代理并按统一协议汇总结果。
   Triggers: 并行执行, 独立任务, parallel agents, 并行子代理, 多任务编排.
-version: 1.2.0
+version: 1.2.1
 ---
 
 # dispatching-parallel-agents

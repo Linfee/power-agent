@@ -3,7 +3,7 @@ name: systematic-debugging
 description: |-
   遇到 bug、测试失败或意外行为时使用。目标是先建立可验证的根因证据，再决定是否进入修复。
   Triggers: bug, 测试失败, 意外行为, debug, 调试, 修复问题.
-version: 1.2.0
+version: 1.2.1
 ---
 
 # systematic-debugging
@@ -78,21 +78,27 @@ version: 1.2.0
 - **代码行为缺陷**（业务逻辑、状态转换、边界条件）：进入修复前应先有失败测试（调用 `test-driven-development`）。
 - **环境/部署/数据问题**：不强制失败测试，但必须提供可观测检查证据（配置差异、运行时状态、外部依赖状态等）。
 
-## 输出 Contract（固定）
+## 输出格式（固定）
 
-```yaml
-status: INVESTIGATING | HYPOTHESIS_VERIFIED | FIXABLE | BLOCKED | ESCALATE
-evidence:
-  - type: error | repro | log | diff | env
-    ref: "文件路径/命令输出/测试名"
-    note: "关键观察"
-blocking_issues:
-  - "阻塞项（缺失信息/环境不可用/依赖未就绪）"
-advisories:
-  - "风险或建议（例如需架构级处理）"
-next_action:
-  owner: "debugger | implementer | user"
-  action: "下一步最小动作"
+完成当前调试阶段后，用便于阅读的 Markdown 小节输出结果，不使用 YAML：
+
+```markdown
+## 调试结论
+
+状态：INVESTIGATING / HYPOTHESIS_VERIFIED / FIXABLE / BLOCKED / ESCALATE
+
+### 证据
+- [error / repro / log / diff / env] 文件路径、命令输出或测试名：关键观察
+
+### 阻塞项
+- 阻塞项（缺失信息、环境不可用、依赖未就绪等；无则写“无”）
+
+### 风险与建议
+- 风险或建议（例如需架构级处理；无则写“无”）
+
+### 下一步
+- 负责人：debugger / implementer / user
+- 动作：下一步最小动作
 ```
 
 ## 状态使用规则

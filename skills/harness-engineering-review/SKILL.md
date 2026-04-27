@@ -3,7 +3,7 @@ name: harness-engineering-review
 description: |-
   对项目的 agent 工作流、AGENTS.md 结构或开发实践进行 Harness Engineering 最佳实践审查时使用。
   Triggers: agent最佳实践, AGENTS.md审查, 工作流审查, harness engineering, 知识库结构, agent工作流审查, 最佳实践检查.
-version: 1.2.0
+version: 1.2.1
 ---
 
 # Harness Engineering Review
@@ -33,22 +33,26 @@ version: 1.2.0
 
 ## 审查报告格式
 
-完成审查后，输出统一 contract：
+完成审查后，用便于阅读的 Markdown 小节输出结果，不使用 YAML：
 
-```yaml
-status: DONE | DONE_WITH_CONCERNS | BLOCKED
-evidence:
-  - type: file | diff | command | review
-    ref: <path|command>
-blocking_issues:
-  - id: HER-xxx
-    reason: <why>
-    scope: <impact>
-advisories:
-  - <non-blocking suggestion>
-next_action:
-  type: proceed | split | rerun | escalate
-  owner: user | orchestrator
+```markdown
+## 审查结果
+
+状态：DONE / DONE_WITH_CONCERNS / BLOCKED
+
+### 证据
+- [file / diff / command / review] <path 或 command>
+
+### 阻塞项
+- HER-xxx：<阻塞原因>
+  - 影响范围：<impact>
+
+### 非阻塞建议
+- <建议内容>
+
+### 下一步
+- 动作：proceed / split / rerun / escalate
+- 负责人：user / orchestrator
 ```
 
 并附结构化报告：

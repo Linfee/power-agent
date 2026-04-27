@@ -4,7 +4,7 @@ description: |-
   在声称工作完成之前使用，核验“完成声明”是否有本轮可验证证据支撑。
   通过结构化输出返回验证结论；不固定 lint/test/build 菜单，按任务类型选择最小充分验证。
   Triggers: 验证完成, 完成前验证, 声称通过, verification.
-version: 1.2.0
+version: 1.2.1
 ---
 
 # 完成前验证
@@ -60,26 +60,33 @@ version: 1.2.0
 - 证据过期或与改动范围不匹配时，必须标记阻塞
 - 只要存在阻塞项，不得给出”可以声称完成”的结论
 
-### 输出 contract（必须遵循）
-```yaml
-status: DONE | PARTIAL | BLOCKED
-commit_sha: string  # 验证时 HEAD commit sha，供下游分支收尾 skill 消费
-evidence:
-  - type: 测试 | 检查 | 构建 | 人工核对 | 其他
-    command: string
-    exit_code: integer
-    timestamp: string
-    scope: 变更文件 | 目标模块 | 全仓库
-    summary: string
-blocking_issues:
-  - code: 无证据 | 证据过期 | 检查失败 | 范围不匹配
-    message: string
-    required_action: string
-advisories:
-  - string
-next_action:
-  owner: 代理 | 用户
-  action: string
+### 输出格式（必须遵循）
+
+完成核验后，用便于阅读的 Markdown 小节输出结果，不使用 YAML：
+
+```markdown
+## 完成前验证结果
+
+状态：DONE / PARTIAL / BLOCKED
+commit：<验证时 HEAD commit sha，供下游分支收尾 skill 消费>
+
+### 证据
+- [测试 / 检查 / 构建 / 人工核对 / 其他] <command>
+  - exit code：<integer>
+  - 时间：<timestamp>
+  - 范围：变更文件 / 目标模块 / 全仓库
+  - 摘要：<summary>
+
+### 阻塞项
+- [无证据 / 证据过期 / 检查失败 / 范围不匹配] <message>
+  - 需要动作：<required_action>
+
+### 非阻塞建议
+- <建议内容；无则写“无”>
+
+### 下一步
+- 负责人：代理 / 用户
+- 动作：<具体动作>
 ```
 
 ### 判定规则

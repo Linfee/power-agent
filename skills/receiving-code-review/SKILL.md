@@ -3,7 +3,7 @@ name: receiving-code-review
 description: |-
   收到代码审查反馈时使用，在实施建议之前完成技术评估并输出结构化结论。
   Triggers: 收到审查, 审查反馈, 处理审查, code review feedback.
-version: 1.2.0
+version: 1.2.1
 ---
 
 # 接收代码审查
@@ -73,21 +73,29 @@ version: 1.2.0
 
 ### 输出格式（必填）
 
-```yaml
-status: DONE | BLOCKED
-decision: 采纳 | 部分采纳 | 驳回 | 需澄清
-reason: <一句话技术判断>
-evidence:
-  - source: <file:line | diff-hunk | test-output>
-    note: <证据说明>
-action:
-  - type: 实施 | 请求澄清 | 暂缓
-    item: <具体动作>
-blocking_issues:
-  - <阻塞原因；无则空数组>
-advisories:
-  - <非阻塞建议；无则空数组>
-next_action: <唯一下一步动作>
+完成评估后，用便于阅读的 Markdown 小节输出结果，不使用 YAML：
+
+```markdown
+## 审查反馈评估结果
+
+状态：DONE / BLOCKED
+决策：采纳 / 部分采纳 / 驳回 / 需澄清
+理由：<一句话技术判断>
+
+### 证据
+- <file:line / diff-hunk / test-output>：<证据说明>
+
+### 行动
+- [实施 / 请求澄清 / 暂缓] <具体动作>
+
+### 阻塞项
+- <阻塞原因；无则写“无”>
+
+### 非阻塞建议
+- <建议内容；无则写“无”>
+
+### 下一步
+- <唯一下一步动作>
 ```
 
 ### 最小行为准则

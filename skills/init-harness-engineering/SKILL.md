@@ -3,7 +3,7 @@ name: init-harness-engineering
 description: |-
   初始化或更新项目的 AGENTS.md 与 docs/ 知识库结构，使项目符合 Harness Engineering 最佳实践。
   适合手动调用 `/init-harness-engineering [关注点]`，如 `重点关注前端架构` 或 `需要安全规范`。
-version: 1.2.0
+version: 1.2.1
 ---
 
 # 项目 Harness 初始化
@@ -51,19 +51,25 @@ version: 1.2.0
 
 不做持续园艺、归档搬运与大范围内容改写。
 
-## 输出 contract
+## 输出格式
 
-```yaml
-status: DONE | DONE_WITH_CONCERNS | BLOCKED
-evidence:
-  - type: file | diff | command
-    ref: <path|command>
-blocking_issues:
-  - id: INIT-xxx
-    reason: <why>
-advisories:
-  - <non-blocking suggestion>
-next_action:
-  type: proceed | handoff-to-docs-maintain | clarify
-  owner: user | orchestrator
+完成任务后，用便于阅读的 Markdown 小节输出结果，不使用 YAML：
+
+```markdown
+## Harness 初始化结果
+
+状态：DONE / DONE_WITH_CONCERNS / BLOCKED
+
+### 证据
+- [file / diff / command] <path 或 command>
+
+### 阻塞项
+- INIT-xxx：<阻塞原因>
+
+### 非阻塞建议
+- <建议内容>
+
+### 下一步
+- 动作：proceed / handoff-to-docs-maintain / clarify
+- 负责人：user / orchestrator
 ```
