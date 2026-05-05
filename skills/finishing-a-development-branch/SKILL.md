@@ -2,8 +2,8 @@
 name: finishing-a-development-branch
 description: |-
   在实现完成后，作为分支处置决策器输出收尾选项与结构化结果：merge/PR/保留/丢弃。
-  依赖调用方提供验证证据；本 skill 不内嵌命令脚本。
-version: 1.2.2
+  依赖调用方提供 verification_evidence；Triggers: 分支收尾, finishing, merge, PR, 保留分支, 丢弃工作.
+version: 1.2.4
 ---
 
 # Finishing a Development Branch
@@ -30,7 +30,7 @@ version: 1.2.2
 ## Context & Tools
 
 ### 必要输入
-- `verification_evidence`：绑定当前提交的验证结果（至少包含 `sha`、`passed`、`timestamp`）。
+- `verification_evidence`：绑定当前提交的验证结果（至少包含 `commit_sha`、`passed`、`verified_at`、`evidence[]`）。
 - `branch_context`：当前分支、候选 base branch、ahead/behind 状态。
 - `working_tree_state`：是否有未提交变更、是否存在未跟踪文件。
 - `worktree_context`：当前 worktree 信息（如适用），至少包含 `path`、`is_linked_worktree`、`is_detached_head`、`worktree_source`、`managed_by`、`cleanup_allowed`。
@@ -39,7 +39,7 @@ version: 1.2.2
 - 默认最小上下文，只消费当前决策所需信息。
 - 缺失关键输入时返回 `BLOCKED`，并在 `blocking_issues` 中给出补齐要求。
 - 可给出 docs 同步提醒，但仅进入 `advisories`。
-- 当上游为 `verification-before-completion` 时：`passed = (status == DONE)`，`sha` 来自 `commit_sha` 字段，`timestamp` 来自 `evidence[0].timestamp`。
+- 当上游为 `verification-before-completion` 时：`commit_sha`、`passed`、`verified_at` 和 `evidence[]` 直接来自其输出字段。
 
 ## Constraints & Format
 
@@ -53,7 +53,7 @@ version: 1.2.2
 1. `collect_state`
    - 汇总必要输入；缺失则转 `BLOCKED`。
 2. `check_gate`
-   - `verification_evidence` 不存在、`sha` 不匹配或 `passed=false` 时，不展示选项，输出 `BLOCKED`。
+   - `verification_evidence` 不存在、`commit_sha` 与当前 HEAD 不匹配或 `passed=false` 时，不展示选项，输出 `BLOCKED`。
 3. `detect_environment`
    - 判断普通 checkout / linked worktree / detached HEAD / 外部管理工作区。
 4. `present_options`
@@ -90,9 +90,9 @@ version: 1.2.2
 选择：本地合并 / 创建PR / 保留分支 / 丢弃工作 / 未选择
 
 ### 验证证据
-- commit：<sha 或 未提供>
+- commit_sha：<sha 或 未提供>
 - 结果：通过 / 未通过 / 未提供
-- 时间：<timestamp 或 未提供>
+- 时间：<verified_at 或 未提供>
 
 ### 分支状态
 - 当前分支：<current_branch 或 未提供>

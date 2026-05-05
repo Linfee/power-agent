@@ -2,8 +2,8 @@
 name: init-harness-engineering
 description: |-
   初始化或更新项目的 AGENTS.md 与 docs/ 知识库结构，使项目符合 Harness Engineering 最佳实践。
-  适合手动调用 `/init-harness-engineering [关注点]`，如 `重点关注前端架构` 或 `需要安全规范`。
-version: 1.2.2
+  Triggers: 初始化 harness, init-harness-engineering, AGENTS.md 初始化, docs 知识库初始化.
+version: 1.2.4
 disable-model-invocation: true
 ---
 

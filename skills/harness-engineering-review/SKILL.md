@@ -1,9 +1,10 @@
 ---
 name: harness-engineering-review
 description: |-
-  对项目的 agent 工作流、AGENTS.md 结构或开发实践进行 Harness Engineering 最佳实践审查时使用。
-  Triggers: agent最佳实践, AGENTS.md审查, 工作流审查, harness engineering, 知识库结构, agent工作流审查, 最佳实践检查.
-version: 1.2.2
+  对项目的 agent 工作流、AGENTS.md 结构、知识库与开发实践做 Harness Engineering 最佳实践审查。
+  Triggers: harness engineering, agent最佳实践, AGENTS.md审查, 工作流审查, 知识库结构.
+version: 1.2.4
+disable-model-invocation: true
 ---
 
 # Harness Engineering Review

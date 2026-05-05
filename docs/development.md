@@ -10,7 +10,7 @@ Power-Agent 是一个 AI 编码 Agent 工作流插件系统，以 Markdown 文�
 ## 环境要求
 
 - Git 版本控制
-- 支持的 AI IDE：Claude Code、Cursor、Factory
+- 支持的 AI IDE：Claude Code、Cursor、Factory、Droid、Gemini
 
 ## 项目结构
 
@@ -20,7 +20,11 @@ power-agent/
 │   ├── architecture.md       # 系统架构
 │   ├── development.md        # 本文档
 │   ├── workflow.md           # 工作机制与 Skill 协调
+│   ├── harness-engineering.md # Harness Engineering 体系
+│   ├── skill-and-harness-design.md # Skill 与 Harness 设计原则
 │   ├── arch-decisions/       # 设计决策（DD-NNN-title.md）
+│   ├── domain/               # 领域/模块专题文档
+│   ├── references/           # 外部依赖、集成、第三方参考
 │   ├── exec-plans/           # 执行计划
 │   │   ├── active/           # 进行中
 │   │   └── completed/        # 已归档
@@ -30,7 +34,13 @@ power-agent/
 │       ├── SKILL.md          # 核心 skill 定义（必须）
 │       └── references/       # 支撑文档、模板、prompt
 ├── AGENTS.md                 # Agent 快速参考（≤200 行）
+├── CLAUDE.md                 # Claude Code 入口
+├── GEMINI.md                 # Gemini 入口
 ├── VERSION                   # Skill 版本号
+├── .claude-plugin/           # Claude Code / Droid 插件清单
+├── .cursor-plugin/           # Cursor 插件清单
+├── .factory-plugin/          # Factory 插件清单
+├── gemini-extension.json     # Gemini extension 清单
 └── scripts/
     └── sync-version.sh       # 版本同步脚本
 ```
@@ -51,8 +61,9 @@ skills/
 ```markdown
 ---
 name: [skill-name]
-description: [用途描述，中文]
-triggers: [触发关键词，逗号分隔]
+description: |-
+  [用途描述，中文]
+  Triggers: [触发关键词，逗号分隔]
 version: [x.y.z]
 disable-model-invocation: [true|false]  # 可选，默认 false
 ---

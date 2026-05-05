@@ -1,6 +1,9 @@
+<!-- verified: 2026-05-05 -->
+<!-- scope: using-git-worktrees, manual-worktree-fallback -->
+
 # 手动创建 Git Worktree
 
-当 `using-git-worktrees` 已确认需要手动 fallback，且宿主环境没有原生 worktree 工具时使用。
+当 `using-git-worktrees` 进入 Step 3 git worktree fallback，且宿主环境没有原生 worktree 工具时使用。
 
 ## 前提检查
 

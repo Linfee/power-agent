@@ -27,9 +27,9 @@ Three principles from Harness Engineering:
 |-------|---------|
 | `discuss` | Design exploration before coding — spec doc with 2-3 approach comparison and spec reviewer loop |
 | `writing-plans` | Convert spec/design into TDD-structured exec-plans with executable task cards |
-| `exec-plan-runner` | Execute exec-plans via one-shot subagents, parallel batches, two-phase code review |
+| `exec-plan-runner` | Execute or resume exec-plans with dependency batches, conflict checks, review/fix convergence, verification, and finishing |
 | `dev-docs` | Doc router — delegates exec-plan to `writing-plans`, handles other doc types directly |
-| `dev-docs-maintain` | Doc gardening — scan and fix stale docs after major features |
+| `dev-docs-maintain` | Doc gardening — scan and fix stale, missing, or invalid docs on demand |
 | `init-harness-engineering` | Bootstrap a project's Harness Engineering knowledge base from scratch |
 | `using-git-worktrees` | Detect or prepare isolated worktrees before large execution tasks |
 | `writing-skills` | Create, modify, review, and pressure-test skills |
@@ -49,18 +49,14 @@ discuss skill          ← optional: design exploration → spec doc
     ↓ (spec approved)
 writing-plans skill    ← create TDD-structured exec-plan
     ↓
-using-git-worktrees    ← detect/prepare isolated workspace
-    ↓
-exec-plan-runner skill ← TDD subagents, parallel
-    ↓
-requesting-code-review ← code review
-    ↓
-dev-docs-maintain      ← doc sync
-    └── Phase 8:   dev-docs-maintain skill
+exec-plan-runner skill ← BOOTSTRAP(using-git-worktrees) → TDD subagents, parallel
+                     └── internal review → verification → branch finishing
 
 Bug / test failure → systematic-debugging skill
                          └── → test-driven-development + verification-before-completion
 ```
+
+`requesting-code-review` is mandatory before merge/PR by default unless the user explicitly asks to skip it and the reason is recorded. `dev-docs-maintain` remains an on-demand doc maintenance skill, not a mandatory step for every development run.
 
 ---
 
@@ -85,9 +81,9 @@ Or via the interactive UI: `/plugins` → Browse tab.
 
 Claude Code and Droid share a compatible plugin format. Install the same way via the Claude Code plugin manager, or copy the plugin directory and add it to your plugin path.
 
-### As Cursor rules
+### As a Cursor plugin
 
-Copy `.cursor/rules/power-agent.mdc` into your project's `.cursor/rules/` directory. This provides skill descriptions as Cursor context rules.
+Use `.cursor-plugin/plugin.json` via Cursor's plugin manager, or copy the `skills/` directory into a project manually.
 
 ---
 

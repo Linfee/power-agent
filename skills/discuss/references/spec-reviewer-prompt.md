@@ -31,9 +31,20 @@ Status: APPROVED | ISSUES_FOUND
 Blocking Issues:
 - [章节]: [问题] | Impact: [为何阻塞 planning] | Fix Hint: [最小修复建议]
 
+Evidence:
+- [章节或行号]: [支持判断的证据，必须来自 spec 文本或用户原始需求]
+
+Missing Evidence:
+- [章节]: [缺失的证据或验收口径；无则写“无”]
+
 Advisory:
 - [非阻塞建议]
 
 Next Action:
 - approve_for_user_review | revise_spec | return_to_discuss | handoff_to_writing_plans
+
+规则：
+- `Status=APPROVED` 时，`Blocking Issues` 必须为空，`Evidence` 必须非空，`Missing Evidence` 只能为“无”或非阻塞缺口。
+- 如果验收标准、范围或用户目标缺少可引用证据，返回 `Status=ISSUES_FOUND`。
+- 不要只凭印象批准；每个关键批准结论都必须能指向 spec 章节或用户原始需求。
 ```

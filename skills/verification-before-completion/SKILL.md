@@ -1,10 +1,10 @@
 ---
 name: verification-before-completion
 description: |-
-  在声称工作完成之前使用，核验“完成声明”是否有本轮可验证证据支撑。
-  通过结构化输出返回验证结论；不固定 lint/test/build 菜单，按任务类型选择最小充分验证。
+  在声称编码工作完成之前使用，核验“完成声明”是否有本轮可验证证据支撑。
+  不固定 lint/test/build 菜单，按任务类型选择最小充分验证。
   Triggers: 验证完成, 完成前验证, 声称通过, verification.
-version: 1.2.2
+version: 1.2.4
 ---
 
 # 完成前验证
@@ -68,7 +68,9 @@ version: 1.2.2
 ## 完成前验证结果
 
 状态：DONE / PARTIAL / BLOCKED
-commit：<验证时 HEAD commit sha，供下游分支收尾 skill 消费>
+commit_sha：<验证时 HEAD commit sha，供下游分支收尾 skill 消费>
+passed：true / false
+verified_at：<timestamp>
 
 ### 证据
 - [测试 / 检查 / 构建 / 人工核对 / 其他] <command>
@@ -97,3 +99,4 @@ commit：<验证时 HEAD commit sha，供下游分支收尾 skill 消费>
 ### 编排层消费规则
 - 仅当 `status=DONE` 且 `blocking_issues` 为空时，允许声称完成
 - 当 `status=PARTIAL|BLOCKED` 时，必须按 `next_action` 继续执行
+- 交给 `finishing-a-development-branch` 时，使用 `commit_sha`、`passed`、`verified_at` 和 `evidence[]` 组成 `verification_evidence`；不要从展示文案中推断字段名。

@@ -1,3 +1,6 @@
+<!-- verified: 2026-05-05 -->
+<!-- scope: exec-plan-runner, progress-log -->
+
 # Session Log 模板
 
 每个 batch 完成后，在 exec-plan 文件的 `## Session Log` section 追加一条记录（最新在最上方）。

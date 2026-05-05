@@ -31,9 +31,9 @@
 |-------|------|
 | `discuss` | 编码前的设计探索——含 2-3 方案对比、Spec 子代理审查循环和用户批准 Gate |
 | `writing-plans` | 将 spec/设计转化为 TDD 结构的 exec-plan，产出可执行任务卡 |
-| `exec-plan-runner` | 通过一次性子代理并行批次执行 exec-plan，含两阶段代码审查 |
+| `exec-plan-runner` | 自主执行或恢复 exec-plan，含依赖批次、冲突检测、审查修复收敛、验证与收尾 |
 | `dev-docs` | 文档路由器——exec-plan 委派给 `writing-plans`，其他文档类型直接处理 |
-| `dev-docs-maintain` | 文档维护（Doc Gardening）——扫描并修复重大功能完成后的过期文档 |
+| `dev-docs-maintain` | 文档维护（Doc Gardening）——按需扫描并修复过期、缺失或失效文档 |
 | `init-harness-engineering` | 从零为项目建立 Harness Engineering 知识体系 |
 | `using-git-worktrees` | 执行大任务前检测/创建隔离 worktree，优先使用宿主原生能力 |
 | `writing-skills` | 创建、修改、审查和压力测试 Skill |
@@ -53,17 +53,15 @@ discuss skill          ← 设计探索 → spec 文档
     ↓（spec 批准后）
 writing-plans skill    ← 创建 TDD 结构 exec-plan
     ↓
-using-git-worktrees    ← 检测/准备隔离工作区
-    ↓
-exec-plan-runner skill ← TDD 子代理并行实现
-    ↓
-requesting-code-review ← 代码审查
-    ↓
-dev-docs-maintain      ← 文档同步
+exec-plan-runner skill ← BOOTSTRAP(using-git-worktrees) → TDD 子代理并行实现
+                     └── 内部审查 → 验证 → 分支收尾
 
 Bug / 测试失败 → systematic-debugging skill
                      └── → test-driven-development + verification-before-completion
 ```
+
+`requesting-code-review` 在合并/PR 前默认强制执行，除非用户明确要求跳过并记录原因。
+`dev-docs-maintain` 是按需或用户要求调用的文档维护 Skill，不是每次开发执行的固定主流程。
 
 详细的 Skill 协调机制见 [docs/workflow.md](docs/workflow.md)。
 
@@ -188,7 +186,7 @@ claude plugin install power-agent@power-agent --scope project
 > "A recurring 'doc-gardening' agent scans for stale or obsolete documentation that does not reflect the real code behavior and opens fix-up pull requests."
 > — §We made repository knowledge the system of record
 
-**本项目状态：** `dev-docs-maintain` skill 覆盖了 doc gardening 的逻辑（新鲜度检查、内容对照代码验证、P0/P1/P2 修复优先级），但它是**手动触发的 skill**，由 exec-plan-runner 归档时或用户显式调用。博客描述的是在 CI 中定时自动运行、自动开 PR 的后台任务，两者的可靠性和覆盖度有根本差异。
+**本项目状态：** `dev-docs-maintain` skill 覆盖了 doc gardening 的逻辑（新鲜度检查、内容对照代码验证、P0/P1/P2 修复优先级），但它是**按需手动触发的 skill**，不属于每次开发执行的固定阶段。博客描述的是在 CI 中定时自动运行、自动开 PR 的后台任务，两者的可靠性和覆盖度有根本差异。
 
 ---
 

@@ -11,7 +11,22 @@
 
 **Skill 是执行单元，人类是决策者。** 每个 Skill 只做一件事，通过明确的输入/输出协议与其他 Skill 协作。规划阶段（spec 批准）设置强制 Gate 等待人类决策；实现阶段改为轻量启动通知，Agent 自主闭环，worktree 沙盒兜底（DD-006）。
 
-**产出物是协调介质。** Skill 之间不直接调用彼此——它们通过写入仓库文件来"传话"：spec 文档、exec-plan 文件、代码、docs/ 文档。下一个 Skill 读取这些产出物作为输入。
+**产出物是协调介质。** Skill 之间的长期状态通过仓库文件传递：spec 文档、exec-plan 文件、代码、docs/ 文档。编排型 Skill 可以在流程中使用下游 Skill，但必须保留明确的输入/输出契约，避免把下游实现细节复制到调用方。
+
+## 状态协议速查
+
+本项目不使用全局单一状态枚举。每个 Skill 保留自己的输出协议，但上下游交接必须显式写清字段与映射。
+
+| Skill / 场景 | 状态值 | 下游消费规则 |
+|--------------|--------|--------------|
+| `writing-plans` plan review | `APPROVED / ISSUES_FOUND` | `APPROVED` 才能进入执行选项；`ISSUES_FOUND` 按 blocking issues 修正后重新审查 |
+| `exec-plan-runner` 实现/修复子代理 | `DONE / DONE_WITH_CONCERNS / BLOCKED / UNKNOWN` | `DONE*` 可继续；`BLOCKED/UNKNOWN` 需要补上下文、拆分、重试或升级 |
+| `exec-plan-runner` 内部审查 prompt | `DONE / DONE_WITH_CONCERNS / BLOCKED` | `BLOCKED` 进入 fix loop；连续同类问题无收敛则升级 |
+| `requesting-code-review` 全量审查 | `通过 / 通过_含建议 / 阻塞 / 需澄清` | `阻塞` 启动修复并复审；`需澄清` 补充口径后重新审查 |
+| `receiving-code-review` 反馈评估 | `DONE / BLOCKED` | `DONE` 表示反馈已完成采纳/驳回判断；`BLOCKED` 等待澄清 |
+| `verification-before-completion` | `DONE / PARTIAL / BLOCKED` | 仅 `DONE` 且 `passed=true` 可交给分支收尾；输出 `commit_sha/passed/verified_at/evidence[]` |
+| `finishing-a-development-branch` | `READY / BLOCKED / DONE / CANCELLED` | `DONE` 表示分支处置完成；`CANCELLED` 表示用户取消收尾或 destructive 确认失败 |
+| `dispatching-parallel-agents` | `DONE / PARTIAL / BLOCKED / FAILED` | 总状态按关键子任务结果归并；非 `DONE` 时必须给出 next_action |
 
 ---
 
@@ -44,24 +59,16 @@
 │                                                         │
 │   exec-plan-runner skill（状态机自主闭环）                  │
 │   ├── BOOTSTRAP：using-git-worktrees 检测/建立隔离工作区      │
-│   ├── EXECUTING：依赖驱动批次并行（TDD 子代理，最大 3）       │
-│   ├── REVIEWING：代码审查子代理（风险分级）                  │
+│   ├── EXECUTING：依赖驱动批次并行 + conflict_check/review/fix │
 │   ├── VERIFYING：verification-before-completion          │
 │   └── FINALIZING：finishing-a-development-branch        │
 └─────────────────────┬───────────────────────────────────┘
-                      │
-                      ▼
-┌─────────────────────────────────────────────────────────┐
-│                 收尾阶段                                  │
-│                                                         │
-│   finishing-a-development-branch → dev-docs-maintain    │
-└─────────────────────────────────────────────────────────┘
 
 调试路径（独立入口）：
    systematic-debugging skill
-       └── [status=可修复] → test-driven-development skill
+       └── [status=FIXABLE] → test-driven-development skill
                └── → verification-before-completion skill
-       └── [status=需升级] → discuss 或 writing-plans
+       └── [status=ESCALATE] → discuss 或 writing-plans
 ```
 
 ---
@@ -112,18 +119,20 @@
 
 **触发：** writing-plans 交棒，或用户手动恢复执行。
 
-**状态机：** BOOTSTRAP → READY → EXECUTING → VERIFYING → FINALIZING → DONE
+**状态机：** BOOTSTRAP → READY → EXECUTING → VERIFYING → FINALIZING → DONE（异常：ESCALATED / CANCELLED）
 
 **核心流程：**
 1. BOOTSTRAP：读取三文档，调用 `using-git-worktrees` 检测/建立隔离工作区
 2. READY：确认依赖图、batch 划分和任务卡字段完整
 3. EXECUTING：拓扑排序 tasks，依赖就绪后按批次并行派发实现子代理，并在批次内执行 conflict_check / review / fix loop
 4. VERIFYING：全量调用 `verification-before-completion`
-5. FINALIZING：调用 `finishing-a-development-branch`，归档 exec-plan
+5. FINALIZING：调用 `requesting-code-review`（合并/PR 前默认强制，用户明确跳过除外）与 `finishing-a-development-branch`，按收尾状态归档或保留恢复点
 
 **产出：** 实现代码变更 + Session Log + 归档 exec-plan
 
-**调用链：** TDD 子代理 → `receiving-code-review` → `verification-before-completion` → `finishing-a-development-branch` → `dev-docs-maintain`
+**调用链：** TDD 子代理 → runner 内部审查 prompt → `verification-before-completion` → `requesting-code-review`（合并/PR 前）→ `finishing-a-development-branch`
+
+`requesting-code-review` 是合并/PR 前默认强制的全量审查编排器；仅当用户明确要求跳过时可跳过，并在 Session Log 记录原因。`dev-docs-maintain` 是按需手动文档维护 Skill，不是每次开发执行的固定阶段。
 
 ---
 
@@ -133,7 +142,7 @@
 
 **铁律：** 没有跑通的目标测试就没有声称完成。
 
-**核心流程：** 写测试（RED）→ 最小实现通过（GREEN）→ 重构（REFACTOR）→ 增量验证
+**核心流程：** 选择最小行为变更 → 补目标测试或验证 → 最小实现 → 增量验证 → 必要时重构
 
 **产出：** 实现代码 + 可运行通过的目标测试
 
@@ -149,26 +158,26 @@
 
 **核心流程：** 现象隔离 → 假设生成 → 假设验证 → 根因确认
 
-**输出结论：** `status: 调查中 / 假设已验证 / 可修复 / 已阻塞 / 需升级`
+**输出结论：** `状态：INVESTIGATING / HYPOTHESIS_VERIFIED / FIXABLE / BLOCKED / ESCALATE`
 
 **交棒给：**
-- `status=可修复` → `test-driven-development`
-- `status=需升级` → `discuss` 或 `writing-plans`
+- `status=FIXABLE` → `test-driven-development`
+- `status=ESCALATE` → `discuss` 或 `writing-plans`
 
 ---
 
 ### requesting-code-review — 全量审查编排
 
-**触发：** 实现完成后，由 exec-plan-runner 或用户直接触发。
+**触发：** 实现完成后按风险或用户要求触发；合并/PR 前默认强制触发，除非用户明确要求跳过并记录原因。
 
 **核心流程：**
 1. 评估变更风险等级（低/中 = 单审，高 = 双审并行）
 2. 按风险分级派发审查子代理（使用 `references/code-reviewer.md` prompt）
 3. 汇总结构化审查结论
 
-**输出：** `status: 通过 / 通过_含建议 / 阻塞 / 需澄清 + blocking_issues + next_action`
+**输出：** `状态：通过 / 通过_含建议 / 阻塞 / 需澄清 + 阻塞问题 + 下一步`
 
-**交棒给：** `receiving-code-review` → `verification-before-completion` → `dev-docs-maintain`
+**交棒给：** `receiving-code-review` → `verification-before-completion`
 
 ---
 
@@ -178,7 +187,7 @@
 
 **铁律：** 基于代码事实做技术判断，非情绪化接受或拒绝。
 
-**输出：** 逐条决策（采纳/部分采纳/驳回/需澄清）+ blocking_issues + next_action
+**输出：** 逐条决策（采纳/部分采纳/驳回/需澄清）+ 阻塞项 + 下一步
 
 **参考：** `references/response-examples.md`
 
@@ -190,9 +199,9 @@
 
 **铁律：** 没有本轮可验证证据（命令/退出码/时间戳/摘要）不得声称完成。
 
-**输出：** `status: 通过 / 部分通过 / 阻塞 + evidence + blocking_issues`
+**输出：** `状态：DONE / PARTIAL / BLOCKED + commit_sha + passed + verified_at + evidence + blocking_issues`
 
-**交棒给：** `finishing-a-development-branch`（status=通过后）
+**交棒给：** `finishing-a-development-branch`（仅 `状态：DONE` 且 `passed=true` 后）
 
 ---
 
@@ -206,7 +215,7 @@
 - 保留：保留 worktree 供后续使用
 - 丢弃：删除 worktree 和分支（高风险，需明确确认）
 
-**输出：** `selected_option + cleanup_result + advisories`
+**输出：** `状态 + 选择 + 验证证据 + 分支状态 + 环境状态 + 工作区状态 + 清理结果 + advisories`
 
 ---
 
@@ -214,7 +223,7 @@
 
 **约束：** 单批次最大并行度 3，仅当任务彼此独立（无共享改动面、无顺序依赖）时才并行。
 
-**输出：** 各子代理结构化结果汇总（status: success/partial/blocked/failed）
+**输出：** 各子代理结构化结果汇总（status: DONE/PARTIAL/BLOCKED/FAILED）
 
 **参考文件：** `task-card-template.md`、`result-contract.md`、`conflict-resolution-rubric.md`
 
@@ -256,7 +265,7 @@
 
 **disable-model-invocation: true**（直接执行，不召唤新代理）
 
-**触发：** 手动调用，或由 exec-plan-runner / finishing-a-development-branch 在收尾时触发。
+**触发：** 手动调用，或在重大变更后由用户/代理按需建议调用。
 
 **核心流程：** 扫描 docs/ → 对照实际代码状态 → 识别过期/缺失/失效内容 → 修复
 
@@ -270,11 +279,13 @@
 
 **输出：** AGENTS.md（≤200 行）+ docs/architecture.md + docs/development.md
 
-**交棒给：** `dev-docs-maintain`
+**交棒给：** 无固定下游；需要长期文档维护时建议用户手动调用 `dev-docs-maintain`。
 
 ---
 
 ### harness-engineering-review — 工作流审查
+
+**disable-model-invocation: true**（直接执行，不召唤新代理）
 
 **七个审查维度：**
 1. AGENTS.md 结构与质量

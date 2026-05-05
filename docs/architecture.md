@@ -43,11 +43,10 @@ graph TB
     WP --> EP
 
     EP --> TDD
-    EP --> RRC
     EP --> VBC
-    EP --> RCR
+    EP -.->|合并前强制审查| RCR
     EP --> FAB
-    EP --> DDM
+    User -.->|按需维护| DDM
 
     DBG --> TDD
     DBG --> VBC
@@ -93,13 +92,12 @@ exec-plan-runner（实现编排）
     │
     ├── using-git-worktrees（隔离工作区）
     ├── test-driven-development（实现子代理）
-    ├── receiving-code-review（反馈评估）
+    ├── 内部审查 prompt（规格符合性 + 代码质量）
     ├── verification-before-completion（全量验证）
-    ├── requesting-code-review（可选全量审查）
+    ├── requesting-code-review（合并前全量审查）
     └── finishing-a-development-branch（分支收尾）
-    │
-    ▼
-dev-docs-maintain（文档同步）
+
+requesting-code-review 在合并/PR 前默认强制执行，除非用户明确要求跳过；dev-docs-maintain 是按需手动文档维护入口，不属于 exec-plan-runner 的固定主流程。
 ```
 
 **硬规则：** 依赖只能从上层指向下层，禁止反向依赖。
@@ -110,7 +108,7 @@ dev-docs-maintain（文档同步）
 |--------|--------|--------|------|
 | Spec 文档 | `discuss` | `writing-plans` | `docs/specs/YYYY-MM-DD-*.md` |
 | Exec-plan | `writing-plans` | `exec-plan-runner` | `docs/exec-plans/active/` |
-| 代码变更 | `exec-plan-runner` 子代理 | `requesting-code-review` | Git diff |
+| 代码变更 | `exec-plan-runner` 子代理 | runner 内部审查 prompt / `requesting-code-review`（合并前） | Git diff |
 | Session Log | `exec-plan-runner` | 归档 | `docs/exec-plans/completed/` |
 | 分支处置结论 | `finishing-a-development-branch` | exec-plan-runner / 用户 | 结构化输出 |
 | Skill 压力场景 | `writing-skills` | Skill 作者 / reviewer | Skill 修改说明或 docs |
@@ -143,7 +141,7 @@ dev-docs-maintain（文档同步）
 详见 [设计决策索引](arch-decisions/index.md)。核心原则概要：
 
 1. **Skill 是执行单元，人类是决策者**（DD-001）
-2. **产出物是协调介质** — Skill 之间通过文件\"传话\"（DD-003）
+2. **产出物是协调介质** — 跨阶段状态通过文件传递，编排调用必须保留明确契约（DD-003）
 3. **仓库是唯一真相来源** — Agent 看不到的内容不存在
 4. **AGENTS.md 是目录，不是百科全书**（DD-004）
 5. **机械化约束优于 Prompt 啰嗦** — 证据/测试 > 文字规则

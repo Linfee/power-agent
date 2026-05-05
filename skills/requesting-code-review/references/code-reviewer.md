@@ -61,28 +61,31 @@ Task:
 
     ## 输出格式（严格遵循）
 
-    status: 通过 | 通过_含建议 | 阻塞 | 需澄清
-    risk_level: 低风险 | 中风险 | 高风险
-    evidence:
-      - source: <diff|test|log|review>
-        locator: <file:line|command>
-        summary: <证据摘要>
-    blocking_issues:
-      - severity: 严重 | 重要
-        issue: <问题描述>
-        impact: <影响>
-        required_fix: <必须修复动作>
-    advisories:
-      - severity: 轻微
-        suggestion: <非阻塞建议>
-    next_action: 继续流程 | 启动修复子代理 | 重新审查 | 升级处理
+    ## 代码审查结果
+
+    状态：通过 / 通过_含建议 / 阻塞 / 需澄清
+    风险等级：低风险 / 中风险 / 高风险
+
+    ### 证据
+    - <diff|test|log|review>（<file:line|command>）：<证据摘要>
+
+    ### 阻塞问题
+    - [严重 / 重要] <问题描述>
+      - 影响：<影响>
+      - 必须修复：<必须修复动作>
+
+    ### 非阻塞建议
+    - [轻微] <非阻塞建议；无则写“无”>
+
+    ### 下一步
+    - 继续流程 / 启动修复子代理 / 重新审查 / 升级处理
 
     ## 输出规则
-    - `status=阻塞` 时，`blocking_issues` 不能为空。
-    - `status=通过|通过_含建议` 时，`blocking_issues` 必须为空。
-    - `status=通过|通过_含建议` 时，`evidence` 必须非空。
+    - `状态=阻塞` 时，`阻塞问题` 不能为空。
+    - `状态=通过|通过_含建议` 时，`阻塞问题` 必须为空。
+    - `状态=通过|通过_含建议` 时，`证据` 必须非空。
     - 所有 blocking issue 必须引用 file:line、diff hunk 或命令证据。
-    - 如果需求或基线缺失导致无法审查，返回 `status=需澄清`。
+    - 如果需求或基线缺失导致无法审查，返回 `状态=需澄清`。
 ```
 
 ## 占位符说明

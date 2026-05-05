@@ -1,4 +1,4 @@
-<!-- verified: 2026-04-21 -->
+<!-- verified: 2026-05-05 -->
 <!-- scope: harness-engineering -->
 
 # Harness Engineering 体系设计
@@ -116,7 +116,10 @@ docs/
 ├── development.md           # 开发指南：环境搭建、构建命令、调试
 ├── workflow.md              # Skill 协调机制详解
 ├── harness-engineering.md   # 本文档：体系设计与参考
-├── arch-decisions/        # 设计决策记录
+├── skill-and-harness-design.md # Skill 与 Harness 设计原则
+├── domain/                  # 领域/模块专题文档
+├── references/              # 外部依赖、集成、第三方参考
+├── arch-decisions/          # 设计决策记录
 │   └── index.md             # 决策索引（带验证状态）
 ├── exec-plans/              # 执行计划
 │   ├── active/              # 进行中
@@ -153,4 +156,4 @@ docs/
 | 子代理一次性，避免上下文污染     | [DD-002](arch-decisions/DD-002-disposable-subagents.md)      |
 | 产出物作为协调介质               | [DD-003](arch-decisions/DD-003-artifacts-as-coordination.md) |
 | AGENTS.md 精简（≤200 行）        | [DD-004](arch-decisions/DD-004-lean-agents-md.md)            |
-| Gate 机制强制人工确认            | [DD-005](arch-decisions/DD-005-gate-mechanism.md)            |
+| Gate 机制重构：规划 Gate + 实现自主 | [DD-006](arch-decisions/DD-006-gate-restructuring.md)        |

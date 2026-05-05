@@ -1,3 +1,6 @@
+<!-- verified: 2026-05-05 -->
+<!-- scope: dispatching-parallel-agents, conflict-resolution -->
+
 # Conflict Resolution Rubric
 
 用于主代理在并行结果汇总阶段进行冲突检测与归并。
@@ -17,17 +20,17 @@
 4. 风格偏好
 
 ## 3) 状态归并
-- 任一关键子任务 `failed`：总体为 `failed`。
-- 无 `failed` 但存在关键 `blocked`：总体为 `blocked`。
-- 全部 `success` 且无冲突：总体为 `success`。
-- 其余情况：总体为 `partial`。
+- 任一关键子任务 `FAILED`：总体为 `FAILED`。
+- 无 `FAILED` 但存在关键 `BLOCKED`：总体为 `BLOCKED`。
+- 全部 `DONE` 且无冲突：总体为 `DONE`。
+- 其余情况：总体为 `PARTIAL`。
 
 ## 4) 证据门槛
-- 子任务 `status=success` 但证据缺失：降级为 `partial`。
+- 子任务 `status=DONE` 但证据缺失：降级为 `PARTIAL`。
 - 汇总结论必须引用对应 `evidence`，不得仅凭口头描述。
 
 ## 5) 失败归并输出
-当总体非 `success` 时，主代理必须输出：
+当总体非 `DONE` 时，主代理必须输出：
 - `blocking_issues`（按影响范围排序）
 - `next_action`（明确 owner 与动作）
 - 是否需要新一轮分发（是/否 + 理由）

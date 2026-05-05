@@ -1,3 +1,6 @@
+<!-- verified: 2026-05-05 -->
+<!-- scope: exec-plans -->
+
 # 执行计划目录
 
 ## 进行中
@@ -9,7 +12,7 @@
 
 ## 已归档
 
-`completed/` 目录存放已完成的执行计划（含 Session Log）。
+`completed/` 目录存放已完成的执行计划。Session Log 保留在 exec-plan 文件的 `## Session Log` section 中，不另建独立日志文件。
 
 ## 命名约定
 
@@ -24,6 +27,5 @@ docs/exec-plans/
     └── YYYY-MM-DD-feature-name/
         ├── plan.md
         ├── context.md
-        ├── tasks.md
-        └── session-log.md  # 归档时添加
+        └── tasks.md
 ```

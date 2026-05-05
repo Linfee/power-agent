@@ -6,7 +6,7 @@ AI 编码 Agent 工作流插件系统，融合 superpowers + Harness Engineering
 
 - **类型**: AI Agent Skill/Prompt 工程
 - **Skills**: 16 个可复用 Skill
-- **支持平台**: Claude Code, Cursor, Factory Droid
+- **支持平台**: Claude Code, Cursor, Factory, Droid, Gemini
 
 ## 架构概览
 
@@ -32,16 +32,12 @@ discuss skill [需求]      → docs/specs/*.md
     ↓
 writing-plans             → exec-plan
     ↓
-using-git-worktrees       → 隔离工作区
-    ↓
-exec-plan-runner          → TDD 子代理并行实现
-    ↓
-requesting-code-review    → 代码审查
-    ↓
-dev-docs-maintain         → 文档同步
+exec-plan-runner          → BOOTSTRAP(using-git-worktrees) → TDD 子代理并行实现 → 内部审查 → 验证 → 分支收尾
 ```
 
 **调试路径**: `systematic-debugging` → `test-driven-development` → `verification-before-completion`
+
+**合并前审查**: `requesting-code-review`（全量审查）在合并/PR 前默认强制执行，除非用户明确要求跳过并记录原因；`dev-docs-maintain`（文档维护）按需手动调用。
 
 ## Skill 速查
 
@@ -96,6 +92,7 @@ dev-docs-maintain         → 文档同步
 - 任务完成后，将 exec-plan 从 `active/` 移动到 `completed/`
 - 上下文接近极限时，更新 exec-plan 进度并提醒用户
 - 重大变更后，检查 docs/ 相关文档是否需要同步更新
+- 需要文档维护时，按需手动调用 `dev-docs-maintain`
 - 文档 verified 时间戳超过 30 天需验证，超过 90 天需修复
 
 ## 上游追踪

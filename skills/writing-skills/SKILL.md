@@ -2,7 +2,8 @@
 name: writing-skills
 description: |-
   创建、修改、审查或优化 Skill 时使用，包括新增 SKILL.md、调整触发描述、修复 Skill 间契约、编写压力场景、验证 Skill 行为是否稳定。
-version: 1.2.2
+  Triggers: 创建 skill, 修改 skill, skill 设计, prompt 契约, skill review.
+version: 1.2.4
 ---
 
 # Writing Skills

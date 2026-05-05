@@ -1,13 +1,9 @@
 ---
 name: discuss
 description: |-
-  在实现前进行产品需求探索：通过结构化对话澄清用户目标、功能范围、验收标准，
-  产出可评审的 spec 文档。仅处理产品与体验决策，不进入技术方案与实现细节。
-  当用户表达“需求还不清楚”、存在方案分歧、需要明确范围边界或验收口径时，应优先使用本 skill。
-  当任务已明确且改动很小（如单点 bugfix、文案微调、已有实现路径的局部修改）时，
-  不应进入 discuss，应建议直接进入实现。
+  实现和指定方案前澄清模糊需求、范围、验收标准与方案取舍，产出可评审 spec；明确小改直接跳过。
   Triggers: discuss, 需求讨论, 需求分析, 产品讨论, 设计探索, 功能范围, 用户故事, 验收标准, 方案取舍, brainstorming.
-version: 1.2.2
+version: 1.2.4
 ---
 
 # 产品需求探索（目标与约束导向）
@@ -73,9 +69,10 @@ discuss 的核心是**明确需求**，类似 PM 与工程师的早期讨论。
 
 ### E. Spec Review Loop
 - 使用 `references/spec-reviewer-prompt.md` 派发独立 spec-reviewer 子代理审查。
+- 若平台没有专用 spec-reviewer 角色，使用通用子代理并粘贴该 prompt。
 - 若 `Status=ISSUES_FOUND`，先按 blocking issues 修正 spec，再重新审查。
 - 同类 blocking issue 连续 2 轮无收敛时，停止循环并向用户升级。
-- 若 `Status=APPROVED`，进入用户 Review Gate。
+- 若 `Status=APPROVED`，必须确认审查输出包含非空 Evidence，且 Missing Evidence 不含阻塞 planning 的缺口，再进入用户 Review Gate。
 
 ### F. 用户 Review Gate 与交棒
 - 提示用户审阅并等待明确批准。

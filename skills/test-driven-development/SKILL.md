@@ -1,9 +1,10 @@
 ---
 name: test-driven-development
 description: |-
-  实现功能或 bugfix 时使用，采用务实的增量测试循环（Pragmatic test-first）。
-  关注局部行为的测试与实现闭环，不承担全量回归验证职责。Triggers: 实现功能, TDD, 测试驱动, bugfix, 编写代码.
-version: 1.2.2
+  实现功能或已确认根因的 bugfix 时使用，采用务实的增量测试循环（Pragmatic test-first）。
+  关注局部行为的测试与实现闭环，不承担全量回归验证职责。
+  Triggers: 实现功能, TDD, 测试驱动, 已确认根因的 bugfix, 编写代码.
+version: 1.2.4
 ---
 
 # 务实测试驱动（Pragmatic test-first）
@@ -14,6 +15,12 @@ version: 1.2.2
 ```
 没有终端跑通的目标测试，就没有声称完成的增量改动
 ```
+
+## 入口保护
+
+- 若用户只描述 bug、测试失败或异常行为，且没有根因证据，先使用 `systematic-debugging`。
+- 只有当 `systematic-debugging` 输出 `状态：FIXABLE`，或用户提供了可验证根因与目标行为时，才进入本 Skill 做 bugfix。
+- 本 Skill 可以验证修复是否成立，但不负责在根因未知时直接猜测修复。
 
 ---
 
@@ -81,14 +88,14 @@ pytest tests/path/test.py::test_name -v
 
 在标记当前增量完成前：
 
-- [ ] 当前功能或 bugfix 的目标行为有对应测试
+- [ ] 当前功能或已确认根因 bugfix 的目标行为有对应测试
 - [ ] 已在终端运行目标测试并看到 PASS 输出
 - [ ] 改动范围保持在当前增量目标内
 - [ ] 若涉及高风险场景，已触发 AskUser 并获得明确决策
 
 ---
 
-## Bugfix 示例
+## 已确认根因的 Bugfix 示例
 
 ```python
 # 1) 为当前增量准备目标测试

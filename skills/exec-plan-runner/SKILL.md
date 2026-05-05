@@ -2,7 +2,8 @@
 name: exec-plan-runner
 description: |-
   自主执行或恢复执行 exec-plan：依赖驱动批次执行、并行实现、冲突检测、审查修复收敛、全量验证、分支收尾与归档。
-version: 1.2.2
+  Triggers: 执行 exec-plan, 恢复执行, run plan, exec-plan-runner.
+version: 1.2.4
 ---
 
 # Exec-Plan Runner
@@ -16,7 +17,7 @@ version: 1.2.2
 ### 要做什么
 
 - 使用状态机执行或恢复执行 exec-plan
-- 将子代理返回统一为人类可读的结构化结果
+- 将实现/修复子代理返回统一为人类可读的结构化结果
 - 在并行批次后执行冲突检测，再进入审查
 - 用收敛判据控制审查-修复循环
 - 支持执行中需求变更（Plan Amendment）
@@ -30,7 +31,7 @@ version: 1.2.2
 `BOOTSTRAP -> READY -> EXECUTING -> VERIFYING -> FINALIZING -> DONE`
 
 异常状态：
-`ESCALATED`
+`ESCALATED | CANCELLED`
 
 子代理异常结果状态：
 `UNKNOWN`（超时、输出不可解析、异常终止）
@@ -42,6 +43,7 @@ version: 1.2.2
 <!-- runner-batch: 2/4 -->
 <!-- runner-phase: implement|conflict_check|review|fix -->
 <!-- runner-fix-round: 1/3 -->
+<!-- runner-next-action: <下一步动作> -->
 ```
 
 恢复时优先读取上述标记与 Session Log 的“下一步”。
@@ -84,15 +86,35 @@ version: 1.2.2
 - `VERIFYING -> ESCALATED`
   - 验证反复失败且无法收敛
 
+- `FINALIZING -> FINALIZING`
+  - `finishing-a-development-branch` 返回 `READY`
+  - 已展示 merge / PR / keep / discard 选项，正在等待用户选择或确认
+  - 写入恢复点：`runner-state=FINALIZING`，`runner-next-action=user_select_finish_option`
+
+- `FINALIZING -> VERIFYING`
+  - `finishing-a-development-branch` 返回 `BLOCKED`
+  - 阻塞原因是 `verification_evidence` 缺失、过期、`commit_sha` 与当前 HEAD 不匹配或 `passed=false`
+  - 写入恢复点：`runner-state=VERIFYING`，`runner-next-action=rerun_verification`
+
+- `FINALIZING -> ESCALATED`
+  - `finishing-a-development-branch` 返回 `BLOCKED`
+  - 阻塞原因是分支上下文、worktree provenance 或 base branch 无法可靠恢复，且补齐状态后仍不可继续
+  - 写入恢复点：`runner-state=ESCALATED`，`runner-next-action=escalate_to_user_with_blockers`
+
+- `FINALIZING -> CANCELLED`
+  - `finishing-a-development-branch` 返回 `CANCELLED`
+  - 用户取消分支处置、拒绝 destructive 确认，或明确要求停止收尾
+  - 保留分支与 worktree，不归档为完成；写入恢复点：`runner-state=CANCELLED`，`runner-next-action=user_resume_or_abort`
+
 - `FINALIZING -> DONE`
-  - 分支处置完成
-  - 归档完成
+  - `finishing-a-development-branch` 返回 `DONE`
+  - 分支处置完成且归档完成
 
 ---
 
 ## 统一结果格式
 
-所有实现/审查/修复/验证子代理统一返回：
+所有实现/修复子代理统一返回：
 
 ```markdown
 ## 子代理结果
@@ -124,6 +146,9 @@ version: 1.2.2
   - 旧提示词或模型输出的 `NEEDS_CONTEXT` -> `BLOCKED`，并生成 `BI-needs-context`
   - 超时、异常终止或无法解析 -> `UNKNOWN`
 
+审查 prompt 使用 runner 内部审查协议，必须返回 `DONE / DONE_WITH_CONCERNS / BLOCKED`。
+若内部审查输出 `通过 / 通过_含建议 / 阻塞 / 需澄清` 等外部全量审查状态，视为协议错误：标记为 `UNKNOWN`，生成 `BI-invalid-review-protocol`，并启动重新审查；若输出中已有明确阻塞证据，主代理可保守转为 `BLOCKED` 处理，但仍必须修正 prompt 后复审。
+
 ---
 
 ## EXECUTING 内部流程
@@ -133,6 +158,9 @@ version: 1.2.2
 ### 1) implement
 
 - 按 batch 并行启动实现子代理（并行度遵循项目约束）
+- 所有实现子代理在同一工作目录工作，不拥有独立 worktree 或 branch。
+- 主代理必须在派发前分配互不冲突的任务：同批次任务不得共享目标文件、公共接口出口或同一验证目标。
+- 子代理不得自行创建 commit；完成后只报告修改内容、验证证据和文件列表，由主代理统一检查、整合与提交。
 - 子代理使用 `test-driven-development`
 - 返回 `DONE | DONE_WITH_CONCERNS | BLOCKED | UNKNOWN`
 
@@ -150,7 +178,7 @@ version: 1.2.2
 ### 3) review
 
 - 并行启动审查子代理（规格符合性 + 代码质量）
-- 子代理使用 `receiving-code-review`
+- 子代理使用 `references/spec-reviewer-prompt.md` 和 `references/code-quality-reviewer-prompt.md`；`receiving-code-review` 仅用于收到审查反馈后的采纳/驳回评估。
 
 ### 4) fix + 收敛判据
 
@@ -202,13 +230,20 @@ version: 1.2.2
 
 ### FINALIZING
 
+- 合并/PR 前默认调用 `requesting-code-review`；仅当用户明确要求跳过时可跳过，并在 Session Log 记录原因。
 - 使用 `finishing-a-development-branch`
 - 走用户决策 Gate（merge / PR / keep / discard）
+- 消费 `finishing-a-development-branch` 的四态输出：
+  - `READY`：展示选项后暂停，保留 `runner-state=FINALIZING` 与 `runner-next-action=user_select_finish_option`，等待用户选择后恢复。
+  - `BLOCKED`：先按阻塞项补齐状态；验证证据问题回到 `VERIFYING`，分支/worktree 上下文问题补齐后重试一次，仍失败则 `ESCALATED`。
+  - `CANCELLED`：停止收尾并保留现状，记录 `runner-state=CANCELLED` 与 `runner-next-action=user_resume_or_abort`。
+  - `DONE`：继续 `ARCHIVE`。
 
 ### ARCHIVE
 
 - 将 exec-plan 从 `docs/exec-plans/active/` 移动到 `completed/`
-- 记录执行摘要与后续文档同步建议
+- 在 exec-plan 的 `## Session Log` 中记录执行摘要与后续文档同步建议
+- `dev-docs-maintain` 仅作为按需手动文档维护建议，不是每次开发执行的固定阶段
 
 ---
 
@@ -231,15 +266,10 @@ version: 1.2.2
 
 以下 references 按状态与触发条件使用，不是固定顺序脚本。
 
-- `manual-worktree-setup.md`（`references/manual-worktree-setup.md`）
-  - 状态：`BOOTSTRAP`
-  - 触发：`using-git-worktrees` 判定需要 git fallback，且当前Agent环境没有原生 worktree 工具
-  - 用途：最后回退的手动 git worktree 建立步骤
-
 - `using-git-worktrees`
   - 状态：`BOOTSTRAP`
   - 触发：执行或恢复 exec-plan 前
-  - 用途：检测现有隔离、优先使用内置 worktree 工具、建立或跳过隔离工作区
+  - 用途：检测现有隔离、优先使用内置 worktree 工具、建立或跳过隔离工作区；git worktree fallback 细节由 `skills/using-git-worktrees/references/manual-worktree-setup.md` 维护
 
 - `implementer-prompt.md`（`references/implementer-prompt.md`）
   - 状态：`EXECUTING / implement`

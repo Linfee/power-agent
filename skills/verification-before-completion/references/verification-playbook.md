@@ -1,3 +1,6 @@
+<!-- verified: 2026-05-05 -->
+<!-- scope: verification-before-completion, verification-playbook -->
+
 # Verification Playbook
 
 本文件提供验证路径建议，不是强制命令菜单。
@@ -10,9 +13,10 @@
 
 ## 证据记录最小字段
 
+- commit_sha
+- verified_at
 - command
 - exit_code
-- timestamp
 - scope
 - summary
 

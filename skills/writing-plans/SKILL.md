@@ -1,10 +1,9 @@
 ---
 name: writing-plans
-version: 1.2.2
+version: 1.2.4
 description: |-
   将需求/spec 转为可执行 exec-plan：聚焦目标、系统边界、关键技术方案、验收标准与依赖关系。
-  默认不写实现代码与精确命令。仅在上下文不足时按需加载调查信息。
-  Use when: 复杂功能实现前需要计划。DO NOT use for: 单文件小改、明确 bugfix、纯格式/文案调整
+  不用于单文件小改、明确局部 bugfix、纯格式/文案调整。
   Triggers: 创建实现计划, exec-plan, writing-plans, 任务拆解, 实现计划.
 ---
 
@@ -214,6 +213,7 @@ description: |-
 ### Step 2: 计划审查循环
 
 默认使用 `skills/writing-plans/references/plan-reviewer-prompt.md` dispatch `tech-plan-reviewer` 子代理审查。
+若平台没有专用 tech-plan-reviewer 角色，使用通用子代理并粘贴该 prompt。
 
 保留 subagent review loop：不要替换为 inline self-review。该 reviewer 的职责是检查计划是否足够让下游执行，而不是重写实现方案。
 
@@ -222,6 +222,7 @@ description: |-
 - `status`（`APPROVED` | `ISSUES_FOUND`）
 - `evidence`
 - `blocking_issues`
+- `missing_evidence`
 - `advisories`
 - `next_action`
 

@@ -1,8 +1,9 @@
 ---
 name: using-git-worktrees
 description: |-
-  在开始需要隔离的大型功能、exec-plan 执行或高风险改动前使用。优先检测当前是否已在隔离 worktree 中，再优先使用宿主环境原生 worktree 能力，最后才回退到 git worktree。
-version: 1.2.2
+  在大型功能、exec-plan 执行或高风险改动前检测/准备隔离工作区；先用宿主原生能力，最后才回退 git worktree。
+  Triggers: worktree, 隔离执行, exec-plan BOOTSTRAP, 高风险改动.
+version: 1.2.4
 ---
 
 # Using Git Worktrees
@@ -87,6 +88,8 @@ git branch --show-current
 ---
 
 ## Step 3: git worktree 回退
+
+详细手动 fallback 步骤见 `references/manual-worktree-setup.md`。本节保留关键决策与输出契约，避免调用方复制 worktree 规则。
 
 目录选择优先级：
 1. 用户或项目文档明确指定的位置。
@@ -176,3 +179,11 @@ cleanup_allowed: false
 ### 下一步
 - <继续执行 / 在当前工作区执行 / 需要用户决策>
 ```
+
+---
+
+## References
+
+- `references/manual-worktree-setup.md`
+  - 触发：Step 3 git worktree fallback，且没有宿主原生 worktree 工具可用
+  - 用途：手动创建 worktree、记录 provenance、准备项目环境

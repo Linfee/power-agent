@@ -3,7 +3,7 @@ name: receiving-code-review
 description: |-
   收到代码审查反馈时使用，在实施建议之前完成技术评估并输出结构化结论。
   Triggers: 收到审查, 审查反馈, 处理审查, code review feedback.
-version: 1.2.2
+version: 1.2.4
 ---
 
 # 接收代码审查
@@ -17,8 +17,8 @@ version: 1.2.2
 ### 做什么
 
 - 逐项评估审查反馈是否成立。
-- 产出结构化结论：`status/decision/reason/evidence/action`。
-- 对阻塞项给出 `blocking_issues` 与 `next_action`。
+- 产出结构化结论：状态、决策、理由、证据与行动。
+- 对阻塞项给出明确下一步。
 
 ### 不做什么
 
@@ -63,13 +63,13 @@ version: 1.2.2
 ### Gate 约束
 
 - 当 `decision=需澄清` 时：
-  - `status` 必须为 `BLOCKED`
-  - `action` 只能是 `请求澄清`
-  - `next_action` 必须是具体澄清问题
+  - `状态` 必须为 `BLOCKED`
+  - `行动` 只能是 `请求澄清`
+  - `下一步` 必须是具体澄清问题
 - 当 `decision=采纳|部分采纳|驳回` 时：
-  - `evidence` 不得为空
+  - `证据` 不得为空
 - 当 `evidence` 为空时：
-  - `status` 必须为 `BLOCKED`
+  - `状态` 必须为 `BLOCKED`
 
 ### 输出格式（必填）
 

@@ -1,4 +1,4 @@
-<!-- verified: 2026-04-21 -->
+<!-- verified: 2026-05-05 -->
 <!-- scope: workflow, skills, gate-mechanism -->
 <!-- status: active -->
 
@@ -31,7 +31,7 @@ DD-005 在所有"关键决策点"设置强制人工 Gate，包括实现阶段前
 2. Sandbox 隔离 → worktree 物理限制破坏范围
 3. Agent-to-Agent 审查 → 质量保障（风险分级 + 审查循环）
 
-Escalation 仅作兜底：审查修复循环耗尽（3轮）后才触发
+Escalation 仅作兜底：审查修复循环耗尽（3轮）、plan 致命缺陷、验证不可恢复或计划前提失效时触发
 ```
 
 ### Gate 变化对比
@@ -40,10 +40,10 @@ Escalation 仅作兜底：审查修复循环耗尽（3轮）后才触发
 |---------|--------|--------|
 | discuss spec 批准 | 强制等待 | **保留** — 规划 Gate |
 | exec-plan-runner 启动前 | 强制等待 | **弱化为轻量启动通知** |
-| exec-plan-runner escalation | 歧义/破坏性/3轮失败 | **仅 3 轮失败时触发** |
+| exec-plan-runner escalation | 歧义/破坏性/3轮失败 | **无人工确认式 Gate；仅在不可自主收敛时升级** |
 
 ## 后果
 
-- `exec-plan-runner`：Escalation 条件精简，只保留"3 轮修复失败"
+- `exec-plan-runner`：Escalation 不再是常规人工 Gate，只在修复循环不收敛、plan 致命缺陷、验证不可恢复或计划前提失效时触发
 - Agent 在实现阶段有更大自主权，worktree 提供安全兜底
 - 减少不必要的人工等待，提升 exec-plan-runner 的自主闭环能力
