@@ -5,7 +5,7 @@ AI 编码 Agent 工作流插件系统，融合 superpowers + Harness Engineering
 ## 快速参考
 
 - **类型**: AI Agent Skill/Prompt 工程
-- **Skills**: 14 个可复用 Skill
+- **Skills**: 16 个可复用 Skill
 - **支持平台**: Claude Code, Cursor, Factory Droid
 
 ## 架构概览
@@ -32,6 +32,8 @@ discuss skill [需求]      → docs/specs/*.md
     ↓
 writing-plans             → exec-plan
     ↓
+using-git-worktrees       → 隔离工作区
+    ↓
 exec-plan-runner          → TDD 子代理并行实现
     ↓
 requesting-code-review    → 代码审查
@@ -49,15 +51,17 @@ dev-docs-maintain         → 文档同步
 | `writing-plans` | 创建 TDD 结构 exec-plan | '创建实现计划', 'exec-plan' |
 | `exec-plan-runner` | 执行 exec-plan | 恢复执行 |
 | `systematic-debugging` | 四阶段根因调试 | 'bug', '测试失败', 'debug' |
-| `test-driven-development` | RED-GREEN-REFACTOR | '实现功能', 'TDD' |
+| `test-driven-development` | 务实增量测试闭环 | '实现功能', 'TDD' |
 | `requesting-code-review` | 代码审查编排 | '代码审查', 'code review' |
 | `receiving-code-review` | 审查反馈技术评估 | '收到审查', '审查反馈' |
 | `verification-before-completion` | 证据优先验证 | '验证完成', 'verification' |
 | `dev-docs` | 文档路由器 | '写文档', 'architecture' |
 | `dev-docs-maintain` | 文档维护 | 手动调用 |
 | `dispatching-parallel-agents` | 并行调度 | '并行执行', 'parallel agents' |
+| `using-git-worktrees` | 隔离 worktree 准备 | 'worktree', '隔离执行' |
 | `init-harness-engineering` | 项目初始化 | 手动调用 |
 | `harness-engineering-review` | 实践审查 | 'agent最佳实践' |
+| `writing-skills` | 创建/修改/验证 Skill | '写skill', '修改skill' |
 | `finishing-a-development-branch` | 分支收尾：merge/PR/保留/丢弃（exec-plan-runner 自动调用） | 手动调用 |
 
 ## 约束（硬规则）
@@ -98,5 +102,5 @@ dev-docs-maintain         → 文档同步
 
 | 项目 | 版本 | 来源 |
 |------|------|------|
-| superpowers | v5.0.5 | github.com/obra/superpowers |
+| superpowers | v5.1.0 | github.com/obra/superpowers |
 | Harness Engineering | 2026-02 | openai.com/index/harness-engineering |

@@ -1,4 +1,4 @@
-<!-- verified: 2026-04-21 -->
+<!-- verified: 2026-05-05 -->
 <!-- scope: architecture -->
 
 # 系统架构
@@ -32,6 +32,8 @@ graph TB
 
     subgraph "基础设施层"
         DPA[dispatching-parallel-agents]
+        WGT[using-git-worktrees]
+        WSK[writing-skills]
         FAB[finishing-a-development-branch]
         IHE[init-harness-engineering]
         DDM[dev-docs-maintain]
@@ -59,13 +61,15 @@ graph TB
 | | `writing-plans` | Spec → 三文档 exec-plan |
 | | `dev-docs` | 文档路由器，委派或创建文档 |
 | **实现层** | `exec-plan-runner` | 状态机编排，驱动全生命周期 |
-| | `test-driven-development` | 增量测试循环，RED-GREEN-REFACTOR |
+| | `test-driven-development` | 务实增量测试闭环 |
 | | `systematic-debugging` | 四阶段根因优先调试 |
 | | `verification-before-completion` | 证据优先验证，拦截无证据声明 |
 | **审查层** | `requesting-code-review` | 风险分级全量审查编排 |
 | | `receiving-code-review` | 审查反馈技术评估 |
 | | `harness-engineering-review` | Agent 工作流七维度审查 |
 | **基础设施层** | `dispatching-parallel-agents` | 通用并行调度（最大并行度 3） |
+| | `using-git-worktrees` | 隔离工作区检测、创建与基线准备 |
+| | `writing-skills` | Skill 创建、修改、契约审查与压力场景验证 |
 | | `finishing-a-development-branch` | 分支处置决策器（merge/PR/保留/丢弃） |
 | | `init-harness-engineering` | 项目知识体系初始化 |
 | | `dev-docs-maintain` | 文档维护（Doc Gardening） |
@@ -87,6 +91,7 @@ docs/exec-plans/active/
     ▼
 exec-plan-runner（实现编排）
     │
+    ├── using-git-worktrees（隔离工作区）
     ├── test-driven-development（实现子代理）
     ├── receiving-code-review（反馈评估）
     ├── verification-before-completion（全量验证）
@@ -108,6 +113,7 @@ dev-docs-maintain（文档同步）
 | 代码变更 | `exec-plan-runner` 子代理 | `requesting-code-review` | Git diff |
 | Session Log | `exec-plan-runner` | 归档 | `docs/exec-plans/completed/` |
 | 分支处置结论 | `finishing-a-development-branch` | exec-plan-runner / 用户 | 结构化输出 |
+| Skill 压力场景 | `writing-skills` | Skill 作者 / reviewer | Skill 修改说明或 docs |
 
 ## 子代理模式
 

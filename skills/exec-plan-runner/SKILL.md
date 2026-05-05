@@ -2,7 +2,7 @@
 name: exec-plan-runner
 description: |-
   自主执行或恢复执行 exec-plan：依赖驱动批次执行、并行实现、冲突检测、审查修复收敛、全量验证、分支收尾与归档。
-version: 1.2.1
+version: 1.2.2
 ---
 
 # Exec-Plan Runner
@@ -51,7 +51,7 @@ version: 1.2.1
 ## State Transitions
 
 - `BOOTSTRAP -> READY`
-  - worktree 已建立
+  - `using-git-worktrees` 已确认隔离工作区、决定在当前工作区执行，或明确返回可继续
   - 恢复点可判定
   - 基线检查可用（命令成功或已确认可继续）
 
@@ -117,6 +117,12 @@ version: 1.2.1
 规则：
 - `DONE` / `DONE_WITH_CONCERNS`：默认 concise
 - `BLOCKED` / `UNKNOWN`：必须 detailed，并附最小复现证据
+- 子代理原始状态归一化：
+  - `DONE` -> `DONE`
+  - `DONE_WITH_CONCERNS` -> `DONE_WITH_CONCERNS`
+  - `BLOCKED` -> `BLOCKED`
+  - 旧提示词或模型输出的 `NEEDS_CONTEXT` -> `BLOCKED`，并生成 `BI-needs-context`
+  - 超时、异常终止或无法解析 -> `UNKNOWN`
 
 ---
 
@@ -227,8 +233,13 @@ version: 1.2.1
 
 - `manual-worktree-setup.md`（`references/manual-worktree-setup.md`）
   - 状态：`BOOTSTRAP`
-  - 触发：`EnterWorktree` 不可用或工具受限
-  - 用途：手动建立 worktree
+  - 触发：`using-git-worktrees` 判定需要 git fallback，且当前Agent环境没有原生 worktree 工具
+  - 用途：最后回退的手动 git worktree 建立步骤
+
+- `using-git-worktrees`
+  - 状态：`BOOTSTRAP`
+  - 触发：执行或恢复 exec-plan 前
+  - 用途：检测现有隔离、优先使用内置 worktree 工具、建立或跳过隔离工作区
 
 - `implementer-prompt.md`（`references/implementer-prompt.md`）
   - 状态：`EXECUTING / implement`
@@ -254,4 +265,3 @@ version: 1.2.1
 - 正常路径默认 `concise`
 - `BLOCKED/UNKNOWN` 或关键冲突时升级 `detailed`
 - 多个审查 prompt 可组合，但输出必须回填“统一结果格式”
-

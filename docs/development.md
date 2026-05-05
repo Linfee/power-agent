@@ -1,4 +1,4 @@
-<!-- verified: 2026-04-21 -->
+<!-- verified: 2026-05-05 -->
 <!-- scope: development -->
 
 # 开发指南
@@ -25,12 +25,12 @@ power-agent/
 │   │   ├── active/           # 进行中
 │   │   └── completed/        # 已归档
 │   └── specs/                # Spec 文档（YYYY-MM-DD-topic.md）
-├── skills/                   # Skill 定义（14 个）
+├── skills/                   # Skill 定义（16 个）
 │   └── <skill-name>/
 │       ├── SKILL.md          # 核心 skill 定义（必须）
 │       └── references/       # 支撑文档、模板、prompt
 ├── AGENTS.md                 # Agent 快速参考（≤200 行）
-├── VERSION                   # 版本号
+├── VERSION                   # Skill 版本号
 └── scripts/
     └── sync-version.sh       # 版本同步脚本
 ```
@@ -81,6 +81,15 @@ disable-model-invocation: [true|false]  # 可选，默认 false
 bash scripts/sync-version.sh
 # 3. 确认输出"版本同步完成"
 ```
+
+### Skill 行为验证
+
+新增或重写核心 Skill 时，使用 `writing-skills`：
+
+- 先写清楚触发场景、目标行为和无 Skill 时的失败模式。
+- 为关键路径准备 2-3 个压力场景。
+- 检查上游产物是否满足下游输入契约。
+- 至少运行路径、版本或引用检查；有条件时运行子代理 eval。
 
 ## 文档规范
 

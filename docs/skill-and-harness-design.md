@@ -1,4 +1,4 @@
-<!-- verified: 2026-04-21 -->
+<!-- verified: 2026-05-05 -->
 <!-- scope: skill-design -->
 
 # Skill 与 Harness 设计指南
@@ -24,6 +24,25 @@
 - **字面遵从**：Claude 4.7+ 不会自动泛化规则，需要广泛应用时必须显式声明范围
 - **最小集**：从最小 prompt + 最强模型开始，只在 eval 显示失败模式时才加规则
 - **软硬配合**：prompt 是软约束（模型可绕过），安全需求必须用 harness 硬约束兜底
+
+## Skill 行为验证
+
+**Skill 修改需要压力场景。** 对核心工作流 Skill，不只检查 Markdown 格式，还要验证它是否改变 Agent 行为。
+
+最小压力场景包含：
+- 用户输入：真实用户会如何触发。
+- 无 Skill 易错行为：Agent 常见失败模式。
+- 期望行为：使用 Skill 后应出现的决策、输出或文件变化。
+- 验收点：可观察证据。
+
+优先覆盖：
+- 上游/下游契约交接。
+- 子代理任务卡是否缺字段。
+- 完成声明是否缺验证证据。
+- worktree / branch cleanup / destructive 操作。
+- 多个 Skill 可能同时触发的冲突场景。
+
+相关 Skill：`writing-skills`。
 
 ---
 

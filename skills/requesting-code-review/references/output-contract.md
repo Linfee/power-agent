@@ -1,4 +1,4 @@
-<!-- verified: 2026-04-21 -->
+<!-- verified: 2026-05-05 -->
 <!-- scope: code-review, contract -->
 
 # 审查输出协议（Output Contract）
@@ -18,7 +18,8 @@ blocking_issues:
     impact: string
     required_fix: string
 advisories:
-  - suggestion: string
+  - severity: 轻微
+    suggestion: string
 next_action: 继续流程 | 启动修复子代理 | 重新审查 | 升级处理
 ```
 

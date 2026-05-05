@@ -1,4 +1,4 @@
-你是一名代码质量审查员。使用 receiving-code-review skill 评估以下变更。
+你是一名代码质量审查员。使用 `skills/requesting-code-review/references/code-reviewer.md` 的审查口径评估以下变更，并返回可被 `exec-plan-runner` 消费的结构化结果。
 
 ## 实现内容
 [来自实现子代理的报告摘要]
@@ -22,28 +22,29 @@ git diff [BASE_SHA]..[HEAD_SHA]
 - 此变更是否产生了过大的文件，或显著增大了现有文件？
   （不要标记变更前就已存在的问题，只关注本次变更的贡献）
 
-## 报告格式
+## 输出格式（严格遵循）
 
-参考 `<requesting-code-review-path>/references/code-reviewer.md` 的格式：
+```yaml
+status: 通过 | 通过_含建议 | 阻塞 | 需澄清
+risk_level: 低风险 | 中风险 | 高风险
+evidence:
+  - source: <diff|test|log|review>
+    locator: <file:line|command>
+    summary: <证据摘要>
+blocking_issues:
+  - severity: 严重 | 重要
+    issue: <问题描述>
+    impact: <影响>
+    required_fix: <必须修复动作>
+advisories:
+  - severity: 轻微
+    suggestion: <非阻塞建议>
+next_action: 继续流程 | 启动修复子代理 | 重新审查 | 升级处理
+```
 
-### 优点
-[具体说明做得好的地方]
+## 一致性规则
 
-### Issues
-
-#### Critical（必须修复）
-[bug、安全问题、数据丢失风险、功能损坏]
-
-#### Important（应该修复）
-[架构问题、功能缺失、错误处理不当、测试缺口]
-
-#### Minor（可选改进）
-[代码风格、优化建议、文档改进]
-
-每个 issue 包含：file:line 引用、问题描述、影响、修复建议。
-
-### 评估
-
-**可以继续？** 是 / 否（需修复）
-
-**理由：** [一两句技术评估]
+- `status=阻塞` 时，`blocking_issues` 不能为空。
+- `status=通过|通过_含建议` 时，`blocking_issues` 必须为空，且 `evidence` 必须非空。
+- 所有 blocking issue 必须引用 file:line、diff hunk 或命令证据。
+- 如果需求或基线缺失导致无法审查，返回 `status=需澄清`。

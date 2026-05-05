@@ -3,7 +3,7 @@ name: receiving-code-review
 description: |-
   收到代码审查反馈时使用，在实施建议之前完成技术评估并输出结构化结论。
   Triggers: 收到审查, 审查反馈, 处理审查, code review feedback.
-version: 1.2.1
+version: 1.2.2
 ---
 
 # 接收代码审查

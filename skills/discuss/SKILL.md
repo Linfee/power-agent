@@ -7,7 +7,7 @@ description: |-
   当任务已明确且改动很小（如单点 bugfix、文案微调、已有实现路径的局部修改）时，
   不应进入 discuss，应建议直接进入实现。
   Triggers: discuss, 需求讨论, 需求分析, 产品讨论, 设计探索, 功能范围, 用户故事, 验收标准, 方案取舍, brainstorming.
-version: 1.2.1
+version: 1.2.2
 ---
 
 # 产品需求探索（目标与约束导向）
@@ -71,9 +71,15 @@ discuss 的核心是**明确需求**，类似 PM 与工程师的早期讨论。
 - 写入 `docs/specs/YYYY-MM-DD-<topic>.md`。
 - 模板使用：`references/spec-template.md`（已包含头部元信息）。
 
-### E. Review Gate 与交棒
+### E. Spec Review Loop
+- 使用 `references/spec-reviewer-prompt.md` 派发独立 spec-reviewer 子代理审查。
+- 若 `Status=ISSUES_FOUND`，先按 blocking issues 修正 spec，再重新审查。
+- 同类 blocking issue 连续 2 轮无收敛时，停止循环并向用户升级。
+- 若 `Status=APPROVED`，进入用户 Review Gate。
+
+### F. 用户 Review Gate 与交棒
 - 提示用户审阅并等待明确批准。
-- 若需修改，迭代更新后再次审阅。
+- 若需修改，迭代更新后再次执行 Spec Review Loop。
 - 批准后将状态改为 `accepted`，并建议执行：
   - `writing-plans [spec-path]`
 

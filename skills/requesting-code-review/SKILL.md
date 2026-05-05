@@ -3,7 +3,7 @@ name: requesting-code-review
 description: |-
   实现完成后使用，作为收尾阶段的全量代码审查编排器：基于风险分级派发审查子代理，结构化汇总结论并给出下一步动作。
   Triggers: 代码审查, code review, 请求审查, 合并前审查, 全量审查.
-version: 1.2.1
+version: 1.2.2
 ---
 
 # 请求代码审查
@@ -67,6 +67,8 @@ version: 1.2.1
 ### 风险驱动派发
 - `低风险` / `中风险`：单审
 - `高风险`：双审（2 个独立审查子代理并行）
+- 默认使用平台可用的 reviewer 子代理；没有专用 reviewer 时，使用通用子代理并粘贴 `references/code-reviewer.md`。
+- 不依赖 named `code-reviewer` agent，避免跨平台不可用或 persona 漂移。
 
 ### 冲突归并
 双审结果按 `references/conflict-resolution.md` 归并，取更严格结论并保留证据。
@@ -90,7 +92,7 @@ version: 1.2.1
   - 必须修复：<required_fix>
 
 ### 非阻塞建议
-- <suggestion>
+- [轻微] <suggestion>
 
 ### 下一步
 - 继续流程 / 启动修复子代理 / 重新审查 / 升级处理

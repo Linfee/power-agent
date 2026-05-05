@@ -1,4 +1,4 @@
-<!-- verified: 2026-04-21 -->
+<!-- verified: 2026-05-05 -->
 <!-- scope: workflow -->
 
 # 工作机制与 Skill 协调
@@ -43,7 +43,7 @@
 │                 实现阶段                                  │
 │                                                         │
 │   exec-plan-runner skill（状态机自主闭环）                  │
-│   ├── BOOTSTRAP：建立隔离 worktree                        │
+│   ├── BOOTSTRAP：using-git-worktrees 检测/建立隔离工作区      │
 │   ├── EXECUTING：依赖驱动批次并行（TDD 子代理，最大 3）       │
 │   ├── REVIEWING：代码审查子代理（风险分级）                  │
 │   ├── VERIFYING：verification-before-completion          │
@@ -98,8 +98,8 @@
 **核心流程：**
 1. 读取 spec 和相关代码文件
 2. 拆解为三文档 exec-plan（plan.md / context.md / tasks.md）
-3. 每个任务包含：目标、依赖、验收标准、实现提示
-4. 启动 `tech-plan-reviewer` 子代理审查（最多 3 轮）
+3. 每个任务包含：目标行为、主要文件/模块、可读取上下文、禁止触碰范围、验收标准、测试场景、实施提示、验证命令、阻塞条件和依赖关系
+4. 启动 `tech-plan-reviewer` 子代理审查（最多 3 轮，保留 subagent review loop）
 5. 提供执行选项（推荐 `exec-plan-runner`）
 
 **产出：** `docs/exec-plans/active/YYYY-MM-DD-title/plan.md + context.md + tasks.md`
@@ -112,12 +112,12 @@
 
 **触发：** writing-plans 交棒，或用户手动恢复执行。
 
-**状态机：** BOOTSTRAP → EXECUTING → REVIEWING → VERIFYING → FINALIZING → DONE
+**状态机：** BOOTSTRAP → READY → EXECUTING → VERIFYING → FINALIZING → DONE
 
 **核心流程：**
-1. BOOTSTRAP：读取三文档，建立隔离 worktree
-2. EXECUTING：拓扑排序 tasks，依赖就绪后按批次并行派发实现子代理
-3. REVIEWING：批次完成后基于风险分级派发审查子代理
+1. BOOTSTRAP：读取三文档，调用 `using-git-worktrees` 检测/建立隔离工作区
+2. READY：确认依赖图、batch 划分和任务卡字段完整
+3. EXECUTING：拓扑排序 tasks，依赖就绪后按批次并行派发实现子代理，并在批次内执行 conflict_check / review / fix loop
 4. VERIFYING：全量调用 `verification-before-completion`
 5. FINALIZING：调用 `finishing-a-development-branch`，归档 exec-plan
 
@@ -217,6 +217,28 @@
 **输出：** 各子代理结构化结果汇总（status: success/partial/blocked/failed）
 
 **参考文件：** `task-card-template.md`、`result-contract.md`、`conflict-resolution-rubric.md`
+
+---
+
+### using-git-worktrees — 隔离工作区
+
+**触发：** exec-plan-runner BOOTSTRAP、高风险改动、用户要求隔离执行。
+
+**核心流程：** 检测当前是否已在 linked worktree → 优先使用宿主原生 worktree 能力 → 无原生能力时回退 `git worktree` → 运行最小基线检查。
+
+**输出契约：** 向后续收尾流程传递 `path`、`is_linked_worktree`、`is_detached_head`、`worktree_source`、`managed_by`、`cleanup_allowed`。
+
+**不做：** 不创建嵌套 worktree，不清理来源不明或宿主管理的 worktree。
+
+---
+
+### writing-skills — Skill 创建与维护
+
+**触发：** 新增、修改、审查或优化 Skill。
+
+**核心流程：** 定义目标行为与失败模式 → 修改最小必要 Skill/refs/docs → 检查上下游契约 → 准备压力场景 → 同步版本。
+
+**交棒给：** `verification-before-completion` 或 `requesting-code-review`。
 
 ---
 

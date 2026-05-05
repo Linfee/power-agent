@@ -6,7 +6,7 @@
 
 融合两套互补方法论的 AI 编码 Agent 工作流系统：
 
-- **[superpowers](https://github.com/obra/superpowers)**（当前追踪版本 **v5.0.5**）— 面向 AI Agent 的完整软件开发 Skill 体系
+- **[superpowers](https://github.com/obra/superpowers)**（当前追踪版本 **v5.1.0**）— 面向 AI Agent 的完整软件开发 Skill 体系
 - **[Harness Engineering](https://openai.com/index/harness-engineering/)**（Ryan Lopopolo, OpenAI, 2026 年 2 月）— OpenAI 关于在工程工作流中运用 AI Agent 的方法论
 
 两者结合，形成一套完整、有主张的工作流：结构化设计探索 → TDD 驱动的执行计划 → 子代理并行实现 → 系统化调试 → 文档维护。
@@ -29,14 +29,16 @@
 
 | Skill | 用途 |
 |-------|------|
-| `discuss` | 编码前的设计探索——含 2-3 方案对比和 Spec 审查循环，产出经批准的 spec 文档 |
-| `writing-plans` | 将 spec/设计转化为 TDD 结构的 exec-plan，含完整代码片段 |
+| `discuss` | 编码前的设计探索——含 2-3 方案对比、Spec 子代理审查循环和用户批准 Gate |
+| `writing-plans` | 将 spec/设计转化为 TDD 结构的 exec-plan，产出可执行任务卡 |
 | `exec-plan-runner` | 通过一次性子代理并行批次执行 exec-plan，含两阶段代码审查 |
 | `dev-docs` | 文档路由器——exec-plan 委派给 `writing-plans`，其他文档类型直接处理 |
 | `dev-docs-maintain` | 文档维护（Doc Gardening）——扫描并修复重大功能完成后的过期文档 |
 | `init-harness-engineering` | 从零为项目建立 Harness Engineering 知识体系 |
+| `using-git-worktrees` | 执行大任务前检测/创建隔离 worktree，优先使用宿主原生能力 |
+| `writing-skills` | 创建、修改、审查和压力测试 Skill |
 | `systematic-debugging` | 四阶段根因优先调试（先找根本原因，再动手修复） |
-| `test-driven-development` | RED-GREEN-REFACTOR 执行强制，含反模式参考 |
+| `test-driven-development` | 务实增量测试闭环，含反模式参考 |
 | `requesting-code-review` | 通过子代理编排代码审查，输出结构化发现 |
 | `receiving-code-review` | 技术性评估审查反馈（非表演性同意） |
 | `verification-before-completion` | 证据优先验证——没有新鲜证据不得声称完成 |
@@ -50,6 +52,8 @@
 discuss skill          ← 设计探索 → spec 文档
     ↓（spec 批准后）
 writing-plans skill    ← 创建 TDD 结构 exec-plan
+    ↓
+using-git-worktrees    ← 检测/准备隔离工作区
     ↓
 exec-plan-runner skill ← TDD 子代理并行实现
     ↓
@@ -109,10 +113,10 @@ claude plugin install power-agent@power-agent --scope project
 
 | 上游项目 | 当前追踪版本 | 来源 |
 |----------|------------|------|
-| superpowers | v5.0.5 | https://github.com/obra/superpowers |
+| superpowers | v5.1.0 | https://github.com/obra/superpowers |
 | Harness Engineering | 2026 年 2 月 | https://openai.com/index/harness-engineering/ |
 
-当 superpowers 发布新版本时，查阅 CHANGELOG 并将相关改进移植到本项目。
+当 superpowers 发布新版本时，查阅 RELEASE-NOTES 并将相关改进移植到本项目。
 
 ---
 
@@ -167,7 +171,7 @@ claude plugin install power-agent@power-agent --scope project
 
 博客未直接命名 TDD，但全文强调每个变更必须有测试覆盖，且 exec-plan 结构中测试与实现不可分离。
 
-**本项目状态：** `test-driven-development` skill 强制 RED-GREEN-REFACTOR 循环，`exec-plan-runner` 的实现子代理被要求使用该 skill，`testing-anti-patterns.md` 列出了 5 类常见违规模式。
+**本项目状态：** `test-driven-development` skill 要求增量测试闭环，`exec-plan-runner` 的实现子代理被要求使用该 skill，`testing-anti-patterns.md` 列出了 5 类常见违规模式。
 
 ---
 
@@ -330,6 +334,6 @@ Golden principles 是团队对代码风格的具体约定（如"优先使用共�
 
 本项目基于以下工作构建：
 
-- **superpowers** by [Jesse Vincent (obra)](https://github.com/obra/superpowers) — MIT License。当前追踪 **v5.0.5**。以下 Skill 派生自 superpowers：`discuss`（来自 `brainstorming`）、`writing-plans`、`exec-plan-runner`（融合了 `subagent-driven-development`）、`test-driven-development`、`requesting-code-review`、`receiving-code-review`、`verification-before-completion`、`dispatching-parallel-agents`、`systematic-debugging`。
+- **superpowers** by [Jesse Vincent (obra)](https://github.com/obra/superpowers) — MIT License。当前追踪 **v5.1.0**。以下 Skill 派生或受其启发：`discuss`（来自 `brainstorming`）、`writing-plans`、`exec-plan-runner`（融合了 `subagent-driven-development`）、`test-driven-development`、`requesting-code-review`、`receiving-code-review`、`verification-before-completion`、`dispatching-parallel-agents`、`systematic-debugging`、`using-git-worktrees`、`writing-skills`。
 
 - **Harness Engineering** — [Ryan Lopopolo，OpenAI，2026 年 2 月 11 日](https://openai.com/index/harness-engineering/)。`harness-engineering-review`、`init-harness-engineering`、`dev-docs`、`dev-docs-maintain` Skill 以及"仓库即唯一真相来源"的整体设计哲学源于该方法论。
