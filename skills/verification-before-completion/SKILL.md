@@ -4,7 +4,7 @@ description: |-
   在声称编码工作完成之前使用，核验“完成声明”是否有本轮可验证证据支撑。
   不固定 lint/test/build 菜单，按任务类型选择最小充分验证。
   Triggers: 验证完成, 完成前验证, 声称通过, verification.
-version: 1.2.4
+version: 1.2.5
 ---
 
 # 完成前验证

@@ -3,7 +3,7 @@ name: init-harness-engineering
 description: |-
   初始化或更新项目的 AGENTS.md 与 docs/ 知识库结构，使项目符合 Harness Engineering 最佳实践。
   Triggers: 初始化 harness, init-harness-engineering, AGENTS.md 初始化, docs 知识库初始化.
-version: 1.2.4
+version: 1.2.5
 disable-model-invocation: true
 ---
 

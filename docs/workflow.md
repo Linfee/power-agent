@@ -177,7 +177,7 @@
 
 **输出：** `状态：通过 / 通过_含建议 / 阻塞 / 需澄清 + 阻塞问题 + 下一步`
 
-**交棒给：** `receiving-code-review` → `verification-before-completion`
+**交棒给：** `receiving-code-review` → 修复采纳项 → 重新审查（直到通过或 3 轮上限）→ `verification-before-completion`
 
 ---
 

@@ -3,7 +3,7 @@ name: systematic-debugging
 description: |-
   遇到 bug、测试失败或意外行为时使用。目标是先建立可验证的根因证据，再决定是否进入修复。
   Triggers: 根因未明, 复现不稳, 测试失败, 意外行为, debug, 调试.
-version: 1.2.4
+version: 1.2.5
 ---
 
 # systematic-debugging

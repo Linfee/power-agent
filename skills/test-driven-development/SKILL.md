@@ -4,7 +4,7 @@ description: |-
   实现功能或已确认根因的 bugfix 时使用，采用务实的增量测试循环（Pragmatic test-first）。
   关注局部行为的测试与实现闭环，不承担全量回归验证职责。
   Triggers: 实现功能, TDD, 测试驱动, 已确认根因的 bugfix, 编写代码.
-version: 1.2.4
+version: 1.2.5
 ---
 
 # 务实测试驱动（Pragmatic test-first）

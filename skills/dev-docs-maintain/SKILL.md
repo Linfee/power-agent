@@ -3,7 +3,7 @@ name: dev-docs-maintain
 description: |-
   手动或收尾后按需扫描 docs/ 文档和知识库，识别并修复过期、缺失或失效内容
   Triggers: 文档维护, docs 过期, dev-docs-maintain, doc gardening.
-version: 1.2.4
+version: 1.2.5
 disable-model-invocation: true
 ---
 

@@ -3,7 +3,7 @@ name: discuss
 description: |-
   实现和指定方案前澄清模糊需求、范围、验收标准与方案取舍，产出可评审 spec；明确小改直接跳过。
   Triggers: discuss, 需求讨论, 需求分析, 产品讨论, 设计探索, 功能范围, 用户故事, 验收标准, 方案取舍, brainstorming.
-version: 1.2.4
+version: 1.2.5
 ---
 
 # 产品需求探索（目标与约束导向）

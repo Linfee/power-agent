@@ -3,7 +3,7 @@ name: finishing-a-development-branch
 description: |-
   在实现完成后，作为分支处置决策器输出收尾选项与结构化结果：merge/PR/保留/丢弃。
   依赖调用方提供 verification_evidence；Triggers: 分支收尾, finishing, merge, PR, 保留分支, 丢弃工作.
-version: 1.2.4
+version: 1.2.5
 ---
 
 # Finishing a Development Branch

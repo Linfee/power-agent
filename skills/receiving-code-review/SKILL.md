@@ -3,7 +3,7 @@ name: receiving-code-review
 description: |-
   收到代码审查反馈时使用，在实施建议之前完成技术评估并输出结构化结论。
   Triggers: 收到审查, 审查反馈, 处理审查, code review feedback.
-version: 1.2.4
+version: 1.2.5
 ---
 
 # 接收代码审查
@@ -103,5 +103,7 @@ version: 1.2.4
 - 先判断，再行动。
 - 结论必须可追溯到证据。
 - 语言保持技术化与简洁，避免客套化表述。
+- 作为 `requesting-code-review` 阻塞反馈的下游时，若 `状态=DONE`，下一步必须是实施所有 `决策=采纳|部分采纳` 的阻塞项、运行相关验证，并回到 `requesting-code-review` 重新审查；不得要求用户决定是否继续。
+- 只有 `状态=BLOCKED`、反馈超出授权范围、修复涉及破坏性/越权操作，或上游修复-复审已达到 3 轮上限时，才能请求用户介入。
 
 示例见 `references/response-examples.md`。

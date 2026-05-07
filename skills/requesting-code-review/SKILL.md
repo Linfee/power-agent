@@ -3,7 +3,7 @@ name: requesting-code-review
 description: |-
   完成编码工作后使用；合并/PR 前默认强制执行全量代码审查，除非用户明确要求跳过；不替代 exec-plan-runner 的 batch 内审查。
   Triggers: 代码审查, code review, 请求审查, 合并前审查, 全量审查.
-version: 1.2.4
+version: 1.2.5
 ---
 
 # 请求代码审查
@@ -102,6 +102,9 @@ version: 1.2.4
 - `阻塞问题` 非空：`下一步` 只能是 `启动修复子代理`、`重新审查` 或达到轮次上限后的 `升级处理`
 - 修复后必须重新审查，不能沿用旧结论
 - 连续修复-复审 3 轮仍 `阻塞` 且无收敛：`下一步=升级处理`
+- 当 `状态=阻塞` 且 `下一步=启动修复子代理` 时，必须先交给 `receiving-code-review` 评估反馈
+- 若 `receiving-code-review` 输出 `状态=DONE`，不得中途询问用户；必须实施所有 `决策=采纳|部分采纳` 的阻塞项、运行相关验证，然后重新发起本 Skill 审查
+- 只有当 `receiving-code-review` 输出 `状态=BLOCKED`、连续 3 轮仍阻塞且无收敛，或修复涉及破坏性/越权操作时，才能升级询问用户
 
 ---
 
@@ -122,5 +125,5 @@ version: 1.2.4
 
 - 上游：`exec-plan-runner`（已完成 batch 内审查）
 - 本 Skill：做收尾阶段全量审查编排
-- 下游：`receiving-code-review`（评估与采纳反馈）→ `verification-before-completion`
+- 下游：`receiving-code-review`（评估与采纳反馈）→ 修复采纳项 → 重新审查，直到通过或达到 3 轮上限 → `verification-before-completion`
 - `dev-docs-maintain` 是按需手动文档维护 Skill，不是每次代码审查后的固定步骤。

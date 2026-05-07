@@ -4,7 +4,7 @@ description: |-
   创建或更新 docs/ 下的开发文档，支持六种类型：architecture、arch-decision、exec-plan、domain、development、reference。
   exec-plan 类型立即委派给 writing-plans；临时讨论、一次性调试和可由代码直接推导的信息不写入 docs。
   Triggers: 写文档, dev-docs, architecture, arch-decision, exec-plan, 架构文档, 决策记录, 领域文档.
-version: 1.2.4
+version: 1.2.5
 disable-model-invocation: true
 ---
 

@@ -3,7 +3,7 @@ name: exec-plan-runner
 description: |-
   自主执行或恢复执行 exec-plan：依赖驱动批次执行、并行实现、冲突检测、审查修复收敛、全量验证、分支收尾与归档。
   Triggers: 执行 exec-plan, 恢复执行, run plan, exec-plan-runner.
-version: 1.2.4
+version: 1.2.5
 ---
 
 # Exec-Plan Runner

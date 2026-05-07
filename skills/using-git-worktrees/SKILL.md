@@ -3,7 +3,7 @@ name: using-git-worktrees
 description: |-
   在大型功能、exec-plan 执行或高风险改动前检测/准备隔离工作区；先用宿主原生能力，最后才回退 git worktree。
   Triggers: worktree, 隔离执行, exec-plan BOOTSTRAP, 高风险改动.
-version: 1.2.4
+version: 1.2.5
 ---
 
 # Using Git Worktrees
