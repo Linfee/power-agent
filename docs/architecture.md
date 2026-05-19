@@ -59,7 +59,7 @@ graph TB
 | **规划层** | `discuss` | 需求探索，产出 spec 文档 |
 | | `writing-plans` | Spec → 三文档 exec-plan |
 | | `dev-docs` | 文档路由器，委派或创建文档 |
-| **实现层** | `exec-plan-runner` | 状态机编排，驱动全生命周期 |
+| **实现层** | `exec-plan-runner` | 状态机编排，驱动全生命周期；默认先并行委派，无法并行时委派单个实现子代理 |
 | | `test-driven-development` | 务实增量测试闭环 |
 | | `systematic-debugging` | 四阶段根因优先调试 |
 | | `verification-before-completion` | 证据优先验证，拦截无证据声明 |

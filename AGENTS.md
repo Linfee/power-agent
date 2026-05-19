@@ -32,7 +32,7 @@ discuss skill [需求]      → docs/specs/*.md
     ↓
 writing-plans             → exec-plan
     ↓
-exec-plan-runner          → BOOTSTRAP(using-git-worktrees) → TDD 子代理并行实现 → 内部审查 → 验证 → 分支收尾
+exec-plan-runner          → BOOTSTRAP(using-git-worktrees) → 默认先并行委派，不能并行则单代理推进 → 内部审查 → 验证 → 分支收尾
 ```
 
 **调试路径**: `systematic-debugging` → `test-driven-development` → `verification-before-completion`

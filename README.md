@@ -9,7 +9,7 @@
 - **[superpowers](https://github.com/obra/superpowers)**（当前追踪版本 **v5.1.0**）— 面向 AI Agent 的完整软件开发 Skill 体系
 - **[Harness Engineering](https://openai.com/index/harness-engineering/)**（Ryan Lopopolo, OpenAI, 2026 年 2 月）— OpenAI 关于在工程工作流中运用 AI Agent 的方法论
 
-两者结合，形成一套完整、有主张的工作流：结构化设计探索 → TDD 驱动的执行计划 → 子代理并行实现 → 系统化调试 → 文档维护。
+两者结合，形成一套完整、有主张的工作流：结构化设计探索 → TDD 驱动的执行计划 → 默认先并行委派 → 不能并行时单代理推进 → 系统化调试 → 文档维护。
 
 ---
 
@@ -31,7 +31,7 @@
 |-------|------|
 | `discuss` | 编码前的设计探索——含 2-3 方案对比、Spec 子代理审查循环和用户批准 Gate |
 | `writing-plans` | 将 spec/设计转化为 TDD 结构的 exec-plan，产出可执行任务卡 |
-| `exec-plan-runner` | 自主执行或恢复 exec-plan，含依赖批次、冲突检测、审查修复收敛、验证与收尾 |
+| `exec-plan-runner` | 自主执行或恢复 exec-plan，含默认并行委派、单代理回退、依赖批次、冲突检测、审查修复收敛、验证与收尾 |
 | `dev-docs` | 文档路由器——exec-plan 委派给 `writing-plans`，其他文档类型直接处理 |
 | `dev-docs-maintain` | 文档维护（Doc Gardening）——按需扫描并修复过期、缺失或失效文档 |
 | `init-harness-engineering` | 从零为项目建立 Harness Engineering 知识体系 |

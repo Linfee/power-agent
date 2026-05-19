@@ -124,7 +124,7 @@
 **核心流程：**
 1. BOOTSTRAP：读取三文档，调用 `using-git-worktrees` 检测/建立隔离工作区
 2. READY：确认依赖图、batch 划分和任务卡字段完整
-3. EXECUTING：拓扑排序 tasks，依赖就绪后按批次并行派发实现子代理，并在批次内执行 conflict_check / review / fix loop
+3. EXECUTING：拓扑排序 tasks，默认先按批次并行派发实现子代理；无法并行时改为单个实现子代理推进，并在批次内执行 conflict_check / review / fix loop
 4. VERIFYING：全量调用 `verification-before-completion`
 5. FINALIZING：调用 `requesting-code-review`（合并/PR 前默认强制，用户明确跳过除外）与 `finishing-a-development-branch`，按收尾状态归档或保留恢复点
 
