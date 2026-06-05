@@ -32,12 +32,12 @@ discuss skill [需求]      → 内联需求结论（按需 docs/specs/*.md）
     ↓
 writing-plans             → compact exec-plan（plan.md + review-contract.md，按需 context/tasks）
     ↓
-plan-impl          → BOOTSTRAP(using-git-worktrees) → 中小任务可走 plan-impl-lightweight → 优先 team 模式，缺失 team 工具时回退并行/单代理委派 → 内部审查 → 验证 → 分支收尾
+plan-impl          → BOOTSTRAP(using-git-worktrees) → 中小任务可走 plan-impl-lightweight → 优先 team 模式，缺失 team 工具时回退并行/单代理委派 → 内部审查 → 全量审查 → 验证 → 分支收尾
 ```
 
 **调试路径**: `systematic-debugging` → `proof-oriented-development` → `verification-before-completion`
 
-**合并前审查**: `requesting-code-review`（全量审查）在合并/PR 前默认强制执行，除非用户明确要求跳过并记录原因；`dev-docs-maintain`（文档维护）按需手动调用。
+**最终验证前审查**: `requesting-code-review`（全量审查）在 `verification-before-completion` 前默认强制执行；合并/PR 前不得跳过未通过的审查结果，除非用户明确要求跳过并记录原因。`dev-docs-maintain`（文档维护）按需手动调用。
 
 ## Skill 速查
 

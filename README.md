@@ -54,13 +54,13 @@ discuss skill          ← 需求讨论 / PRD 细化 → 内联需求结论（�
 writing-plans skill    ← 创建包含证明策略的 compact exec-plan（必需 `plan.md + review-contract.md`，按需 `context.md/tasks.md`）
     ↓
 plan-impl skill ← BOOTSTRAP(using-git-worktrees) → 轻量启动通知 → 中小任务可走 plan-impl-lightweight
-                     └── 优先 team 模式；缺失 team 工具时回退 proof-oriented 实现子代理并行/单代理推进 → 内部审查 → 验证 → 分支收尾
+                     └── 优先 team 模式；缺失 team 工具时回退 proof-oriented 实现子代理并行/单代理推进 → 内部审查 → 全量审查 → 验证 → 分支收尾
 
 Bug / 测试失败 → systematic-debugging skill
                      └── → proof-oriented-development + verification-before-completion
 ```
 
-`requesting-code-review` 在合并/PR 前默认强制执行，除非用户明确要求跳过并记录原因。
+`requesting-code-review` 在最终验证前默认强制执行；合并/PR 前不得跳过未通过的审查结果，除非用户明确要求跳过并记录原因。
 `dev-docs-maintain` 是按需或用户要求调用的文档维护 Skill，不是每次开发执行的固定主流程。
 
 详细的 Skill 协调机制见 [docs/workflow.md](docs/workflow.md)。
@@ -102,6 +102,14 @@ claude plugin install power-agent@power-agent --scope project
 ### 作为 Cursor 插件
 
 使用 `.cursor-plugin/plugin.json`，通过 Cursor 插件管理器安装，或手动将 `skills/` 目录内容复制到项目中。
+
+### 作为 Factory 插件
+
+使用 `.factory-plugin/plugin.json`，通过 Factory 插件管理器安装，或手动将 `skills/` 目录内容复制到项目中。
+
+### 作为 Gemini 扩展
+
+使用 `gemini-extension.json`；该清单指向 `GEMINI.md`，再由 `GEMINI.md` 加载 `AGENTS.md`。
 
 ---
 

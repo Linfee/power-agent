@@ -46,13 +46,7 @@ skills/discuss/scripts/start-server.sh
 
 会话文件默认保存在 `/tmp/discuss-<session>/`，停止服务时会被清理；不要依赖仓库内持久目录。
 
-如果本地 URL 不可访问，可绑定非 loopback 地址：
-
-```bash
-skills/discuss/scripts/start-server.sh \
-  --host 0.0.0.0 \
-  --url-host localhost
-```
+服务只绑定 `127.0.0.1`。不要把 visual companion 暴露到非 loopback 网络；远程或容器环境应通过宿主提供的端口转发访问本机 loopback URL。
 
 ## 讨论闭环
 

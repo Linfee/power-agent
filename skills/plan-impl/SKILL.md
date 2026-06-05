@@ -20,8 +20,8 @@ description: |-
 - 优先检测并使用 team 模式；不可用时回退并行子代理或单子代理。
 - 对中等偏小、边界清楚、验证方式明确的任务，可调用 `plan-impl-lightweight`。
 - 在实现批次后执行 `conflict_check -> review -> fix loop`。
-- 通过 `verification-before-completion` 输出 `verification_evidence`。
-- 在收尾阶段串联 `requesting-code-review` 与 `finishing-a-development-branch`。
+- 先通过 `requesting-code-review` 完成最终全量审查，再通过 `verification-before-completion` 输出 `verification_evidence`。
+- 在收尾阶段串联 `finishing-a-development-branch`。
 
 ### 不做什么
 
@@ -42,7 +42,7 @@ description: |-
 ## State Machine
 
 主状态：
-`BOOTSTRAP -> READY -> EXECUTING -> VERIFYING -> FINALIZING -> DONE`
+`BOOTSTRAP -> READY -> EXECUTING -> REVIEWING -> VERIFYING -> FINALIZING -> DONE`
 
 异常状态：
 `ESCALATED | CANCELLED`
@@ -68,7 +68,8 @@ description: |-
 
 - `BOOTSTRAP -> READY`：工作区/恢复点/基线检查可继续。
 - `READY -> EXECUTING`：任务、依赖、Proof、阻塞条件可判定，且无致命 plan 缺陷。
-- `EXECUTING -> VERIFYING`：所有 batch 完成，且阻塞问题已清零。
+- `EXECUTING -> REVIEWING`：所有 batch 完成，且内部阻塞问题已清零。
+- `REVIEWING -> VERIFYING`：`requesting-code-review` 通过，或用户明确要求跳过并记录原因。
 - `VERIFYING -> FINALIZING`：`verification-before-completion` 返回 `DONE` 且 `passed=true`。
 - `FINALIZING -> DONE`：`finishing-a-development-branch` 返回 `DONE`，且归档完成。
 - 任一阶段遇到 plan 致命缺陷、修复不收敛、验证不可恢复或前提失效导致超范围影响，进入 `ESCALATED`。
@@ -183,6 +184,14 @@ description: |-
 
 ---
 
+## REVIEWING
+
+- 默认调用 `requesting-code-review`；仅当用户明确要求跳过时可跳过，并在 Session Log 记录原因。
+- 审查返回 `阻塞` 或 `需澄清` 时，按 `receiving-code-review` 评估反馈，采纳修复项后重新审查。
+- 修复审查反馈后不得沿用旧验证证据；审查通过后进入 `VERIFYING` 重新生成最终 `verification_evidence`。
+
+---
+
 ## VERIFYING
 
 - 调用 `verification-before-completion`。
@@ -198,7 +207,6 @@ description: |-
 
 ### FINALIZING
 
-- 合并/PR 前默认调用 `requesting-code-review`；仅当用户明确要求跳过时可跳过，并在 Session Log 记录原因。
 - 调用 `finishing-a-development-branch`。
 - 消费其四态输出：
   - `READY`：展示 `merge / PR / keep / discard` 选项，写入恢复点，等待用户选择。

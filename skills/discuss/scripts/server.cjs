@@ -74,8 +74,18 @@ function decodeFrame(buffer) {
 // ========== Configuration ==========
 
 const PORT = process.env.DISCUSS_PORT || process.env.BRAINSTORM_PORT || (49152 + Math.floor(Math.random() * 16383));
-const HOST = process.env.DISCUSS_HOST || process.env.BRAINSTORM_HOST || '127.0.0.1';
-const URL_HOST = process.env.DISCUSS_URL_HOST || process.env.BRAINSTORM_URL_HOST || (HOST === '127.0.0.1' ? 'localhost' : HOST);
+const requestedHost = process.env.DISCUSS_HOST || process.env.BRAINSTORM_HOST || '127.0.0.1';
+if (requestedHost !== '127.0.0.1' && requestedHost !== 'localhost') {
+  console.error(JSON.stringify({ error: 'DISCUSS_HOST must be 127.0.0.1 or localhost' }));
+  process.exit(1);
+}
+const HOST = '127.0.0.1';
+const requestedUrlHost = process.env.DISCUSS_URL_HOST || process.env.BRAINSTORM_URL_HOST || 'localhost';
+if (requestedUrlHost !== '127.0.0.1' && requestedUrlHost !== 'localhost') {
+  console.error(JSON.stringify({ error: 'DISCUSS_URL_HOST must be 127.0.0.1 or localhost' }));
+  process.exit(1);
+}
+const URL_HOST = requestedUrlHost;
 const SESSION_DIR = process.env.DISCUSS_DIR || process.env.BRAINSTORM_DIR || '/tmp/discuss';
 const CONTENT_DIR = path.join(SESSION_DIR, 'content');
 const STATE_DIR = path.join(SESSION_DIR, 'state');
@@ -163,6 +173,7 @@ function handleRequest(req, res) {
 // ========== WebSocket Connection Handling ==========
 
 const clients = new Set();
+let shuttingDown = false;
 
 function handleUpgrade(req, socket) {
   const key = req.headers['sec-websocket-key'];
@@ -244,6 +255,15 @@ function broadcast(msg) {
   }
 }
 
+function closeClients() {
+  const closeFrame = encodeFrame(OPCODES.CLOSE, Buffer.alloc(0));
+  for (const socket of clients) {
+    try { socket.end(closeFrame); } catch (e) { console.error('Failed to close WebSocket client:', e.message); }
+    try { socket.destroy(); } catch (e) { console.error('Failed to destroy WebSocket client:', e.message); }
+    clients.delete(socket);
+  }
+}
+
 // ========== Activity Tracking ==========
 
 const IDLE_TIMEOUT_MS = 30 * 60 * 1000; // 30 minutes
@@ -299,6 +319,8 @@ function startServer() {
   watcher.on('error', (err) => console.error('fs.watch error:', err.message));
 
   function shutdown(reason) {
+    if (shuttingDown) return;
+    shuttingDown = true;
     console.log(JSON.stringify({ type: 'server-stopped', reason }));
     const infoFile = path.join(STATE_DIR, 'server-info');
     if (fs.existsSync(infoFile)) fs.unlinkSync(infoFile);
@@ -307,7 +329,10 @@ function startServer() {
       JSON.stringify({ reason, timestamp: Date.now() }) + '\n'
     );
     watcher.close();
+    closeClients();
     clearInterval(lifecycleCheck);
+    const forceExit = setTimeout(() => process.exit(0), 1000);
+    forceExit.unref();
     server.close(() => process.exit(0));
   }
 

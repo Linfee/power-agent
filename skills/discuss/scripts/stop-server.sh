@@ -44,12 +44,15 @@ if [[ -f "$PID_FILE" ]]; then
 
   rm -f "$PID_FILE" "${STATE_DIR}/server.log"
 
-  # Only delete ephemeral /tmp directories
-  if [[ "$SESSION_DIR" == /tmp/* ]]; then
-    rm -rf "$SESSION_DIR"
-  fi
+  cleanup="skipped"
+  case "$SESSION_DIR" in
+    /tmp/discuss-*)
+      rm -rf "$SESSION_DIR"
+      cleanup="removed"
+      ;;
+  esac
 
-  echo '{"status": "stopped"}'
+  echo "{\"status\": \"stopped\", \"cleanup\": \"$cleanup\"}"
 else
   echo '{"status": "not_running"}'
 fi

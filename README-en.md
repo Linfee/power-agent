@@ -1,5 +1,7 @@
 # power-agent
 
+> **Early experimental project.** This is a personal experiment that integrates the [superpowers](https://github.com/obra/superpowers) skill system with OpenAI's [Harness Engineering](https://openai.com/index/harness-engineering/) methodology. It is still early: several core Harness Engineering practices, especially custom linters, application legibility, automated doc gardening, quality scoring, tech-debt tracking, and PR lifecycle automation, are not implemented yet.
+
 An AI coding agent workflow system that combines two complementary methodologies:
 
 - **[superpowers](https://github.com/obra/superpowers)** — A complete software development skill system for AI agents
@@ -50,13 +52,13 @@ discuss skill          ← optional: requirement discussion / PRD refinement →
 writing-plans skill    ← create compact proof-oriented exec-plan (required `plan.md + review-contract.md`, optional `context.md/tasks.md`)
     ↓
 plan-impl skill ← BOOTSTRAP(using-git-worktrees) → lightweight start notice → optional plan-impl-lightweight for medium-small tasks
-                     └── prefer team mode; without team tools, fall back to proof-oriented implementation subagents in parallel or serial flow → internal review → verification → branch finishing
+                     └── prefer team mode; without team tools, fall back to proof-oriented implementation subagents in parallel or serial flow → internal review → full code review → verification → branch finishing
 
 Bug / test failure → systematic-debugging skill
                          └── → proof-oriented-development + verification-before-completion
 ```
 
-`requesting-code-review` is mandatory before merge/PR by default unless the user explicitly asks to skip it and the reason is recorded. `dev-docs-maintain` remains an on-demand doc maintenance skill, not a mandatory step for every development run.
+`requesting-code-review` is mandatory before final verification by default. Merge/PR handoff must not skip unresolved review findings unless the user explicitly asks to skip and the reason is recorded. `dev-docs-maintain` remains an on-demand doc maintenance skill, not a mandatory step for every development run.
 
 ---
 
@@ -84,6 +86,26 @@ Claude Code and Droid share a compatible plugin format. Install the same way via
 ### As a Cursor plugin
 
 Use `.cursor-plugin/plugin.json` via Cursor's plugin manager, or copy the `skills/` directory into a project manually.
+
+### As a Factory plugin
+
+Use `.factory-plugin/plugin.json` via Factory's plugin manager, or copy the `skills/` directory into a project manually.
+
+### As a Gemini extension
+
+Use `gemini-extension.json`; it points Gemini at `GEMINI.md`, which in turn loads `AGENTS.md`.
+
+---
+
+## Current status and known gaps
+
+The repository currently provides the skill workflow, docs structure, ADRs, and local visual companion scripts. The following Harness Engineering capabilities are intentionally tracked as gaps rather than claimed as complete:
+
+- **Mechanical constraints:** no project-level lint, formatter, CI, or custom structural tests are provided yet.
+- **Application legibility:** no per-worktree app startup, log/metric query, browser-driving, or observability harness is provided.
+- **Automated maintenance:** `dev-docs-maintain` is an on-demand skill, not a scheduled background agent that opens PRs.
+- **Quality and debt tracking:** no `docs/quality.md`, golden-principles file, or tech-debt tracker exists yet.
+- **PR lifecycle:** implementation can finish a branch, but there is no end-to-end PR creation, review-response, CI-fix, and merge loop.
 
 ---
 

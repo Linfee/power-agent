@@ -97,11 +97,11 @@ plan-impl（实现编排）
     ├── plan-impl-lightweight（中小任务轻量执行路径）
     ├── proof-oriented-development（证明导向实现子代理）
     ├── 内部审查 prompt（规格符合性 + 代码质量）
+    ├── requesting-code-review（最终验证前全量审查）
     ├── verification-before-completion（Proof Block 审计与 verification_evidence）
-    ├── requesting-code-review（合并前全量审查）
     └── finishing-a-development-branch（分支收尾）
 
-requesting-code-review 在合并/PR 前默认强制执行，除非用户明确要求跳过；dev-docs-maintain 是按需手动文档维护入口，不属于 plan-impl 的固定主流程。
+requesting-code-review 在最终验证前默认强制执行；合并/PR 前不得跳过未通过的审查结果，除非用户明确要求跳过。dev-docs-maintain 是按需手动文档维护入口，不属于 plan-impl 的固定主流程。
 ```
 
 **硬规则：** 依赖只能从上层指向下层，禁止反向依赖。
@@ -112,7 +112,7 @@ requesting-code-review 在合并/PR 前默认强制执行，除非用户明确�
 |--------|--------|--------|------|
 | 需求结论 / Spec 文档 | `discuss` | `writing-plans` | 默认内联传递；按需 `docs/specs/YYYY-MM-DD-*.md` |
 | Compact exec-plan（`plan.md + review-contract.md`，按需 `context.md/tasks.md`） | `writing-plans` | 人类默认审 `review-contract.md`；`plan-impl` 必读 `plan.md + review-contract.md`，并按需读取拆分材料 | `docs/exec-plans/active/` |
-| 代码变更 | `plan-impl` 子代理 | runner 内部审查 prompt / `requesting-code-review`（合并前） | Git diff |
+| 代码变更 | `plan-impl` 子代理 | runner 内部审查 prompt / `requesting-code-review`（最终验证前） | Git diff |
 | Session Log | `plan-impl` | 归档 | `docs/exec-plans/completed/` |
 | 分支处置结论 | `finishing-a-development-branch` | plan-impl / 用户 | 结构化输出 |
 | Skill 压力场景 | `writing-skills` | Skill 作者 / reviewer | Skill 修改说明或 docs |

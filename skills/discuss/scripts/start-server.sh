@@ -1,15 +1,14 @@
 #!/usr/bin/env bash
 # Start the discuss visual companion server and output connection info
-# Usage: start-server.sh [--project-dir <path>] [--host <bind-host>] [--url-host <display-host>] [--foreground] [--background]
+# Usage: start-server.sh [--project-dir <path>] [--host 127.0.0.1] [--url-host localhost] [--foreground] [--background]
 #
 # Starts server on a random high port, outputs JSON with URL.
 # Each session gets its own /tmp directory to avoid repository assumptions.
 #
 # Options:
 #   --project-dir <path>  Accepted for compatibility; session files still go under /tmp.
-#   --host <bind-host>    Host/interface to bind (default: 127.0.0.1).
-#                         Use 0.0.0.0 in remote/containerized environments.
-#   --url-host <host>     Hostname shown in returned URL JSON.
+#   --host <bind-host>    Loopback host to bind: 127.0.0.1 or localhost (default: 127.0.0.1).
+#   --url-host <host>     Loopback hostname shown in returned URL JSON.
 #   --foreground          Run server in the current terminal (no backgrounding).
 #   --background          Force background mode (overrides Codex auto-foreground).
 
@@ -51,12 +50,20 @@ while [[ $# -gt 0 ]]; do
 done
 
 if [[ -z "$URL_HOST" ]]; then
-  if [[ "$BIND_HOST" == "127.0.0.1" || "$BIND_HOST" == "localhost" ]]; then
-    URL_HOST="localhost"
-  else
-    URL_HOST="$BIND_HOST"
-  fi
+  URL_HOST="localhost"
 fi
+
+if [[ "$BIND_HOST" != "127.0.0.1" && "$BIND_HOST" != "localhost" ]]; then
+  echo "{\"error\": \"--host must be 127.0.0.1 or localhost\"}"
+  exit 1
+fi
+
+if [[ "$URL_HOST" != "127.0.0.1" && "$URL_HOST" != "localhost" ]]; then
+  echo "{\"error\": \"--url-host must be 127.0.0.1 or localhost\"}"
+  exit 1
+fi
+
+BIND_HOST="127.0.0.1"
 
 # Some environments reap detached/background processes. Auto-foreground when detected.
 if [[ -n "${CODEX_CI:-}" && "$FOREGROUND" != "true" && "$FORCE_BACKGROUND" != "true" ]]; then
@@ -84,13 +91,6 @@ LOG_FILE="${STATE_DIR}/server.log"
 
 # Create fresh session directory with content and state peers
 mkdir -p "${SESSION_DIR}/content" "$STATE_DIR"
-
-# Kill any existing server
-if [[ -f "$PID_FILE" ]]; then
-  old_pid=$(cat "$PID_FILE")
-  kill "$old_pid" 2>/dev/null
-  rm -f "$PID_FILE"
-fi
 
 cd "$SCRIPT_DIR"
 

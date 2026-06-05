@@ -22,8 +22,8 @@
 | `writing-plans` plan review | `APPROVED / ISSUES_FOUND` | `APPROVED` 才能进入执行选项；`ISSUES_FOUND` 按 blocking issues 修正后重新审查 |
 | `plan-impl` 实现/修复子代理 | `DONE / DONE_WITH_CONCERNS / BLOCKED / UNKNOWN` | `DONE*` 可继续；`BLOCKED/UNKNOWN` 需要补上下文、拆分、重试或升级 |
 | `plan-impl` 内部审查 prompt | `DONE / DONE_WITH_CONCERNS / BLOCKED` | `BLOCKED` 进入 fix loop；连续同类问题无收敛则升级 |
+| `requesting-code-review` 全量审查 | `通过 / 通过_含建议 / 阻塞 / 需澄清` | `通过*` 才进入最终验证；修复审查反馈后必须重新审查，再重新验证 |
 | `plan-impl-lightweight` | `DONE / DONE_WITH_CONCERNS / BLOCKED / UNKNOWN` + `path_decision` | `path_decision=lightweight` 且 `DONE*` 可继续；`ask_user/escalate_to_full` 暂停轻量执行并回到用户或完整 runner |
-| `requesting-code-review` 全量审查 | `通过 / 通过_含建议 / 阻塞 / 需澄清` | `阻塞` 启动修复并复审；`需澄清` 补充口径后重新审查 |
 | `receiving-code-review` 反馈评估 | `DONE / BLOCKED` | `DONE` 表示反馈已完成采纳/驳回判断；`BLOCKED` 等待澄清 |
 | `verification-before-completion` | `DONE / PARTIAL / BLOCKED` | 仅 `DONE` 且 `passed=true` 可交给分支收尾；输出 `commit_sha/passed/verified_at/evidence[]` |
 | `finishing-a-development-branch` | `READY / BLOCKED / DONE / CANCELLED` | `DONE` 表示分支处置完成；`CANCELLED` 表示用户取消收尾或 destructive 确认失败 |
@@ -63,6 +63,7 @@
 │   ├── BOOTSTRAP：using-git-worktrees 检测/建立隔离工作区      │
 │   ├── PATH：中小任务可走 plan-impl-lightweight              │
 │   ├── EXECUTING：依赖驱动批次并行 + conflict_check/review/fix │
+│   ├── REVIEWING：requesting-code-review 全量审查            │
 │   ├── VERIFYING：verification-before-completion          │
 │   └── FINALIZING：finishing-a-development-branch        │
 └─────────────────────┬───────────────────────────────────┘
@@ -126,20 +127,21 @@
 
 **触发：** writing-plans 交棒，或用户手动恢复执行。
 
-**状态机：** BOOTSTRAP → READY → EXECUTING → VERIFYING → FINALIZING → DONE（异常：ESCALATED / CANCELLED）
+**状态机：** BOOTSTRAP → READY → EXECUTING → REVIEWING → VERIFYING → FINALIZING → DONE（异常：ESCALATED / CANCELLED）
 
 **核心流程：**
 1. BOOTSTRAP：读取弹性计划包（必读 `plan.md`，读取 `review-contract.md` 人审边界，按存在情况读取 `context.md / tasks.md`），调用 `using-git-worktrees` 检测/建立隔离工作区
 2. READY：确认 `plan.md` 中任务、依赖、Proof、阻塞条件完整；若存在 `tasks.md` 则消费拆分任务图；中等偏小、边界清楚、局部验证充分的任务可转交 `plan-impl-lightweight`
 3. EXECUTING：拓扑排序 tasks（来自 `plan.md` 或可选 `tasks.md`），优先检测并使用 team 模式承载 batch、review、fix、verify；缺少 team 工具且不适合轻量路径时回退为按批次并行派发实现子代理，无法并行时改为单个实现子代理推进，并在批次内执行 conflict_check / review / fix loop
-4. VERIFYING：调用 `verification-before-completion` 审计 Proof Block / 等价证据块，必要时补跑最小额外验证，并输出 `verification_evidence`
-5. FINALIZING：调用 `requesting-code-review`（合并/PR 前默认强制，用户明确跳过除外）与 `finishing-a-development-branch`，按收尾状态归档或保留恢复点
+4. REVIEWING：调用 `requesting-code-review`（最终验证前默认强制，用户明确跳过除外）；修复审查反馈后必须重新审查
+5. VERIFYING：调用 `verification-before-completion` 审计 Proof Block / 等价证据块，必要时补跑最小额外验证，并输出 `verification_evidence`
+6. FINALIZING：调用 `finishing-a-development-branch`，按收尾状态归档或保留恢复点
 
 **产出：** 实现代码变更 + Session Log + 归档 exec-plan
 
-**调用链：** `plan-impl-lightweight`（可选轻量分支）→ proof-oriented 实现子代理（输出 Proof Block）→ runner 内部审查 prompt → `verification-before-completion` → `requesting-code-review`（合并/PR 前）→ `finishing-a-development-branch`
+**调用链：** `plan-impl-lightweight`（可选轻量分支）→ proof-oriented 实现子代理（输出 Proof Block）→ runner 内部审查 prompt → `requesting-code-review`（最终验证前）→ `verification-before-completion` → `finishing-a-development-branch`
 
-`requesting-code-review` 是合并/PR 前默认强制的全量审查编排器；仅当用户明确要求跳过时可跳过，并在 Session Log 记录原因。`dev-docs-maintain` 是按需手动文档维护 Skill，不是每次开发执行的固定阶段。
+`requesting-code-review` 是最终验证前默认强制的全量审查编排器；仅当用户明确要求跳过时可跳过，并在 Session Log 记录原因。`dev-docs-maintain` 是按需手动文档维护 Skill，不是每次开发执行的固定阶段。
 
 ---
 
@@ -190,7 +192,7 @@
 
 ### requesting-code-review — 全量审查编排
 
-**触发：** 实现完成后按风险或用户要求触发；合并/PR 前默认强制触发，除非用户明确要求跳过并记录原因。
+**触发：** 实现完成后、最终验证前默认强制触发；合并/PR 前若尚未完成全量审查，也必须触发，除非用户明确要求跳过并记录原因。
 
 **核心流程：**
 1. 评估变更风险等级（低/中 = 单审，高 = 双审并行）
@@ -261,7 +263,7 @@
 
 **核心流程：** 定义目标行为与失败模式 → 修改最小必要 Skill/refs/docs → 检查上下游契约 → 准备压力场景。
 
-**交棒给：** `verification-before-completion` 或 `requesting-code-review`。
+**交棒给：** `requesting-code-review`，再由最终验证阶段进入 `verification-before-completion`。
 
 ---
 
