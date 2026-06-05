@@ -63,7 +63,7 @@
 理由：建议会破坏已确定的数据兼容约束。
 
 ### 证据
-- docs/arch-decisions/DD-006-gate-restructuring.md:1：现行约束禁止该变更方式
+- docs/adr/0006-gate-restructuring.md:1：现行约束禁止该变更方式
 
 ### 行动
 - [暂缓] 记录拒绝原因并回传审查者

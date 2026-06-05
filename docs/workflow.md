@@ -9,7 +9,7 @@
 
 ## 核心设计原则
 
-**Skill 是执行单元，人类是决策者。** 每个 Skill 只做一件事，通过明确的输入/输出协议与其他 Skill 协作。规划阶段（需求结论批准）设置强制 Gate 等待人类决策；实现阶段改为轻量启动通知，Agent 自主闭环，worktree 沙盒兜底（DD-006）。
+**Skill 是执行单元，人类是决策者。** 每个 Skill 只做一件事，通过明确的输入/输出协议与其他 Skill 协作。规划阶段（需求结论批准）设置强制 Gate 等待人类决策；实现阶段改为轻量启动通知，Agent 自主闭环，worktree 沙盒兜底（ADR-0006）。
 
 **产出物是协调介质。** 默认链路中，discuss 的已批准需求结论由 writing-plans 折叠进 exec-plan；只有用户或流程明确需要时才额外落盘 spec 文档。Skill 之间的长期状态主要通过 exec-plan 文件、代码、docs 文档传递，避免把上游讨论记录复制成第二套真源。
 
@@ -271,9 +271,9 @@
 
 **disable-model-invocation: true**（直接执行，不召唤新代理）
 
-**支持六种文档类型：** architecture、arch-decision、exec-plan、domain、development、reference
+**支持六种文档类型：** architecture、adr、exec-plan、domain、development、reference
 
-**路由逻辑：** exec-plan 类型 → 委派 `writing-plans`；其余类型 → 直接写入对应 docs/ 路径（含 verified/scope 元信息）
+**路由逻辑：** exec-plan 类型 → 委派 `writing-plans`；普通 docs 类型 → 直接写入对应 docs/ 路径（含 verified/scope 元信息）；adr 类型 → 写入 `docs/adr/`，不维护 verified/scope。
 
 ---
 
@@ -293,7 +293,7 @@
 
 **disable-model-invocation: true**（直接执行）
 
-**输出：** AGENTS.md（≤200 行）+ docs/architecture.md + docs/development.md + `CONTEXT.md` / `CONTEXT-MAP.md` 项目记忆骨架 + `docs/arch-decisions/` 目录
+**输出：** AGENTS.md（≤200 行）+ docs/architecture.md + docs/development.md + `CONTEXT.md` / `CONTEXT-MAP.md` 项目记忆骨架 + `docs/adr/` 目录
 
 **交棒给：** 无固定下游；需要长期文档维护时建议用户手动调用 `dev-docs-maintain`。
 

@@ -119,21 +119,21 @@ docs/
 ├── skill-and-harness-design.md # Skill 与 Harness 设计原则
 ├── domain/                  # 领域/模块专题文档
 ├── references/              # 外部依赖、集成、第三方参考
-├── arch-decisions/          # 设计决策记录
-│   └── index.md             # 决策索引（带验证状态）
+├── adr/                     # ADR 历史架构决策记录
 ├── exec-plans/              # 执行计划
 │   ├── active/              # 进行中
 │   └── completed/           # 已归档
 └── specs/                   # 需求规格文档
 ```
 
-**文档元信息（所有文档必须包含）：**
+**文档元信息（ADR 除外，普通 docs 文档必须包含）：**
 
 ```markdown
 <!-- verified: YYYY-MM-DD -->
 <!-- scope: [architecture|frontend|backend|security|...] -->
-<!-- status: accepted | proposed | superseded -->  <!-- 仅设计决策 -->
 ```
+
+ADR 是历史决策记录，不参与普通文档新鲜度刷新；需要表达状态时使用 `<!-- status: accepted | proposed | superseded -->`。
 
 ---
 
@@ -146,14 +146,14 @@ docs/
 
 ## 关键设计决策
 
-所有设计决策已独立建档，见 [设计决策索引](arch-decisions/index.md)。
+所有历史架构决策已独立建档，见 [ADR 目录](adr/)。
 
 核心决策概要：
 
-| 决策                             | DD 编号                                                      |
+| 决策                             | ADR                                                         |
 | -------------------------------- | ------------------------------------------------------------ |
-| Skill 作为执行单元，人类是决策者 | [DD-001](arch-decisions/DD-001-skill-as-execution-unit.md)   |
-| 子代理一次性，避免上下文污染     | [DD-002](arch-decisions/DD-002-disposable-subagents.md)      |
-| 产出物作为协调介质               | [DD-003](arch-decisions/DD-003-artifacts-as-coordination.md) |
-| AGENTS.md 精简（≤200 行）        | [DD-004](arch-decisions/DD-004-lean-agents-md.md)            |
-| Gate 机制重构：规划 Gate + 实现自主 | [DD-006](arch-decisions/DD-006-gate-restructuring.md)        |
+| Skill 作为执行单元，人类是决策者 | [ADR-0001](adr/0001-skill-as-execution-unit.md)             |
+| 子代理一次性，避免上下文污染     | [ADR-0002](adr/0002-disposable-subagents.md)                |
+| 产出物作为协调介质               | [ADR-0003](adr/0003-artifacts-as-coordination.md)           |
+| AGENTS.md 精简（≤200 行）        | [ADR-0004](adr/0004-lean-agents-md.md)                      |
+| Gate 机制重构：规划 Gate + 实现自主 | [ADR-0006](adr/0006-gate-restructuring.md)                  |

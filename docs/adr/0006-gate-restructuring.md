@@ -1,17 +1,15 @@
-<!-- verified: 2026-06-05 -->
-<!-- scope: workflow, skills, gate-mechanism -->
-<!-- status: active -->
+<!-- status: accepted -->
 
-# DD-006: Gate 机制重构
+# ADR-0006: Gate 机制重构
 
-**状态：** active（supersedes DD-005）
+**状态：** accepted（supersedes ADR-0005）
 **日期：** 2026-03-25
 **影响文件：** `skills/plan-impl/SKILL.md`, `docs/workflow.md`, `docs/architecture.md`
 
 
 ## 背景
 
-DD-005 在所有"关键决策点"设置强制人工 Gate，包括实现阶段前必须等待批准。随着 worktree 沙盒机制成熟、Agent-to-Agent 审查循环建立，原有的"实现前必须批准"Gate 已不再必要，反而降低了 Agent 的自主性。
+ADR-0005 在所有"关键决策点"设置强制人工 Gate，包括实现阶段前必须等待批准。随着 worktree 沙盒机制成熟、Agent-to-Agent 审查循环建立，原有的"实现前必须批准"Gate 已不再必要，反而降低了 Agent 的自主性。
 
 ## 约束
 
@@ -35,7 +33,7 @@ Escalation 仅作兜底：审查修复循环耗尽（3轮）、plan 致命缺陷
 
 ### Gate 变化对比
 
-| Gate 点 | DD-005 | DD-006 |
+| Gate 点 | ADR-0005 | ADR-0006 |
 |---------|--------|--------|
 | discuss 需求结论批准 | 强制等待 | **保留** — 规划 Gate |
 | plan-impl 启动前 | 强制等待 | **弱化为轻量启动通知** |

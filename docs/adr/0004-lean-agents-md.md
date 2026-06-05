@@ -1,8 +1,6 @@
-<!-- verified: 2026-06-05 -->
-<!-- scope: architecture -->
 <!-- status: accepted -->
 
-# DD-004: AGENTS.md 精简结构
+# ADR-0004: AGENTS.md 精简结构
 
 ## 背景
 

@@ -22,7 +22,7 @@ power-agent/
 │   ├── workflow.md           # 工作机制与 Skill 协调
 │   ├── harness-engineering.md # Harness Engineering 体系
 │   ├── skill-and-harness-design.md # Skill 与 Harness 设计原则
-│   ├── arch-decisions/       # 设计决策（DD-NNN-title.md）
+│   ├── adr/                  # ADR 历史架构决策（0001-slug.md）
 │   ├── domain/               # 领域/模块专题文档
 │   ├── references/           # 外部依赖、集成、第三方参考
 │   ├── exec-plans/           # 执行计划
@@ -91,19 +91,21 @@ disable-model-invocation: [true|false]  # 可选，默认 false
 
 ## 文档规范
 
-### 元信息（所有文档必须包含）
+### 元信息（ADR 除外，普通 docs 文档必须包含）
 
 ```markdown
 <!-- verified: YYYY-MM-DD -->
 <!-- scope: [范围] -->
 ```
 
+ADR 是历史架构决策记录，不要求 `verified` / `scope` 元信息；需要表达状态时使用 `<!-- status: accepted | proposed | superseded -->`。
+
 ### 命名约定
 
 | 类型 | 格式 |
 |------|------|
 | Skill 主文件 | `SKILL.md`（大写） |
-| 设计决策 | `DD-NNN-title.md` |
+| ADR | `0001-slug.md` |
 | Spec | `YYYY-MM-DD-topic.md` |
 | Exec-plan 目录 | `YYYY-MM-DD-title/` |
 
@@ -111,6 +113,7 @@ disable-model-invocation: [true|false]  # 可选，默认 false
 
 - verified 超过 30 天：需验证内容是否仍准确
 - verified 超过 90 天：必须修复或更新
+- ADR 不刷新 verified；决策变化时新增 ADR 或标记 superseded
 
 ## 约束（硬规则）
 

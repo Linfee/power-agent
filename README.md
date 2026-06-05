@@ -127,7 +127,7 @@ claude plugin install power-agent@power-agent --scope project
 > "We tried the 'one big AGENTS.md' approach. It failed in predictable ways... When everything is 'important,' nothing is... So instead of treating AGENTS.md as the encyclopedia, we treat it as **the table of contents**. A short AGENTS.md (roughly 100 lines) is injected into context and serves primarily as a map, with pointers to deeper sources of truth elsewhere."
 > — §We made repository knowledge the system of record
 
-**本项目状态：** `setup-power-agent` skill 在初始化项目时生成精简的 AGENTS.md（~200行），作为 Agent 指南和知识库导航。`docs/` 下的分层结构承载具体知识；同时初始化 `CONTEXT.md` / `CONTEXT-MAP.md` 与 `docs/arch-decisions/` 这组项目记忆骨架，供后续 Agent 读取领域语言与历史架构决策。
+**本项目状态：** `setup-power-agent` skill 在初始化项目时生成精简的 AGENTS.md（~200行），作为 Agent 指南和知识库导航。`docs/` 下的分层结构承载具体知识；同时初始化 `CONTEXT.md` / `CONTEXT-MAP.md` 与 `docs/adr/` 这组项目记忆骨架，供后续 Agent 读取领域语言与历史架构决策。
 
 ---
 
@@ -136,7 +136,7 @@ claude plugin install power-agent@power-agent --scope project
 > "The repository's knowledge base lives in a structured docs/ directory treated as the system of record... Design documentation is catalogued and indexed, including verification status and a set of core beliefs that define agent-first operating principles."
 > — §We made repository knowledge the system of record
 
-**本项目状态：** `dev-docs` skill 将文档分为 architecture / arch-decision / exec-plan / domain / development / reference 六类，其中 exec-plan 立即委派给 `writing-plans`；各类文档使用固定路径和 `<!-- verified: YYYY-MM-DD -->` 元信息。`dev-docs-maintain` skill 负责检查新鲜度和导航指针有效性。
+**本项目状态：** `dev-docs` skill 将文档分为 architecture / adr / exec-plan / domain / development / reference 六类，其中 exec-plan 立即委派给 `writing-plans`；普通 docs 文档使用固定路径和 `<!-- verified: YYYY-MM-DD -->` 元信息，ADR 作为历史决策记录不参与普通新鲜度刷新。`dev-docs-maintain` skill 负责检查普通文档新鲜度和导航指针有效性。
 
 ---
 

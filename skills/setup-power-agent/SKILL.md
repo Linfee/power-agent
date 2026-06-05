@@ -8,7 +8,7 @@ disable-model-invocation: true
 
 # 项目 Harness 初始化
 
-为当前项目构建 Agent 可读的知识体系：AGENTS.md 作为精简指南（~200行），具体知识下沉到结构化的 `docs/` 目录；领域语言与架构决策通过 `CONTEXT.md` / `CONTEXT-MAP.md` / `docs/arch-decisions/` 形成可持续维护的项目记忆。
+为当前项目构建 Agent 可读的知识体系：AGENTS.md 作为精简指南（~200行），具体知识下沉到结构化的 `docs/` 目录；领域语言与历史架构决策通过 `CONTEXT.md` / `CONTEXT-MAP.md` / `docs/adr/` 形成可持续维护的项目记忆。
 
 **核心理念：** 给 Agent 一张地图，而非一本百科全书。仓库知识即唯一记录系统。
 
@@ -16,7 +16,7 @@ disable-model-invocation: true
 
 ### 做什么
 - 初始化最小可用的 Harness 骨架：`AGENTS.md` 导航化 + `docs/` 基础结构。
-- 初始化项目记忆骨架：根据仓库形态创建 `CONTEXT.md` 或 `CONTEXT-MAP.md`，并准备 `docs/arch-decisions/`。
+- 初始化项目记忆骨架：根据仓库形态创建 `CONTEXT.md` 或 `CONTEXT-MAP.md`，并准备 `docs/adr/`。
 - 在已有骨架上补齐缺失项并修复失效导航。
 
 ### 不做什么
@@ -30,11 +30,11 @@ disable-model-invocation: true
 2. `docs/architecture.md` 与 `docs/development.md` 存在。
 3. 核心文档包含 `verified` 与 `scope` 元信息。
 4. 项目记忆布局已初始化并写入 AGENTS/CLAUDE 入口：
-   - 单 context：仓库根目录 `CONTEXT.md` + `docs/arch-decisions/`
-   - 多 context：仓库根目录 `CONTEXT-MAP.md` + 各 context 的 `CONTEXT.md` + 根级 `docs/arch-decisions/`
+   - 单 context：仓库根目录 `CONTEXT.md` + `docs/adr/`
+   - 多 context：仓库根目录 `CONTEXT-MAP.md` + 各 context 的 `CONTEXT.md` + 根级 `docs/adr/`
 
 **建议项：**
-- `docs/arch-decisions/`
+- `docs/adr/`
 - `docs/exec-plans/`
 - `docs/domain/`
 - `docs/references/`
@@ -46,8 +46,8 @@ disable-model-invocation: true
 3. **初始化项目记忆**：
    - 单 context：创建根目录 `CONTEXT.md`
    - 多 context：创建根目录 `CONTEXT-MAP.md`，并为每个已确认的 context 创建对应 `CONTEXT.md`
-   - 创建 `docs/arch-decisions/` 目录
-   - 在 AGENTS/CLAUDE 入口中写明 `CONTEXT.md` / `CONTEXT-MAP.md` / `docs/arch-decisions/` 的用途与读取规则
+   - 创建 `docs/adr/` 目录
+   - 在 AGENTS/CLAUDE 入口中写明 `CONTEXT.md` / `CONTEXT-MAP.md` / `docs/adr/` 的用途与读取规则
 4. **导航校验**：确认 `AGENTS.md` 指针有效。
 5. **最小验证**：检查元信息、关键命令可执行性（如环境允许）。
 
@@ -64,14 +64,15 @@ disable-model-invocation: true
 - 若仓库是单 context，不创建 `CONTEXT-MAP.md`。
 
 ### ADR
-- ADR 存放在 `docs/arch-decisions/`，采用 `DD-NNN-title.md` 命名。
+- ADR 存放在 `docs/adr/`，采用 `0001-slug.md` 命名。
+- `setup-power-agent` 初始化时创建 `docs/adr/` 目录；ADR 文件仍只在真实决策出现时写入。
 - 只记录难以逆转、没有上下文会显得反直觉、且确实存在权衡的决策。
 - ADR 保持最小：标题 + 1 到 3 句上下文、决策与原因即可。
 
 ### 初始化到项目记忆
 - 初始化时，AGENTS/CLAUDE 入口必须包含一段简短的“项目记忆”说明，明确告诉后续 Agent：
   - 到哪里读领域术语（`CONTEXT.md` / `CONTEXT-MAP.md`）
-  - 到哪里读历史架构决策（`docs/arch-decisions/`）
+  - 到哪里读历史架构决策（`docs/adr/`）
   - 这是单 context 还是多 context 布局
 
 参考模板：

@@ -1,8 +1,6 @@
-<!-- verified: 2026-06-05 -->
-<!-- scope: architecture -->
 <!-- status: accepted -->
 
-# DD-002: 子代理一次性原则
+# ADR-0002: 子代理一次性原则
 
 ## 背景
 

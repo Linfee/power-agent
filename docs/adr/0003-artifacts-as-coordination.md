@@ -1,8 +1,6 @@
-<!-- verified: 2026-06-05 -->
-<!-- scope: architecture -->
 <!-- status: accepted -->
 
-# DD-003: 产出物作为协调介质
+# ADR-0003: 产出物作为协调介质
 
 ## 背景
 

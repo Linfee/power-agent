@@ -14,4 +14,4 @@
 
 - 仅在仓库存在多个清晰 context 时创建本文件。
 - 本文件位于仓库根目录，用来告诉 Agent 去哪里读各 context 的 `CONTEXT.md`。
-- 若某个决策只影响单一 context，在该 context 下维护自己的 `docs/arch-decisions/`；系统级决策保留在根目录 `docs/arch-decisions/`。
+- 若某个决策只影响单一 context，在该 context 下维护自己的 `docs/adr/`；系统级决策保留在根目录 `docs/adr/`。

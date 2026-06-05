@@ -20,7 +20,7 @@ disable-model-invocation: true
 | --------------- | ------------------------- | ---------------------------------------- |
 | exec-plan       | 计划/重构/迁移/实现/spec  | → **委派给 `writing-plans` skill**       |
 | architecture    | 架构/模块/系统/组件       | `docs/architecture.md` 或 `docs/domain/` |
-| arch-decision | 决策/选型/方案/权衡/DD    | `docs/arch-decisions/DD-NNN-title.md`  |
+| adr | 决策/选型/方案/权衡/ADR   | `docs/adr/0001-slug.md`  |
 | domain          | 前端/安全/API/数据库/部署 | `docs/domain/[name].md`                  |
 | development     | 开发/搭建/环境/命令       | `docs/development.md`                    |
 | reference       | 参考/外部/集成/第三方     | `docs/references/[name].md`              |
@@ -48,21 +48,23 @@ disable-model-invocation: true
 
 1. **预检**
    - 确认 `docs/` 目录存在，`AGENTS.md` 已加载。
-   - 仅按需加载最小上下文（目标文档与相邻索引）。
+   - 仅按需加载最小上下文（目标文档与相关 ADR）。
 2. **代码核对**
    - 按主题启动 `explore` 子代理，收集必要证据（关键文件路径、模块边界、数据流）。
 3. **优先更新，再新建**
    - 优先更新已有文档；仅在不存在对应文档时新建。
 4. **写入最小结构**
-   - 所有文档必须包含元信息：
+   - 普通 docs 文档必须包含元信息：
 
 ```markdown
 <!-- verified: YYYY-MM-DD -->
 <!-- scope: [对应范围] -->
 ```
 
-5. **索引联动**
-   - `arch-decision` 更新 `docs/arch-decisions/index.md`。
+   - ADR 不写 `verified` / `scope`；需要表达状态时可写 `<!-- status: accepted | proposed | superseded -->`。
+
+5. **ADR 联动**
+   - `adr` 不维护强制索引；编号时扫描 `docs/adr/` 当前最大编号并递增。
    - 仅当新增路径时更新 `AGENTS.md` 导航。
 
 ### 输出格式

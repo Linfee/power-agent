@@ -1,10 +1,8 @@
-<!-- verified: 2026-06-05 -->
-<!-- scope: architecture -->
-<!-- status: superseded by DD-006 (2026-03-25) -->
+<!-- status: superseded by ADR-0006 (2026-03-25) -->
 
-# DD-005: Gate 机制强制人工确认
+# ADR-0005: Gate 机制强制人工确认
 
-> **状态：** superseded by [DD-006](DD-006-gate-restructuring.md)（2026-03-25）
+> **状态：** superseded by [ADR-0006](0006-gate-restructuring.md)（2026-03-25）
 
 ## 背景
 

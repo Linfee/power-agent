@@ -16,7 +16,7 @@ disable-model-invocation: true
 
 - `check-only`：只检查并输出问题，不写文件。
 - `fix-safe`：仅修复 P0/P1 的明确错误。
-- `full-maintain`：在 `fix-safe` 基础上可执行归档与索引同步。
+- `full-maintain`：在 `fix-safe` 基础上可执行 exec-plan 归档。
 
 未显式指定时默认 `fix-safe`。
 
@@ -32,14 +32,14 @@ disable-model-invocation: true
    - 用户指定范围优先；未指定时仅做最小自动推断（文档新鲜度 + 最近变更）。
 2. **健康检查**
    - 结构完整性：必须项文件是否存在（`AGENTS.md`、`docs/architecture.md`、`docs/development.md`）
-   - `verified` 新鲜度：> 30 天需验证标记（P1），> 90 天视为失效须修复（P0）
+   - `verified` 新鲜度：> 30 天需验证标记（P1），> 90 天视为失效须修复（P0）；ADR 不参与该检查
    - 导航指针有效性：`AGENTS.md` 中所有文件路径可解析（失效为 P0）
 3. **代码对照验证**
    - 对照 `architecture/development/domain` 文档与代码现状，输出带路径与行号证据。
 4. **按模式执行**
    - `check-only`：跳过写入。
    - `fix-safe`：只修 P0/P1。
-   - `full-maintain`：可追加 exec-plan 归档与 arch-decision 索引状态同步。
+   - `full-maintain`：可追加 exec-plan 归档。ADR 记录历史决策，不通过园丁刷新状态；需要变更时写新 ADR 或标记 superseded。
 5. **报告**
    - 输出统一 contract 与修复摘要。
 

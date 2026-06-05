@@ -1,6 +1,8 @@
 # ADR Format
 
-ADR 存放在 `docs/arch-decisions/` 下，按 `DD-NNN-title.md` 命名，例如 `DD-001-use-postgres.md`。
+ADR 存放在 `docs/adr/` 下，按 `0001-slug.md` 命名，例如 `0001-use-postgres.md`。
+
+`setup-power-agent` 初始化时会创建 `docs/adr/` 目录；ADR 文件只在真实决策出现时写入。
 
 ## 模板
 
@@ -14,7 +16,7 @@ ADR 存放在 `docs/arch-decisions/` 下，按 `DD-NNN-title.md` 命名，例如
 
 - 只在三者同时满足时写 ADR：难以逆转、没有上下文会令人困惑、且存在真实权衡。
 - ADR 可以只有一个段落；不要为了“标准格式”填充无意义章节。
-- 编号时扫描 `docs/arch-decisions/` 当前最大 `DD-NNN` 编号，加一后继续。
+- 编号时扫描 `docs/adr/` 当前最大四位编号，加一后继续。
 
 ## 何时跳过
 
