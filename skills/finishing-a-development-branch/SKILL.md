@@ -1,9 +1,8 @@
 ---
 name: finishing-a-development-branch
 description: |-
-  在实现完成后，作为分支处置决策器输出收尾选项与结构化结果：merge/PR/保留/丢弃。
-  依赖调用方提供 verification_evidence；Triggers: 分支收尾, finishing, merge, PR, 保留分支, 丢弃工作.
-version: 1.2.5
+  分支收尾 Skill。基于 verification_evidence 给出 merge/PR/保留/丢弃选项；实现完成并需要处置分支时触发。
+  Triggers: 分支收尾, finishing, 完成后合并, 完成后创建 PR, 保留分支, 丢弃已完成工作.
 ---
 
 # Finishing a Development Branch
@@ -142,5 +141,5 @@ version: 1.2.5
 ## Integration
 
 - 常与 `verification-before-completion` 串联：先产出验证证据，再执行本 skill。
-- 可由 `exec-plan-runner` 在实现完成后调用，消费结构化输出做后续编排。
+- 可由 `plan-impl` 在实现完成后调用，消费结构化输出做后续编排。
 - 与 `using-git-worktrees` 配套：创建阶段记录路径来源，收尾阶段按 provenance 决定是否清理。

@@ -1,9 +1,8 @@
 ---
 name: using-git-worktrees
 description: |-
-  在大型功能、exec-plan 执行或高风险改动前检测/准备隔离工作区；先用宿主原生能力，最后才回退 git worktree。
+  隔离工作区 Skill。检测或准备安全的执行工作区；大型功能、exec-plan 执行或高风险改动前触发。
   Triggers: worktree, 隔离执行, exec-plan BOOTSTRAP, 高风险改动.
-version: 1.2.5
 ---
 
 # Using Git Worktrees
@@ -31,7 +30,7 @@ version: 1.2.5
 ## 使用入口
 
 以下场景默认需要使用本 Skill：
-- 执行 `exec-plan-runner` 的 BOOTSTRAP 阶段。
+- 执行 `plan-impl` 的 BOOTSTRAP 阶段。
 - 跨模块功能、重构、迁移或高风险修复。
 - 用户明确要求隔离分支、worktree、沙盒执行。
 
@@ -141,7 +140,7 @@ cleanup_allowed: false
 ## Step 4: 基线检查
 
 按项目现有约定选择最小基线检查：
-- 文档/Skill 变更：路径检查、版本同步脚本、相关 grep。
+- 文档/Skill 变更：路径检查、frontmatter / manifest 检查、相关引用检查。
 - 代码变更：目标测试优先，再按风险追加 lint/build。
 - 前端可视变更：在项目工具允许时补浏览器或截图验证。
 

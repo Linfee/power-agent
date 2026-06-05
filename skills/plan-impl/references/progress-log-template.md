@@ -1,5 +1,5 @@
 <!-- verified: 2026-05-05 -->
-<!-- scope: exec-plan-runner, progress-log -->
+<!-- scope: plan-impl, progress-log -->
 
 # Session Log 模板
 

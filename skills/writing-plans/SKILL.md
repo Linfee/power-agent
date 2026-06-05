@@ -1,261 +1,137 @@
 ---
 name: writing-plans
-version: 1.2.5
 description: |-
-  将需求/spec 转为可执行 exec-plan：聚焦目标、系统边界、关键技术方案、验收标准与依赖关系。
-  不用于单文件小改、明确局部 bugfix、纯格式/文案调整。
-  Triggers: 创建实现计划, exec-plan, writing-plans, 任务拆解, 实现计划.
+  执行计划编写 Skill。把需求、讨论结论或规格文档转成可执行 exec-plan；用户要求创建实现计划或任务拆解时触发。
+  Triggers: 创建 exec-plan, 创建实现计划, writing-plans, 任务拆解, 实现计划.
 ---
 
 # Writing Plans
 
-作为技术规划师，负责把需求转为**可执行但不脚本化**的实现计划，供后续执行代理落地。
+把需求、讨论结论或规格文档转成可执行 exec-plan。计划应给强执行 Agent 清楚的目标、边界、关键决策与证明方式，避免把实现写成机械脚本。
 
 ---
 
-## Objective
+## 目标
 
-### 要做什么
+- 默认产出紧凑计划包：`plan.md` + `review-contract.md`。
+- 将用户需求、已批准 `discuss` 结论或 spec 折叠进 `plan.md`，使它成为执行前唯一持久真源。
+- 补齐实现级架构、API/模型、任务边界、验收标准、Proof Strategy、Agent 自主边界、风险与阻塞条件。
+- 只在证据昂贵、任务图复杂、多 Agent 协作、上下文过大或可读性明显受损时，拆出可选 `context.md` / `tasks.md`。
+- 通过独立 `tech-plan-reviewer` 审查计划质量；不要用 inline self-review 替代 sub-agent review loop。
 
-- 产出 exec-plan（`plan.md / context.md / tasks.md`）
-- 明确：目标、范围边界、关键技术方案、依赖关系、验收标准、风险
-- 让执行代理拿到计划后可直接开工，且不需要再次做大范围探索
-- 产出“可执行任务卡”：每个任务必须包含目标行为、精确范围、必要上下文、测试场景、验证命令和阻塞条件
+## 何时使用 / 何时跳过
 
-### 不做什么
+使用：
 
-- 不直接修改业务代码
-- 不输出“逐步文件操作脚本”
-- 不默认写完整生产代码；仅在高风险迁移、复杂接口或容易误解的地方给最小代码片段
-- 不为简单任务强行进入 planning 流程
+- 用户要求创建实现计划、exec-plan、任务拆解或实施计划。
+- 已有 `discuss` / spec，需要转为可执行但不过度脚本化的实现计划。
+- 需求跨模块、存在技术决策、验收或证明策略需要提前锁定。
 
-### 入口拦截（必须先判断）
+跳过并说明去向：
 
-以下情况**不应进入** writing-plans：
+- 单文件小改、拼写/文案/格式调整。
+- 明确且局部的 bugfix，且无跨模块设计决策。
+- 已有完整、可直接执行的任务清单且无新技术决策。
 
-- 单文件小改、拼写/文案/格式调整
-- 明确且局部的 bugfix（无跨模块设计决策）
-- 已有完整、可直接执行的任务清单且无新技术决策
+命中跳过条件时，建议直接实现；若需求仍不清晰，回到 `discuss`。
 
-命中拦截时，明确说明并退出：
-- 建议直接实现，或
-- 若需求仍不清晰，回到 `discuss`
+## 边界
 
----
+- `discuss` 的上层技术方向是范围、验收与 planning 约束，不是完整实现设计。
+- `writing-plans` 负责用仓库证据补齐实现级架构/API/模型/任务边界；不要把可由代码证据闭合的技术细节退回 `discuss`。
+- 执行交给 `plan-impl`；本 skill 不直接修改业务代码。
+- 不默认 strict TDD；只有用户明确要求 TDD / 先写失败测试 / Red-Green-Refactor 时，才把 strict TDD 写入 Proof Strategy。
+- 不写逐行改动、机械步骤、私有 helper 设计、局部命名决策或每步几分钟的执行脚本。
+- 不为简单任务强行 planning，不新增默认计划文档，不删除 `review-contract.md` 人审入口。
 
-## Context & Tools
+## 输入
 
-### 最小上下文输入
+最小输入：
 
-优先使用以下输入（按优先级）：
+1. 用户当轮需求与约束，或当前会话已批准的 `discuss` 结论。
+2. 用户指定的 spec、issue、计划或设计文档。
+3. 与目标直接相关的架构决策、模块文档与代码证据。
 
-1. 当前会话正在讨论的 spec，或用户明确指定的 spec（优先）
-2. 用户当轮明确需求与约束
-3. 与该 spec 直接相关的设计文档（如 `docs/arch-decisions/*`、`docs/architecture.md` 的相关部分）
-4. 仅在用户未指定且会话无明确目标 spec 时，才在 `docs/specs/` 中定位最相关且已批准的单一 spec
+上下文获取按缺口升级：先定点读取，再按需启动 `explore` 子代理；只有复杂度或涉及范围超出当前证据时才升级。禁止无明确缺口的全仓探索。
 
-### 上下文获取策略
+## 输出
 
-默认不启动子代理，按复杂度逐级升级调查；每次升级都由主代理决策，直到信息充分。
+计划目录：`docs/exec-plans/active/YYYY-MM-DD-title/`
 
-- **L0**：直接规划（非常确认上下文已充分）
-- **L1**：Read/Grep/Glob 定点补充 1-3 个关键问题
-- **L2**：启动 1 个 `explore` 子代理做全局调查
-- **L3**：按模块启动多个 `explore` 子代理并行调查（仅在 L2 反馈复杂度超预期时）
-- **L4**：多轮调查（跨轮追问 + 复核），用于跨模块耦合或边界不清场景
+默认持久产物：
 
-每个 `explore` 子代理必须返回：
+- `plan.md`：执行真源，承载需求结论、Goal / Done Means、Scope、Key Decisions、Agent 自主边界、Evidence Cache、Tasks、Proof Strategy、Blockers / Escalation、Risks / Rollback。
+- `review-contract.md`：人类默认批准入口；短小、独立、可判定，覆盖 Intent、In / Out、Acceptance、Agent 自主边界、Proof、Blockers、Risks。
 
-1. 问题复杂度评估：low | medium | high
-2. 涉及代码范围评估：小/中/大（并列出关键模块）
-3. 目前已确认事实与未确认项
-4. 建议下一步：保持当前级别 / 升级到更高调查级别
+可选拆分产物：
 
-升级规则：
-
-- 当复杂度或涉及代码量超出当前级别预期时，升级调查级别
-- 当关键问题已闭合且不确定项可控时，停止升级并进入规划
-- 禁止在无明确缺口时直接进入 L3/L4
-
----
-
-## Constraints & Format
-
-### 规则优先级（显式）
-
-1. 用户明确要求
-2. 项目硬约束（AGENTS.md / CLAUDE.md）
-3. 本 skill 的边界与格式约束
-4. 默认偏好
-
-### 计划质量硬要求
-
-计划必须写清楚以下内容（不得泛泛而谈）：
-
-1. **系统边界**：In scope / Out of scope
-2. **架构设计**：模块职责、依赖方向、关键交互
-3. **API/契约设计**（如涉及）：输入、输出、错误语义、幂等/鉴权
-4. **模型设计**（如涉及）：数据模型、状态模型、约束与迁移策略
-5. **验收标准**：可验证、可判定
-6. **风险与回滚**：高风险点、监控信号、回退策略
-
-### 表达约束
-
-- 给“目标 + 定位 + 约束 + 做/不做”，不写机械步骤脚本
-- 测试要求写“场景覆盖”，不写硬性覆盖率数字
-- 每个关键判断尽量附证据来源（文件路径/决策文档）
-- 不把非必要实现细节写死；但必须锁定文件/模块边界、验收口径和验证命令
-
-### No Placeholders
-
-最终计划中不得残留以下内容：
-- `TBD`、`TODO`、`待补充`、`稍后实现`
-- “添加适当错误处理”“处理边界情况”“写相关测试”这类不可执行泛化描述
-- “类似 Task N”但不重复关键上下文
-- 引用未定义的类型、函数、文件或命令
-
-### 文档契约与产出结构
-
-目录：`docs/exec-plans/active/YYYY-MM-DD-title/`
-
-默认且优先产出 `plan.md / context.md / tasks.md`。应先在这三份文档内补充和调整内容，再考虑新增文档。
-
-文档契约（必须满足）：
-
-- `plan` 文档契约
-  - 目标：定义方向与关键技术决策，使执行代理明确“要达成什么、边界在哪”
-  - 最小必备：系统边界、架构设计、关键契约/模型设计（如涉及）、里程碑、风险与回滚
-  - 验收标准：关键决策可追溯到证据或明确假设；范围与完成定义无冲突
-
-- `context` 文档契约
-  - 目标：沉淀实施所需最小证据，减少执行期重复探索
-  - 最小必备：关键代码位置与职责、已确认事实、未确认项、调查复杂度判断、关键命令与约束
-  - 验收标准：每个关键结论都有证据来源或明确标记为 pending
-
-- `tasks` 文档契约
-  - 目标：将方案拆成可执行单元，明确依赖与验收
-  - 最小必备：任务目标、范围、约束、验收标准、测试场景、依赖关系、实施提示、验证命令、阻塞条件
-  - 验收标准：任务可独立执行，依赖图无冲突，验收可判定；执行子代理不需要大范围重新探索
-
-模板策略：
-
-- 模板仅作为最小约束与起点
-- 优先在 `plan.md / context.md / tasks.md` 内扩展内容，不强制新增文档
-- 仅当三文档无法清晰承载关键信息时，才允许新增补充文档（如 `contracts.md`、`risks.md`、`integration-plan.md`）
+- `context.md`：仅作高成本证据缓存，不是上下文百科。
+- `tasks.md`：仅展开复杂任务图、多 Agent 分工或交接信息，不是执行脚本。
 
 模板位置：
 
 - `skills/writing-plans/references/plan-template.md`
+- `skills/writing-plans/references/review-contract-template.md`
 - `skills/writing-plans/references/context-template.md`
 - `skills/writing-plans/references/tasks-template.md`
+- `skills/writing-plans/references/plan-reviewer-prompt.md`
 
-若模板缺失：按本文件“文档契约”直接生成最小合格版本。
+若模板缺失，按上述文档契约生成最小合格版本。`plan.md` 仍是单一事实源；可选文件不得新增方向或与 `plan.md` 冲突。
 
----
-
-## 执行流程（结果导向）
+## 流程
 
 ### Step 0: 准入与充分性检查
-进入 planning 后，先完成以下检查，再进入文档生成：
 
-1. 任务分流
-   - 若命中“入口拦截” → 退出并给出去向
-   - 若需 planning → 继续
+1. 判断是否应进入 planning；命中跳过条件则退出并给出去向。
+2. 判断是否需要拆为多个 plan。独立子系统多、候选任务过多、依赖链深、关键未决策项多，或调查升至复杂级别仍难收敛时，先做母 plan / 子 plan / 集成验收 plan 的边界设计。
+3. 确认业务目标、范围边界、完成定义、非功能约束是否足够。缺口会改变用户目标、范围、验收或上层方案时，先升级到用户或 `discuss`；实现级缺口由本 skill 基于证据补齐。
+4. 只补当前计划需要的证据，并记录上下文充分性结论。
 
-2. 规模分解 Gate
-   先判断是否需要拆分为多个 plan。满足任一条件时，优先拆分：
+### Step 1: 生成计划包
 
-   - 独立子系统数量 ≥ 2
-   - 候选任务数 > 8
-   - 依赖链深度 > 2
-   - 关键未决策项 > 5
-   - 调查已升至 L3/L4 仍难收敛
+创建 `plan.md` 与 `review-contract.md`。只有在 `plan.md` 承载不足时才拆出 `context.md` / `tasks.md`，并在 `plan.md` 写明拆出理由。
 
-   拆分策略：
+计划必须锁定：目标、In / Out Scope、关键技术决策、Agent 自主边界、任务图、Proof Strategy、阻塞/升级条件、风险/回滚。
 
-   - 先创建母 plan：定义全局目标、跨模块契约、全局里程碑、统一验收口径
-   - 再创建子 plan：按模块/子系统拆分，分别进入 reviewer 循环与执行
-   - 最后创建集成验收 plan：覆盖联调、回归、跨模块验收
+### Step 2: 审查循环
 
-   若不满足拆分条件，继续单 plan 流程。
+默认使用 `skills/writing-plans/references/plan-reviewer-prompt.md` dispatch `tech-plan-reviewer` 子代理审查；平台没有专用角色时，使用通用子代理并粘贴该 prompt。
 
-3. 需求与约束完整性
-   确认四件事：业务目标、范围边界、完成定义、非功能约束（安全/性能/兼容等）。
-   缺任一项则先提问补齐。
+保留 sub-agent review loop：reviewer 只审查计划是否足够让下游执行，不重写实现方案。
 
-4. Spec 完整性分级
-   - `blocking`：影响范围边界、验收标准、关键 API/契约、关键模型/状态设计
-   - `non-blocking`：不影响当前批次开工的次级决策
+审查结果为：`status`、`evidence`、`blocking_issues`、`missing_evidence`、`advisories`、`next_action`。
 
-   处理规则：
-
-   - 若存在 `blocking`：先进入计划审查循环，优先通过补充上下文、重写任务边界、收紧验收标准在内部收敛；仅当审查后仍无法闭合时，才向用户输出开放问题清单并建议回 `discuss`
-   - 若仅有 `non-blocking`：允许继续，但必须在 `plan.md` 记录 `Assumptions / Pending Decisions`，并在 `tasks.md` 标注受影响任务及阻塞关系
-   - 未经用户确认，假设不得作为既定事实写入关键设计
-
-5. 上下文充分性
-   仅补齐当前缺口，不做全仓探索，并输出“上下文充分性结论”：
-   - 已充分，可规划；或
-   - 仍缺失项（列出）
-
-### Step 1: 生成 exec-plan
-
-基于文档契约生成计划文档，优先完善 `plan.md / context.md / tasks.md` 三文档；仅在确有承载不足时新增补充文档。
-
-要求：
-
-- 任务是可独立交付单元
-- 任务间依赖明确
-- 验收标准可验证
-- 任务卡具备执行所需的最小上下文，不依赖执行期临时猜测
-- 文档集合能够覆盖关键决策与实施证据，且结构与复杂度匹配
-
-### Step 2: 计划审查循环
-
-默认使用 `skills/writing-plans/references/plan-reviewer-prompt.md` dispatch `tech-plan-reviewer` 子代理审查。
-若平台没有专用 tech-plan-reviewer 角色，使用通用子代理并粘贴该 prompt。
-
-保留 subagent review loop：不要替换为 inline self-review。该 reviewer 的职责是检查计划是否足够让下游执行，而不是重写实现方案。
-
-每轮审查应返回结构化结果：
-
-- `status`（`APPROVED` | `ISSUES_FOUND`）
-- `evidence`
-- `blocking_issues`
-- `missing_evidence`
-- `advisories`
-- `next_action`
-
-收敛规则：
-
-- `APPROVED`：进入 Step 3
-- `ISSUES_FOUND`：主代理先在内部修正（补证据、补边界、补依赖、补验收），再发起下一轮审查
-- 同类 `blocking_issues` 连续出现 ≥2 轮且无实质收敛：才允许向用户升级决策
-
-向用户升级前应尽量满足：
-
-1. 已完成至少 1 轮 reviewer 审查并依据反馈修正
-2. 已尝试按需升级调查级别（L1→L2 或 L2→L3）
-3. 仍存在无法由仓库证据闭合的关键决策缺口
+- `APPROVED`：进入交棒。
+- `ISSUES_FOUND`：主代理补证据、边界、依赖或验收，再发起下一轮审查。
+- 同类 blocking issue 连续出现且无收敛时，才向用户升级；升级前应已完成至少一轮 reviewer 审查并尝试补证据。
 
 ### Step 3: 交棒
 
-输出交棒信息：
-
-- 计划路径
-- 关键技术决策摘要
-- 建议下一步：`exec-plan-runner [plan-path]`
-
----
-
-## 输出契约
-
-最终回复最少包含：
+最终回复至少包含：
 
 - `Plan Path`
-- `Scope Summary`（in/out）
-- `Key Technical Decisions`（3-7 条）
-- `Task Graph Summary`（批次/依赖）
-- `Open Risks`（若无写“none”）
+- `Review Contract Path`
+- `Optional Split Docs`：无则写 `none`
+- `Human Review Request`：默认只审 `review-contract.md`
+- `Scope Summary`
+- `Key Technical Decisions`
+- `Task Graph Summary`
+- `Open Risks`
+- `Next Step`：通常为 `plan-impl [plan-path]`
 
-禁止只给“已生成计划，请查看”。
+禁止只给“已生成计划，请查看”。禁止要求人类逐行审完整执行材料，除非用户明确要求完整审查。
+
+## 质量门槛
+
+- 验收标准必须可观察、可验证、可判定；不要只写“已实现 / 已添加 / 已支持”。
+- Key Decisions 必须有证据、理由与执行含义；未经确认的假设不得写成既定事实。
+- Agent 自主边界必须包含：可自由决策、不可自行决策、必须保持的不变量、触发升级条件。
+- Proof Strategy 必须区分主证明、次证明、non-proof、已知未验证面和失败解释；lint、typecheck、格式化、构建成功或宽泛文本搜索不能单独作为完成证明。
+- 任务是可独立验证的行为增量或结构增量；不要跨越多个无强依赖子系统，也不要细到逐行改动或私有 helper。
+- 高风险且不可逆、权限/安全/隐私/并发语义、公共 API、数据模型、迁移、发布或关键 UX 决策，必须在计划阶段闭合或写入阻塞/升级条件。
+- 最终计划不得残留 `TBD`、`TODO`、`待补充`、`稍后实现`、未定义术语、未定义文件/命令，或“添加适当错误处理 / 写相关测试”这类泛化占位。
+- 人类默认只审 `review-contract.md` 中的 Intent、范围边界、Acceptance、Proof、Agent 自主边界、Blockers 和 Risks；不要要求人类逐行审技术方案、任务拆解或文件路径枚举。
+
+## 交棒
+
+交给 `plan-impl` 的材料必须让执行 Agent 明确：要达成什么、边界在哪、哪些可自主发挥、如何证明完成、何时停止。`plan.md` 是执行材料；`review-contract.md` 是人审入口；`context.md / tasks.md` 只在必要时作为辅助材料。

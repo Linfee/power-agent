@@ -1,4 +1,4 @@
-<!-- verified: 2026-05-05 -->
+<!-- verified: 2026-06-05 -->
 <!-- scope: architecture -->
 
 # 系统架构
@@ -9,17 +9,18 @@ Power-Agent 是一个 AI 编码 Agent 工作流插件系统，融合了 superpow
 
 ```mermaid
 graph TB
-    User[用户需求] --> D[discuss 设计探索]
+    User[用户需求] --> D[discuss 需求讨论]
 
     subgraph "规划层"
-        D2[discuss 设计探索]
+        D2[discuss 需求讨论]
         WP[writing-plans 计划创建]
         DD[dev-docs 文档路由]
     end
 
     subgraph "实现层"
-        EP[exec-plan-runner 计划执行]
-        TDD[test-driven-development]
+        EP[plan-impl 计划执行]
+        LEP[plan-impl-lightweight 轻量执行路径]
+        POD[proof-oriented-development]
         DBG[systematic-debugging]
         VBC[verification-before-completion]
     end
@@ -31,24 +32,26 @@ graph TB
     end
 
     subgraph "基础设施层"
-        DPA[dispatching-parallel-agents]
         WGT[using-git-worktrees]
         WSK[writing-skills]
         FAB[finishing-a-development-branch]
-        IHE[init-harness-engineering]
+        SPA[setup-power-agent]
         DDM[dev-docs-maintain]
     end
 
     D2 --> WP
     WP --> EP
 
-    EP --> TDD
+    EP --> LEP
+    EP --> POD
     EP --> VBC
+    LEP --> POD
+    LEP --> VBC
     EP -.->|合并前强制审查| RCR
     EP --> FAB
     User -.->|按需维护| DDM
 
-    DBG --> TDD
+    DBG --> POD
     DBG --> VBC
 ```
 
@@ -56,21 +59,21 @@ graph TB
 
 | 层级 | Skill | 职责 |
 |------|-------|------|
-| **规划层** | `discuss` | 需求探索，产出 spec 文档 |
-| | `writing-plans` | Spec → 三文档 exec-plan |
+| **规划层** | `discuss` | 需求讨论与 PRD 细化，必要时用 HTML 可视化辅助，默认产出内联需求结论，按需落盘 spec/doc |
+| | `writing-plans` | 需求结论 / spec / 用户描述 → compact exec-plan，并提供人类默认审阅入口 `review-contract.md` |
 | | `dev-docs` | 文档路由器，委派或创建文档 |
-| **实现层** | `exec-plan-runner` | 状态机编排，驱动全生命周期；默认先并行委派，无法并行时委派单个实现子代理 |
-| | `test-driven-development` | 务实增量测试闭环 |
+| **实现层** | `plan-impl` | 状态机编排，驱动全生命周期；优先使用 team 模式，缺失 team 工具时回退并行或单实现子代理 |
+| | `plan-impl-lightweight` | 中等偏小任务的轻量执行路径：scope_check、proof-oriented 实现、局部验证、有限 review/fix 循环、必要时升级完整 runner |
+| | `proof-oriented-development` | 证明导向开发闭环：小步实现、最小相关验证、输出 Proof Block |
 | | `systematic-debugging` | 四阶段根因优先调试 |
-| | `verification-before-completion` | 证据优先验证，拦截无证据声明 |
+| | `verification-before-completion` | 审计 Proof Block / 等价证据块，补充最小验证，输出 verification_evidence |
 | **审查层** | `requesting-code-review` | 风险分级全量审查编排 |
 | | `receiving-code-review` | 审查反馈技术评估 |
 | | `harness-engineering-review` | Agent 工作流七维度审查 |
-| **基础设施层** | `dispatching-parallel-agents` | 通用并行调度（最大并行度 3） |
-| | `using-git-worktrees` | 隔离工作区检测、创建与基线准备 |
+| **基础设施层** | `using-git-worktrees` | 隔离工作区检测、创建与基线准备 |
 | | `writing-skills` | Skill 创建、修改、契约审查与压力场景验证 |
 | | `finishing-a-development-branch` | 分支处置决策器（merge/PR/保留/丢弃） |
-| | `init-harness-engineering` | 项目知识体系初始化 |
+| | `setup-power-agent` | 项目知识体系初始化 |
 | | `dev-docs-maintain` | 文档维护（Doc Gardening） |
 
 ## 依赖方向
@@ -88,16 +91,17 @@ writing-plans（规划）
 docs/exec-plans/active/
     │
     ▼
-exec-plan-runner（实现编排）
+plan-impl（实现编排）
     │
     ├── using-git-worktrees（隔离工作区）
-    ├── test-driven-development（实现子代理）
+    ├── plan-impl-lightweight（中小任务轻量执行路径）
+    ├── proof-oriented-development（证明导向实现子代理）
     ├── 内部审查 prompt（规格符合性 + 代码质量）
-    ├── verification-before-completion（全量验证）
+    ├── verification-before-completion（Proof Block 审计与 verification_evidence）
     ├── requesting-code-review（合并前全量审查）
     └── finishing-a-development-branch（分支收尾）
 
-requesting-code-review 在合并/PR 前默认强制执行，除非用户明确要求跳过；dev-docs-maintain 是按需手动文档维护入口，不属于 exec-plan-runner 的固定主流程。
+requesting-code-review 在合并/PR 前默认强制执行，除非用户明确要求跳过；dev-docs-maintain 是按需手动文档维护入口，不属于 plan-impl 的固定主流程。
 ```
 
 **硬规则：** 依赖只能从上层指向下层，禁止反向依赖。
@@ -106,11 +110,11 @@ requesting-code-review 在合并/PR 前默认强制执行，除非用户明确�
 
 | 产出物 | 生产者 | 消费者 | 位置 |
 |--------|--------|--------|------|
-| Spec 文档 | `discuss` | `writing-plans` | `docs/specs/YYYY-MM-DD-*.md` |
-| Exec-plan | `writing-plans` | `exec-plan-runner` | `docs/exec-plans/active/` |
-| 代码变更 | `exec-plan-runner` 子代理 | runner 内部审查 prompt / `requesting-code-review`（合并前） | Git diff |
-| Session Log | `exec-plan-runner` | 归档 | `docs/exec-plans/completed/` |
-| 分支处置结论 | `finishing-a-development-branch` | exec-plan-runner / 用户 | 结构化输出 |
+| 需求结论 / Spec 文档 | `discuss` | `writing-plans` | 默认内联传递；按需 `docs/specs/YYYY-MM-DD-*.md` |
+| Compact exec-plan（`plan.md + review-contract.md`，按需 `context.md/tasks.md`） | `writing-plans` | 人类默认审 `review-contract.md`；`plan-impl` 必读 `plan.md + review-contract.md`，并按需读取拆分材料 | `docs/exec-plans/active/` |
+| 代码变更 | `plan-impl` 子代理 | runner 内部审查 prompt / `requesting-code-review`（合并前） | Git diff |
+| Session Log | `plan-impl` | 归档 | `docs/exec-plans/completed/` |
+| 分支处置结论 | `finishing-a-development-branch` | plan-impl / 用户 | 结构化输出 |
 | Skill 压力场景 | `writing-skills` | Skill 作者 / reviewer | Skill 修改说明或 docs |
 
 ## 子代理模式
@@ -120,10 +124,10 @@ requesting-code-review 在合并/PR 前默认强制执行，除非用户明确�
 | 子代理类型 | 用途 | 调用者 |
 |----------|------|--------|
 | `explore` | 代码探索，返回关键文件列表 | discuss, dev-docs |
-| `tech-plan-reviewer` | 计划/spec 审查 | discuss, writing-plans |
-| 实现子代理 | TDD 增量实现 | exec-plan-runner |
-| 审查子代理 | 代码审查（风险分级 1-2 个并行） | exec-plan-runner, requesting-code-review |
-| 验证子代理 | 最终验证 | exec-plan-runner |
+| `tech-plan-reviewer` | 需求结论 / 计划审查 | discuss, writing-plans |
+| 实现子代理 | POD 增量实现 | plan-impl |
+| 审查子代理 | 代码审查（风险分级 1-2 个并行） | plan-impl, requesting-code-review |
+| 验证子代理 | 最终验证 | plan-impl |
 
 **并发限制：** 最大并行度 3，超过则分批。
 
@@ -131,9 +135,9 @@ requesting-code-review 在合并/PR 前默认强制执行，除非用户明确�
 
 | Gate 位置 | 触发条件 | 动作 |
 |-----------|---------|------|
-| discuss Step 最终 | spec 草稿完成 + spec-reviewer 审查通过 | 等待用户批准（强制 Gate） |
-| exec-plan-runner 启动前 | 准备实现 | 轻量启动通知（非强制 Gate，worktree 沙盒隔离兜底）（DD-006） |
-| exec-plan-runner 执行中 | 3 轮修复失败，或计划前提假设失效 | Escalate 给用户 |
+| discuss Step 最终 | 需求结论完成 + 独立 reviewer 审查通过 | 等待用户批准（强制 Gate） |
+| plan-impl 启动前 | 准备实现 | 轻量启动通知（非强制 Gate，worktree 沙盒隔离兜底）（DD-006） |
+| plan-impl 执行中 | 3 轮修复失败，或计划前提假设失效 | Escalate 给用户 |
 | finishing-a-development-branch | 丢弃路径（高风险操作） | 要求明确确认 |
 
 ## 设计原则

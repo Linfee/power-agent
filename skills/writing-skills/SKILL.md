@@ -1,9 +1,8 @@
 ---
 name: writing-skills
 description: |-
-  创建、修改、审查或优化 Skill 时使用，包括新增 SKILL.md、调整触发描述、修复 Skill 间契约、编写压力场景、验证 Skill 行为是否稳定。
+  Skill 维护 Skill。创建、修改、审查或优化 Skill 与触发描述；用户要求写 skill、改 skill 或 review skill 时触发。
   Triggers: 创建 skill, 修改 skill, skill 设计, prompt 契约, skill review.
-version: 1.2.5
 ---
 
 # Writing Skills
@@ -101,7 +100,7 @@ description: 本 Skill 会读取反馈、分析代码、输出表格、然后建
 3. 修改最小必要文件，优先修正契约、触发、输出格式和缺失 reference。
 4. 检查交接链路：上游产物是否满足下游输入。
 5. 同步 `AGENTS.md`、`docs/architecture.md`、`docs/workflow.md`、`docs/development.md` 中的 Skill 清单和路径。
-6. 若修改 Skill 内容，更新 `VERSION` 并运行 `bash scripts/sync-version.sh`。
+6. 若修改 Skill 内容，检查 frontmatter、插件 manifest 和相关 docs 是否需要同步更新。
 
 ---
 
@@ -111,7 +110,7 @@ description: 本 Skill 会读取反馈、分析代码、输出表格、然后建
 - [ ] `SKILL.md` 没有残留 TODO、TBD、占位路径或旧 Skill 名。
 - [ ] references 路径真实存在。
 - [ ] 上下游契约字段一致。
-- [ ] 版本号已同步。
+- [ ] frontmatter / manifest / docs 已按需同步。
 - [ ] 至少有 grep、路径检查或压力场景级别的验证证据。
 
 ---

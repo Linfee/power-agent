@@ -1,9 +1,8 @@
 ---
 name: receiving-code-review
 description: |-
-  收到代码审查反馈时使用，在实施建议之前完成技术评估并输出结构化结论。
+  审查反馈处理 Skill。评估代码审查意见并决定采纳、驳回或澄清；收到审查反馈时触发。
   Triggers: 收到审查, 审查反馈, 处理审查, code review feedback.
-version: 1.2.5
 ---
 
 # 接收代码审查

@@ -1,9 +1,8 @@
 ---
 name: requesting-code-review
 description: |-
-  完成编码工作后使用；合并/PR 前默认强制执行全量代码审查，除非用户明确要求跳过；不替代 exec-plan-runner 的 batch 内审查。
+  代码审查请求 Skill。编排全量代码审查并输出结构化发现；编码完成后、合并或 PR 前触发。
   Triggers: 代码审查, code review, 请求审查, 合并前审查, 全量审查.
-version: 1.2.5
 ---
 
 # 请求代码审查
@@ -32,7 +31,7 @@ version: 1.2.5
 - 对阻塞问题给出明确下一步动作
 
 ### 不做什么
-- 不替代 `exec-plan-runner` 的 batch 内部审查循环
+- 不替代 `plan-impl` 的 batch 内部审查循环
 - 不承担最终验证职责（由 `verification-before-completion` 负责）
 - 不承担文档维护职责（由 `dev-docs-maintain` 负责）
 - 不在主 Skill 内嵌长 prompt 模板与命令菜单
@@ -123,7 +122,7 @@ version: 1.2.5
 
 ## 工作流定位
 
-- 上游：`exec-plan-runner`（已完成 batch 内审查）
+- 上游：`plan-impl`（已完成 batch 内审查）
 - 本 Skill：做收尾阶段全量审查编排
 - 下游：`receiving-code-review`（评估与采纳反馈）→ 修复采纳项 → 重新审查，直到通过或达到 3 轮上限 → `verification-before-completion`
 - `dev-docs-maintain` 是按需手动文档维护 Skill，不是每次代码审查后的固定步骤。

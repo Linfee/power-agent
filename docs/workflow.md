@@ -1,4 +1,4 @@
-<!-- verified: 2026-05-05 -->
+<!-- verified: 2026-06-05 -->
 <!-- scope: workflow -->
 
 # 工作机制与 Skill 协调
@@ -9,9 +9,9 @@
 
 ## 核心设计原则
 
-**Skill 是执行单元，人类是决策者。** 每个 Skill 只做一件事，通过明确的输入/输出协议与其他 Skill 协作。规划阶段（spec 批准）设置强制 Gate 等待人类决策；实现阶段改为轻量启动通知，Agent 自主闭环，worktree 沙盒兜底（DD-006）。
+**Skill 是执行单元，人类是决策者。** 每个 Skill 只做一件事，通过明确的输入/输出协议与其他 Skill 协作。规划阶段（需求结论批准）设置强制 Gate 等待人类决策；实现阶段改为轻量启动通知，Agent 自主闭环，worktree 沙盒兜底（DD-006）。
 
-**产出物是协调介质。** Skill 之间的长期状态通过仓库文件传递：spec 文档、exec-plan 文件、代码、docs/ 文档。编排型 Skill 可以在流程中使用下游 Skill，但必须保留明确的输入/输出契约，避免把下游实现细节复制到调用方。
+**产出物是协调介质。** 默认链路中，discuss 的已批准需求结论由 writing-plans 折叠进 exec-plan；只有用户或流程明确需要时才额外落盘 spec 文档。Skill 之间的长期状态主要通过 exec-plan 文件、代码、docs 文档传递，避免把上游讨论记录复制成第二套真源。
 
 ## 状态协议速查
 
@@ -20,13 +20,13 @@
 | Skill / 场景 | 状态值 | 下游消费规则 |
 |--------------|--------|--------------|
 | `writing-plans` plan review | `APPROVED / ISSUES_FOUND` | `APPROVED` 才能进入执行选项；`ISSUES_FOUND` 按 blocking issues 修正后重新审查 |
-| `exec-plan-runner` 实现/修复子代理 | `DONE / DONE_WITH_CONCERNS / BLOCKED / UNKNOWN` | `DONE*` 可继续；`BLOCKED/UNKNOWN` 需要补上下文、拆分、重试或升级 |
-| `exec-plan-runner` 内部审查 prompt | `DONE / DONE_WITH_CONCERNS / BLOCKED` | `BLOCKED` 进入 fix loop；连续同类问题无收敛则升级 |
+| `plan-impl` 实现/修复子代理 | `DONE / DONE_WITH_CONCERNS / BLOCKED / UNKNOWN` | `DONE*` 可继续；`BLOCKED/UNKNOWN` 需要补上下文、拆分、重试或升级 |
+| `plan-impl` 内部审查 prompt | `DONE / DONE_WITH_CONCERNS / BLOCKED` | `BLOCKED` 进入 fix loop；连续同类问题无收敛则升级 |
+| `plan-impl-lightweight` | `DONE / DONE_WITH_CONCERNS / BLOCKED / UNKNOWN` + `path_decision` | `path_decision=lightweight` 且 `DONE*` 可继续；`ask_user/escalate_to_full` 暂停轻量执行并回到用户或完整 runner |
 | `requesting-code-review` 全量审查 | `通过 / 通过_含建议 / 阻塞 / 需澄清` | `阻塞` 启动修复并复审；`需澄清` 补充口径后重新审查 |
 | `receiving-code-review` 反馈评估 | `DONE / BLOCKED` | `DONE` 表示反馈已完成采纳/驳回判断；`BLOCKED` 等待澄清 |
 | `verification-before-completion` | `DONE / PARTIAL / BLOCKED` | 仅 `DONE` 且 `passed=true` 可交给分支收尾；输出 `commit_sha/passed/verified_at/evidence[]` |
 | `finishing-a-development-branch` | `READY / BLOCKED / DONE / CANCELLED` | `DONE` 表示分支处置完成；`CANCELLED` 表示用户取消收尾或 destructive 确认失败 |
-| `dispatching-parallel-agents` | `DONE / PARTIAL / BLOCKED / FAILED` | 总状态按关键子任务结果归并；非 `DONE` 时必须给出 next_action |
 
 ---
 
@@ -38,27 +38,30 @@
 │                                                         │
 │   discuss skill                                         │
 │   输入：模糊需求                                           │
-│   产出：docs/specs/YYYY-MM-DD-<topic>.md                 │
-│   gate：spec-reviewer 子代理审查 + 用户批准（强制 Gate）      │
+│   产出：内联 Discussion Conclusion / 需求结论                │
+│        （仅按需落盘 docs/specs/YYYY-MM-DD-<topic>.md）       │
+│   gate：独立 reviewer 子代理审查 + 用户批准（强制 Gate）        │
 └─────────────────────┬───────────────────────────────────┘
-                      │ spec 文档（或用户直接描述功能）
+                      │ 已批准需求结论（或用户直接描述功能）
                       ▼
 ┌─────────────────────────────────────────────────────────┐
 │                 规划阶段                                  │
 │                                                         │
 │   writing-plans skill                                   │
-│   输入：spec 文档 或 用户描述                               │
+│   输入：需求结论 / spec 文档 / 用户描述                       │
 │   产出：docs/exec-plans/active/YYYY-MM-DD-title/         │
-│           plan.md + context.md + tasks.md               │
+│           plan.md + review-contract.md                  │
+│           （按需拆出 context.md / tasks.md）               │
 │   gate：tech-plan-reviewer 子代理审查                     │
 └─────────────────────┬───────────────────────────────────┘
-                      │ exec-plan 三文档
+                      │ compact exec-plan（人类默认只审 review-contract.md）
                       ▼
 ┌─────────────────────────────────────────────────────────┐
 │                 实现阶段                                  │
 │                                                         │
-│   exec-plan-runner skill（状态机自主闭环）                  │
+│   plan-impl skill（状态机自主闭环）                  │
 │   ├── BOOTSTRAP：using-git-worktrees 检测/建立隔离工作区      │
+│   ├── PATH：中小任务可走 plan-impl-lightweight              │
 │   ├── EXECUTING：依赖驱动批次并行 + conflict_check/review/fix │
 │   ├── VERIFYING：verification-before-completion          │
 │   └── FINALIZING：finishing-a-development-branch        │
@@ -66,8 +69,8 @@
 
 调试路径（独立入口）：
    systematic-debugging skill
-       └── [status=FIXABLE] → test-driven-development skill
-               └── → verification-before-completion skill
+       └── [status=FIXABLE] → proof-oriented-development skill
+               └── Proof Block → verification-before-completion skill
        └── [status=ESCALATE] → discuss 或 writing-plans
 ```
 
@@ -75,78 +78,97 @@
 
 ## 各 Skill 详解
 
-### discuss — 需求探索
+### discuss — 需求讨论与 PRD 细化
 
-**触发：** 需求模糊、有多种可行方案、风险较高的架构决策。
+**触发：** 需求模糊、PRD 不完整、功能范围/用户流程/验收标准不清，或存在真实产品/上层技术方向取舍。
 
-**输入：** 用户的文字描述（任意格式）
+**输入：** 用户描述、PRD 草稿、issue、截图或其他需求材料。
 
 **核心流程：**
-1. 批量澄清问题（按主题分批，不一问一答）
-2. 强制呈现 2-3 个方案对比，含权衡和推荐
-3. 产出 spec 草稿（使用 `references/spec-template.md`）
-4. 启动 `spec-reviewer` 子代理审查（最多 3 轮）
-5. 用户确认 → spec 状态标记为 `accepted`
+1. 建立上下文，识别已明确、冲突和缺失的信息。
+2. 判断是否需要拆分；复杂需求先收敛到一个最小闭环。
+3. 分批澄清目标、范围、用户流程、关键状态、异常路径、验收标准，以及影响范围/验收/planning 的上层技术方向。
+4. 按问题判断是否使用 HTML 可视化辅助；视觉/流程/关系/方案对比复杂时一屏一决策。
+5. 仅在真实分歧存在时呈现 2-3 个产品方案或上层技术方向对比，先给推荐，再说明取舍。
+6. 默认产出内联 `Discussion Conclusion` / `需求结论`，先自查占位符、歧义、范围膨胀，以及是否滑入可直接编码的实现细节。
+7. 启动独立 reviewer 子代理审查；blocking issue 修正后重新审查。
+8. 用户确认需求结论；只有用户明确要求、合规/流程要求或需要长期产品资产时，才按需落盘 spec/doc。
 
-**产出：** `docs/specs/YYYY-MM-DD-<topic>.md`
+**产出：** 内联 `Discussion Conclusion` / `需求结论`；按需 `docs/specs/YYYY-MM-DD-<topic>.md`
 
-**交棒给：** `writing-plans`（spec 批准后）
+**交棒给：** `writing-plans`（需求结论批准后）
 
-**不做：** 不写任何代码，不创建 exec-plan。spec 未批准前的任何实现动作均被 HARD-GATE 阻止。
+**不做：** 不写任何代码，不创建 exec-plan，不做接口签名、数据表/字段、库选型、类/函数拆分、文件路径等实现细节；允许讨论影响范围/验收/planning 的上层技术方向。需求结论未批准前的任何实现动作均被 HARD-GATE 阻止。
 
 ---
 
 ### writing-plans — 实现计划创建
 
-**触发：** 用户要求创建 exec-plan，discuss 完成后，或 `dev-docs` skill 路由。
+**触发：** 用户要求创建 exec-plan，discuss 需求结论已批准后，或 `dev-docs` skill 路由。
 
-**输入：** spec 文档 + 相关代码库上下文
+**输入：** 已批准需求结论 / spec 文档 / 用户描述 + 相关代码库上下文
 
 **核心流程：**
-1. 读取 spec 和相关代码文件
-2. 拆解为三文档 exec-plan（plan.md / context.md / tasks.md）
-3. 每个任务包含：目标行为、主要文件/模块、可读取上下文、禁止触碰范围、验收标准、测试场景、实施提示、验证命令、阻塞条件和依赖关系
-4. 启动 `tech-plan-reviewer` 子代理审查（最多 3 轮，保留 subagent review loop）
-5. 提供执行选项（推荐 `exec-plan-runner`）
+1. 读取需求结论、spec 或用户描述，以及直接相关代码/文档。
+2. 默认生成 compact exec-plan：`plan.md + review-contract.md`；仅在证据昂贵、上下文过大、任务图复杂或多 Agent 交接需要时拆出 `context.md / tasks.md`。
+3. `plan.md` 是执行真源，包含目标、Scope、关键决策、Agent 自主边界、紧凑任务、Proof Strategy、阻塞/升级条件和风险。
+4. `review-contract.md` 是人类默认审阅面：人类只审意图、范围、验收、证明策略、Agent 自主边界、阻塞条件和高风险项，不逐行审执行材料。
+5. 启动 `tech-plan-reviewer` 子代理审查（最多 3 轮，保留 subagent review loop；不得用同上下文 self-review 替代）。
+6. 提供执行选项（推荐 `plan-impl`）。
 
-**产出：** `docs/exec-plans/active/YYYY-MM-DD-title/plan.md + context.md + tasks.md`
+**产出：** `docs/exec-plans/active/YYYY-MM-DD-title/plan.md + review-contract.md`，按需 `context.md / tasks.md`
 
-**交棒给：** `exec-plan-runner`
+**交棒给：** `plan-impl`
 
 ---
 
-### exec-plan-runner — 执行编排
+### plan-impl — 执行编排
 
 **触发：** writing-plans 交棒，或用户手动恢复执行。
 
 **状态机：** BOOTSTRAP → READY → EXECUTING → VERIFYING → FINALIZING → DONE（异常：ESCALATED / CANCELLED）
 
 **核心流程：**
-1. BOOTSTRAP：读取三文档，调用 `using-git-worktrees` 检测/建立隔离工作区
-2. READY：确认依赖图、batch 划分和任务卡字段完整
-3. EXECUTING：拓扑排序 tasks，默认先按批次并行派发实现子代理；无法并行时改为单个实现子代理推进，并在批次内执行 conflict_check / review / fix loop
-4. VERIFYING：全量调用 `verification-before-completion`
+1. BOOTSTRAP：读取弹性计划包（必读 `plan.md`，读取 `review-contract.md` 人审边界，按存在情况读取 `context.md / tasks.md`），调用 `using-git-worktrees` 检测/建立隔离工作区
+2. READY：确认 `plan.md` 中任务、依赖、Proof、阻塞条件完整；若存在 `tasks.md` 则消费拆分任务图；中等偏小、边界清楚、局部验证充分的任务可转交 `plan-impl-lightweight`
+3. EXECUTING：拓扑排序 tasks（来自 `plan.md` 或可选 `tasks.md`），优先检测并使用 team 模式承载 batch、review、fix、verify；缺少 team 工具且不适合轻量路径时回退为按批次并行派发实现子代理，无法并行时改为单个实现子代理推进，并在批次内执行 conflict_check / review / fix loop
+4. VERIFYING：调用 `verification-before-completion` 审计 Proof Block / 等价证据块，必要时补跑最小额外验证，并输出 `verification_evidence`
 5. FINALIZING：调用 `requesting-code-review`（合并/PR 前默认强制，用户明确跳过除外）与 `finishing-a-development-branch`，按收尾状态归档或保留恢复点
 
 **产出：** 实现代码变更 + Session Log + 归档 exec-plan
 
-**调用链：** TDD 子代理 → runner 内部审查 prompt → `verification-before-completion` → `requesting-code-review`（合并/PR 前）→ `finishing-a-development-branch`
+**调用链：** `plan-impl-lightweight`（可选轻量分支）→ proof-oriented 实现子代理（输出 Proof Block）→ runner 内部审查 prompt → `verification-before-completion` → `requesting-code-review`（合并/PR 前）→ `finishing-a-development-branch`
 
 `requesting-code-review` 是合并/PR 前默认强制的全量审查编排器；仅当用户明确要求跳过时可跳过，并在 Session Log 记录原因。`dev-docs-maintain` 是按需手动文档维护 Skill，不是每次开发执行的固定阶段。
 
 ---
 
-### test-driven-development — 增量 TDD 实现
+### plan-impl-lightweight — 轻量执行路径
 
-**触发：** 由 exec-plan-runner 派发任务卡，或用户直接触发。
+**触发：** 中等偏小任务，边界清楚、风险较低、局部验证足以证明完成。
 
-**铁律：** 没有跑通的目标测试就没有声称完成。
+**核心流程：** `scope_check -> execute -> targeted_verify -> review -> fix_once(最多一次)`。
 
-**核心流程：** 选择最小行为变更 → 补目标测试或验证 → 最小实现 → 增量验证 → 必要时重构
+**输出：** `状态：DONE / DONE_WITH_CONCERNS / BLOCKED / UNKNOWN` + `path_decision: lightweight / escalate_to_full / ask_user`。
 
-**产出：** 实现代码 + 可运行通过的目标测试
+**交棒规则：** `path_decision=lightweight` 且 `DONE*` 可继续；`ask_user` 暂停等待澄清；`escalate_to_full` 回到 `plan-impl` 完整路径或先创建 exec-plan。
 
-**交棒给：** `verification-before-completion`（全量回归验证）
+**不做：** 不做 team/多代理编排，不处理恢复点或多 batch 复杂依赖，不承担分支收尾。
+
+
+---
+
+### proof-oriented-development — 证明导向实现
+
+**触发：** 由 plan-impl 派发任务卡，或用户直接触发实现功能、编写代码、证据交付、最小有效验证；只有用户明确要求 TDD / 测试驱动 / 先写失败测试时才启用 strict TDD。
+
+**铁律：** 没有低成本、可复现、与任务强相关的 Proof Block，就不能声称当前增量完成。
+
+**核心流程：** Scope Slice → Proof Plan → Implement → Run Minimal Relevant Verification → Interpret Result → Emit Proof Block
+
+**产出：** 实现代码 + Proof Block（目标约束、验收标准、最小验证命令、运行结果、实现摘要、附加证据、风险说明、未验证项）
+
+**交棒给：** `verification-before-completion`（全量回归与最终完成验证）
 
 ---
 
@@ -156,12 +178,12 @@
 
 **铁律：** 证据充分前不输出修复结论。
 
-**核心流程：** 现象隔离 → 假设生成 → 假设验证 → 根因确认
+**核心流程：** 现象隔离 → 假设生成 → 假设验证 → 根因确认 → 修复交接证明策略
 
-**输出结论：** `状态：INVESTIGATING / HYPOTHESIS_VERIFIED / FIXABLE / BLOCKED / ESCALATE`
+**输出结论：** `状态：INVESTIGATING / HYPOTHESIS_VERIFIED / FIXABLE / BLOCKED / ESCALATE`，其中 `FIXABLE` 必须包含 `bug_class`、`fix_boundary`、`recommended_proof_strategy` 和 `verification_path`。
 
 **交棒给：**
-- `status=FIXABLE` → `test-driven-development`
+- `status=FIXABLE` → `proof-oriented-development`
 - `status=ESCALATE` → `discuss` 或 `writing-plans`
 
 ---
@@ -195,11 +217,13 @@
 
 ### verification-before-completion — 完成前验证
 
-**触发：** 任何"声称完成"之前。
+**触发：** 任何"声称完成"之前，尤其是 `proof-oriented-development` 交付 Proof Block 后。
 
-**铁律：** 没有本轮可验证证据（命令/退出码/时间戳/摘要）不得声称完成。
+**铁律：** 没有通过审计的 Proof Block / 等价证据块，或没有本轮可验证证据（命令/退出码/时间戳/摘要），不得声称完成。
 
-**输出：** `状态：DONE / PARTIAL / BLOCKED + commit_sha + passed + verified_at + evidence + blocking_issues`
+**核心流程：** 审计 Proof Block / 等价证据块 → 判断证据强度 → 必要时补跑最小额外验证 → 输出 `verification_evidence`
+
+**输出：** `状态：DONE / PARTIAL / BLOCKED + commit_sha + passed + verified_at + evidence[] + Proof Block 审计 + blocking_issues + next_action`
 
 **交棒给：** `finishing-a-development-branch`（仅 `状态：DONE` 且 `passed=true` 后）
 
@@ -207,7 +231,7 @@
 
 ### finishing-a-development-branch — 分支处置
 
-**触发：** 由 exec-plan-runner（FINALIZING 阶段）或 verification 完成后调用。
+**触发：** 由 plan-impl（FINALIZING 阶段）或 verification 完成后调用。
 
 **四类选项：**
 - Merge：直接合并到目标分支
@@ -219,19 +243,9 @@
 
 ---
 
-### dispatching-parallel-agents — 并行调度
-
-**约束：** 单批次最大并行度 3，仅当任务彼此独立（无共享改动面、无顺序依赖）时才并行。
-
-**输出：** 各子代理结构化结果汇总（status: DONE/PARTIAL/BLOCKED/FAILED）
-
-**参考文件：** `task-card-template.md`、`result-contract.md`、`conflict-resolution-rubric.md`
-
----
-
 ### using-git-worktrees — 隔离工作区
 
-**触发：** exec-plan-runner BOOTSTRAP、高风险改动、用户要求隔离执行。
+**触发：** plan-impl BOOTSTRAP、高风险改动、用户要求隔离执行。
 
 **核心流程：** 检测当前是否已在 linked worktree → 优先使用宿主原生 worktree 能力 → 无原生能力时回退 `git worktree` → 运行最小基线检查。
 
@@ -245,7 +259,7 @@
 
 **触发：** 新增、修改、审查或优化 Skill。
 
-**核心流程：** 定义目标行为与失败模式 → 修改最小必要 Skill/refs/docs → 检查上下游契约 → 准备压力场景 → 同步版本。
+**核心流程：** 定义目标行为与失败模式 → 修改最小必要 Skill/refs/docs → 检查上下游契约 → 准备压力场景。
 
 **交棒给：** `verification-before-completion` 或 `requesting-code-review`。
 
@@ -273,11 +287,11 @@
 
 ---
 
-### init-harness-engineering — 项目初始化
+### setup-power-agent — 项目初始化
 
 **disable-model-invocation: true**（直接执行）
 
-**输出：** AGENTS.md（≤200 行）+ docs/architecture.md + docs/development.md
+**输出：** AGENTS.md（≤200 行）+ docs/architecture.md + docs/development.md + `CONTEXT.md` / `CONTEXT-MAP.md` 项目记忆骨架 + `docs/arch-decisions/` 目录
 
 **交棒给：** 无固定下游；需要长期文档维护时建议用户手动调用 `dev-docs-maintain`。
 
@@ -309,4 +323,4 @@
 | 重用子代理 | 子代理是一次性的，不得跨任务复用 |
 | 跨层反向依赖 | 下层 Skill 不得调用上层 Skill |
 | 超限并行 | 并行度超过 3 必须分批 |
-| 无测试声称通过 | TDD 铁律：没有跑通的目标测试 = 没有完成 |
+| 无 Proof Block 声称完成 | proof-oriented-development 铁律：没有低成本、可复现、与任务强相关的最小有效证明 = 没有完成 |

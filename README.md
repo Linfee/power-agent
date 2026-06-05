@@ -6,10 +6,10 @@
 
 融合两套互补方法论的 AI 编码 Agent 工作流系统：
 
-- **[superpowers](https://github.com/obra/superpowers)**（当前追踪版本 **v5.1.0**）— 面向 AI Agent 的完整软件开发 Skill 体系
+- **[superpowers](https://github.com/obra/superpowers)** — 面向 AI Agent 的完整软件开发 Skill 体系
 - **[Harness Engineering](https://openai.com/index/harness-engineering/)**（Ryan Lopopolo, OpenAI, 2026 年 2 月）— OpenAI 关于在工程工作流中运用 AI Agent 的方法论
 
-两者结合，形成一套完整、有主张的工作流：结构化设计探索 → TDD 驱动的执行计划 → 默认先并行委派 → 不能并行时单代理推进 → 系统化调试 → 文档维护。
+两者结合，形成一套完整、有主张的工作流：结构化设计探索 → 证明导向执行计划 → 紧凑 exec-plan 包 → Agent 自主实现闭环 → 系统化调试 → 文档维护。
 
 ---
 
@@ -29,35 +29,35 @@
 
 | Skill | 用途 |
 |-------|------|
-| `discuss` | 编码前的设计探索——含 2-3 方案对比、Spec 子代理审查循环和用户批准 Gate |
-| `writing-plans` | 将 spec/设计转化为 TDD 结构的 exec-plan，产出可执行任务卡 |
-| `exec-plan-runner` | 自主执行或恢复 exec-plan，含默认并行委派、单代理回退、依赖批次、冲突检测、审查修复收敛、验证与收尾 |
+| `discuss` | 需求讨论与 PRD 细化——模糊需求澄清、必要的 HTML 可视化辅助、需求结论审查循环和用户批准 Gate |
+| `writing-plans` | 将已批准需求结论 / spec / 用户描述转化为包含证明策略的 compact exec-plan |
+| `plan-impl` | 自主执行或恢复 exec-plan，读取 `plan.md + review-contract.md`，按需消费 `context.md/tasks.md`；优先 team 模式，回退 lightweight / 并行 / 单代理执行，并负责审查、验证与收尾 |
+| `plan-impl-lightweight` | 中等偏小任务的轻量执行路径：scope_check、proof-oriented 实现、局部验证、有限 review/fix 循环、必要时升级完整 runner |
 | `dev-docs` | 文档路由器——exec-plan 委派给 `writing-plans`，其他文档类型直接处理 |
 | `dev-docs-maintain` | 文档维护（Doc Gardening）——按需扫描并修复过期、缺失或失效文档 |
-| `init-harness-engineering` | 从零为项目建立 Harness Engineering 知识体系 |
+| `setup-power-agent` | 从零为项目建立 Harness Engineering 知识体系 |
 | `using-git-worktrees` | 执行大任务前检测/创建隔离 worktree，优先使用宿主原生能力 |
 | `writing-skills` | 创建、修改、审查和压力测试 Skill |
 | `systematic-debugging` | 四阶段根因优先调试（先找根本原因，再动手修复） |
-| `test-driven-development` | 务实增量测试闭环，含反模式参考 |
+| `proof-oriented-development` | 证明导向开发闭环：小步实现、最小相关验证、交付 Proof Block |
 | `requesting-code-review` | 通过子代理编排代码审查，输出结构化发现 |
 | `receiving-code-review` | 技术性评估审查反馈（非表演性同意） |
 | `verification-before-completion` | 证据优先验证——没有新鲜证据不得声称完成 |
-| `dispatching-parallel-agents` | 将独立任务调度为并行子代理 |
 | `harness-engineering-review` | 对照 Harness Engineering 最佳实践审查项目 Agent 工作流 |
 | `finishing-a-development-branch` | 实现完成后的分支收尾（merge/PR/保留/丢弃） |
 
 ### 完整工作流
 
 ```
-discuss skill          ← 设计探索 → spec 文档
-    ↓（spec 批准后）
-writing-plans skill    ← 创建 TDD 结构 exec-plan
+discuss skill          ← 需求讨论 / PRD 细化 → 内联需求结论（按需落盘 spec）
+    ↓（需求结论批准后）
+writing-plans skill    ← 创建包含证明策略的 compact exec-plan（必需 `plan.md + review-contract.md`，按需 `context.md/tasks.md`）
     ↓
-exec-plan-runner skill ← BOOTSTRAP(using-git-worktrees) → TDD 子代理并行实现
-                     └── 内部审查 → 验证 → 分支收尾
+plan-impl skill ← BOOTSTRAP(using-git-worktrees) → 轻量启动通知 → 中小任务可走 plan-impl-lightweight
+                     └── 优先 team 模式；缺失 team 工具时回退 proof-oriented 实现子代理并行/单代理推进 → 内部审查 → 验证 → 分支收尾
 
 Bug / 测试失败 → systematic-debugging skill
-                     └── → test-driven-development + verification-before-completion
+                     └── → proof-oriented-development + verification-before-completion
 ```
 
 `requesting-code-review` 在合并/PR 前默认强制执行，除非用户明确要求跳过并记录原因。
@@ -105,18 +105,6 @@ claude plugin install power-agent@power-agent --scope project
 
 ---
 
-## 版本追踪
-
-本项目持续追踪上游变更：
-
-| 上游项目 | 当前追踪版本 | 来源 |
-|----------|------------|------|
-| superpowers | v5.1.0 | https://github.com/obra/superpowers |
-| Harness Engineering | 2026 年 2 月 | https://openai.com/index/harness-engineering/ |
-
-当 superpowers 发布新版本时，查阅 RELEASE-NOTES 并将相关改进移植到本项目。
-
----
 
 ## Harness Engineering 实践现状与路线图
 
@@ -131,7 +119,7 @@ claude plugin install power-agent@power-agent --scope project
 > "We tried the 'one big AGENTS.md' approach. It failed in predictable ways... When everything is 'important,' nothing is... So instead of treating AGENTS.md as the encyclopedia, we treat it as **the table of contents**. A short AGENTS.md (roughly 100 lines) is injected into context and serves primarily as a map, with pointers to deeper sources of truth elsewhere."
 > — §We made repository knowledge the system of record
 
-**本项目状态：** `init-harness-engineering` skill 在初始化项目时生成精简的 AGENTS.md（~200行），作为 Agent 指南和知识库导航。`docs/` 下的分层结构承载具体知识。
+**本项目状态：** `setup-power-agent` skill 在初始化项目时生成精简的 AGENTS.md（~200行），作为 Agent 指南和知识库导航。`docs/` 下的分层结构承载具体知识；同时初始化 `CONTEXT.md` / `CONTEXT-MAP.md` 与 `docs/arch-decisions/` 这组项目记忆骨架，供后续 Agent 读取领域语言与历史架构决策。
 
 ---
 
@@ -140,7 +128,7 @@ claude plugin install power-agent@power-agent --scope project
 > "The repository's knowledge base lives in a structured docs/ directory treated as the system of record... Design documentation is catalogued and indexed, including verification status and a set of core beliefs that define agent-first operating principles."
 > — §We made repository knowledge the system of record
 
-**本项目状态：** `dev-docs` skill 将文档分为 architecture / arch-decision / domain / development / reference 五类，各有固定路径和 `<!-- verified: YYYY-MM-DD -->` 元信息。`dev-docs-maintain` skill 负责检查新鲜度和导航指针有效性。
+**本项目状态：** `dev-docs` skill 将文档分为 architecture / arch-decision / exec-plan / domain / development / reference 六类，其中 exec-plan 立即委派给 `writing-plans`；各类文档使用固定路径和 `<!-- verified: YYYY-MM-DD -->` 元信息。`dev-docs-maintain` skill 负责检查新鲜度和导航指针有效性。
 
 ---
 
@@ -149,7 +137,7 @@ claude plugin install power-agent@power-agent --scope project
 > "Plans are treated as first-class artifacts. Ephemeral lightweight plans are used for small changes, while complex work is captured in execution plans with progress and decision logs that are checked into the repository. Active plans, completed plans, and known technical debt are all versioned and co-located."
 > — §We made repository knowledge the system of record
 
-**本项目状态：** `writing-plans` skill 产出 exec-plan 到 `docs/exec-plans/active/`，`exec-plan-runner` 执行完成后归档到 `completed/`。博客还提到 tech-debt-tracker，本项目尚未实现（见路线图 #13）。
+**本项目状态：** `writing-plans` skill 产出 exec-plan 到 `docs/exec-plans/active/`，`plan-impl` 执行完成后归档到 `completed/`。博客还提到 tech-debt-tracker，本项目尚未实现（见路线图 #13）。
 
 ---
 
@@ -162,14 +150,14 @@ claude plugin install power-agent@power-agent --scope project
 
 ---
 
-### ✅ 5. TDD 驱动实现
+### ✅ 5. Proof-oriented 证明导向实现
 
 > "we require Codex to parse data shapes at the boundary, but are not prescriptive on how that happens... Agents are most effective in environments with strict boundaries and predictable structure."
 > — §Enforcing architecture and taste
 
-博客未直接命名 TDD，但全文强调每个变更必须有测试覆盖，且 exec-plan 结构中测试与实现不可分离。
+博客强调每个变更必须有可验证证据，并且计划结构中验收、验证与实现不可分离。
 
-**本项目状态：** `test-driven-development` skill 要求增量测试闭环，`exec-plan-runner` 的实现子代理被要求使用该 skill，`testing-anti-patterns.md` 列出了 5 类常见违规模式。
+**本项目状态：** `proof-oriented-development` skill 要求小步实现、自动运行最小相关验证，并交付 Proof Block；`writing-plans` 在计划阶段定义证明策略、Proof Block 期望证据和执行期阻塞条件；`testing-anti-patterns.md` 约束测试和 proof 反模式。
 
 ---
 
@@ -195,7 +183,7 @@ claude plugin install power-agent@power-agent --scope project
 > "Humans may review pull requests, but aren't required to. Over time, we've pushed almost all review effort towards being handled agent-to-agent."
 > — §Redefining the role of the engineer
 
-**本项目状态：** `requesting-code-review` skill 通过 subagent 执行结构化代码审查，`exec-plan-runner` 在每个 batch 后自动启动两阶段审查（规格符合性 + 代码质量）。审查结果仍将人工决策作为 gate，未给出随时间减少人工介入的路径。
+**本项目状态：** `requesting-code-review` skill 通过 subagent 执行结构化代码审查，`plan-impl` 在实现阶段以内审循环保障质量，`review-contract.md` 承载默认人审边界；人工决策仍主要保留在需求结论批准和分支收尾选择上。
 
 ---
 
@@ -204,7 +192,7 @@ claude plugin install power-agent@power-agent --scope project
 > "Ephemeral lightweight plans are used for small changes, while complex work is captured in execution plans."
 > — §We made repository knowledge the system of record
 
-**本项目状态：** `writing-plans` skill 区分了单文件（小任务）和目录结构（大需求）两种输出格式。但没有明确的"临时计划"概念和对应的轻量格式，可能对中等复杂度的变更造成过重的开销。
+**本项目状态：** `writing-plans` 已有轻重分层：默认产出 compact exec-plan（`plan.md + review-contract.md`），仅在上下文过大、任务图复杂或多 Agent 交接需要时拆出 `context.md / tasks.md`。但仍没有一套完全临时、无需落盘的轻量计划格式。
 
 ---
 
@@ -217,7 +205,7 @@ claude plugin install power-agent@power-agent --scope project
 
 **本项目状态：** `docs/harness-engineering.md` 写了"机械化约束优于 Prompt 啰嗦"的原则，`harness-engineering-review` skill 的审查维度中包含"约束机制化"。但项目本身没有提供任何 linter 配置模板、错误信息设计指南或 CI 集成方式。这是当前最大的结构性缺口。
 
-**路线图：** 提供一套 linter 模板（ESLint / Ruff / custom）和 agent 友好错误信息的设计规范，作为 `init-harness-engineering` 输出的一部分。
+**路线图：** 提供一套 linter 模板（ESLint / Ruff / custom）和 agent 友好错误信息的设计规范，作为 `setup-power-agent` 输出的一部分。
 
 ---
 
@@ -230,7 +218,7 @@ claude plugin install power-agent@power-agent --scope project
 
 **本项目状态：** 项目没有提供任何关于如何设计和机械执行分层架构的指导。这需要与第 10 条（自定义 linter）协同实现。
 
-**路线图：** 在 `init-harness-engineering` skill 中加入分层架构的脚手架建议，以及对应的 linter 规则模板。
+**路线图：** 在 `setup-power-agent` skill 中加入分层架构的脚手架建议，以及对应的 linter 规则模板。
 
 ---
 
@@ -272,7 +260,7 @@ Golden principles 是团队对代码风格的具体约定（如"优先使用共�
 
 **本项目状态：** 无对应机制。`harness-engineering-review` skill 可以生成审查报告，但没有持久化的质量追踪文档。
 
-**路线图：** 在 `init-harness-engineering` 输出中加入 `docs/quality.md` 模板，由 `dev-docs-maintain` 在每次维护时更新。
+**路线图：** 在 `setup-power-agent` 输出中加入 `docs/quality.md` 模板，由 `dev-docs-maintain` 在每次维护时更新。
 
 ---
 
@@ -298,7 +286,7 @@ Golden principles 是团队对代码风格的具体约定（如"优先使用共�
 
 **本项目状态：** `dev-docs` skill 有 reference 文档类型，但没有 llms.txt 格式规范，也没有引导如何为项目依赖创建 reference 文件。
 
-**路线图：** 在 `dev-docs` 和 `init-harness-engineering` 中加入 llms.txt 格式的引导，说明如何为核心依赖创建 agent 可消费的本地参考文档。
+**路线图：** 在 `dev-docs` 和 `setup-power-agent` 中加入 llms.txt 格式的引导，说明如何为核心依赖创建 agent 可消费的本地参考文档。
 
 ---
 
@@ -309,7 +297,7 @@ Golden principles 是团队对代码风格的具体约定（如"优先使用共�
 
 博客描述的完整循环是：agent 开 PR → agent 响应 review 评论 → agent 修复 CI 失败 → agent 判断可以 merge 时自动合并。人类只是在需要判断时介入。
 
-**本项目状态：** `exec-plan-runner` 执行完成后即结束，没有覆盖 PR 开启、review 响应、CI 修复、merge 这些后续环节。`requesting-code-review` 和 `receiving-code-review` 处理的是 review 内容本身，不是 PR 生命周期管理。
+**本项目状态：** `plan-impl` 执行完成后即结束，没有覆盖 PR 开启、review 响应、CI 修复、merge 这些后续环节。`requesting-code-review` 和 `receiving-code-review` 处理的是 review 内容本身，不是 PR 生命周期管理。
 
 **路线图：** 增加 `pr-lifecycle` skill，覆盖从"实现完成"到"PR 合并"的完整流程：开 PR、响应 review 评论、处理 CI 失败、确认 merge。
 
@@ -332,6 +320,6 @@ Golden principles 是团队对代码风格的具体约定（如"优先使用共�
 
 本项目基于以下工作构建：
 
-- **superpowers** by [Jesse Vincent (obra)](https://github.com/obra/superpowers) — MIT License。当前追踪 **v5.1.0**。以下 Skill 派生或受其启发：`discuss`（来自 `brainstorming`）、`writing-plans`、`exec-plan-runner`（融合了 `subagent-driven-development`）、`test-driven-development`、`requesting-code-review`、`receiving-code-review`、`verification-before-completion`、`dispatching-parallel-agents`、`systematic-debugging`、`using-git-worktrees`、`writing-skills`。
+- **superpowers** by [Jesse Vincent (obra)](https://github.com/obra/superpowers) — MIT License。以下 Skill 派生或受其启发：`discuss`（来自 `brainstorming`）、`writing-plans`、`plan-impl`（融合了 `subagent-driven-development`）、`proof-oriented-development`（由原测试驱动实现思路演进为证明导向实现）、`requesting-code-review`、`receiving-code-review`、`verification-before-completion`、`systematic-debugging`、`using-git-worktrees`、`writing-skills`。
 
-- **Harness Engineering** — [Ryan Lopopolo，OpenAI，2026 年 2 月 11 日](https://openai.com/index/harness-engineering/)。`harness-engineering-review`、`init-harness-engineering`、`dev-docs`、`dev-docs-maintain` Skill 以及"仓库即唯一真相来源"的整体设计哲学源于该方法论。
+- **Harness Engineering** — [Ryan Lopopolo，OpenAI，2026 年 2 月 11 日](https://openai.com/index/harness-engineering/)。`harness-engineering-review`、`setup-power-agent`、`dev-docs`、`dev-docs-maintain` Skill 以及"仓库即唯一真相来源"的整体设计哲学源于该方法论。

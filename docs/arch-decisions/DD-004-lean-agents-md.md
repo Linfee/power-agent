@@ -1,4 +1,4 @@
-<!-- verified: 2026-04-21 -->
+<!-- verified: 2026-06-05 -->
 <!-- scope: architecture -->
 <!-- status: accepted -->
 

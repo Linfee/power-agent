@@ -1,9 +1,8 @@
 ---
 name: dev-docs-maintain
 description: |-
-  手动或收尾后按需扫描 docs/ 文档和知识库，识别并修复过期、缺失或失效内容
+  文档维护 Skill。扫描并修复 docs/ 与知识库漂移；用户要求文档维护、docs 过期检查或收尾后维护时触发。
   Triggers: 文档维护, docs 过期, dev-docs-maintain, doc gardening.
-version: 1.2.5
 disable-model-invocation: true
 ---
 
@@ -93,5 +92,5 @@ disable-model-invocation: true
 
 - 建议每次重大功能完成后运行一次
 - 可在 exec-plan 完成后按需运行，确保文档同步
-- exec-plan-runner 或 finishing-a-development-branch 只给出 docs 更新提醒，不自动把本 Skill 纳入固定主流程
+- plan-impl 或 finishing-a-development-branch 只给出 docs 更新提醒，不自动把本 Skill 纳入固定主流程
 - 如果只想检查不修复，在参数中说明"仅检查"

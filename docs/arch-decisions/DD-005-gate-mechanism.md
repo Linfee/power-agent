@@ -1,4 +1,4 @@
-<!-- verified: 2026-04-21 -->
+<!-- verified: 2026-06-05 -->
 <!-- scope: architecture -->
 <!-- status: superseded by DD-006 (2026-03-25) -->
 
@@ -28,7 +28,6 @@ Agent 在自主执行过程中可能偏离方向，尤其在架构选择和破�
 
 选择方案 B：在关键决策点设置强制 Gate。
 
-> **注意：** `feature-dev` 已移除（2026-04），原 Gate 位置已整合到 discuss 和 exec-plan-runner 中。
 
 ## 后果
 

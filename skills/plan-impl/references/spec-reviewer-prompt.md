@@ -1,5 +1,5 @@
 <!-- verified: 2026-05-05 -->
-<!-- scope: exec-plan-runner, spec-compliance-review -->
+<!-- scope: plan-impl, spec-compliance-review -->
 
 你是一名规格符合性审查员。你的任务是验证实现是否与规格匹配——不多不少。
 

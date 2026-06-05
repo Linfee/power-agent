@@ -2,10 +2,10 @@
 
 An AI coding agent workflow system that combines two complementary methodologies:
 
-- **[superpowers](https://github.com/obra/superpowers)** — A complete software development skill system for AI agents (currently tracking v5.1.0)
+- **[superpowers](https://github.com/obra/superpowers)** — A complete software development skill system for AI agents
 - **[Harness Engineering](https://openai.com/index/harness-engineering/)** — OpenAI's methodology for leveraging AI agents in engineering workflows (Ryan Lopopolo, Feb 2026)
 
-The result is a cohesive, opinionated workflow: structured design exploration → TDD-driven exec plans → subagent-orchestrated parallel implementation → systematic debugging → doc gardening.
+The result is a cohesive, opinionated workflow: structured design exploration → proof-oriented exec plans → compact exec-plan packages → agent-autonomous implementation loops → systematic debugging → doc gardening.
 
 ---
 
@@ -25,35 +25,35 @@ Three principles from Harness Engineering:
 
 | Skill | Purpose |
 |-------|---------|
-| `discuss` | Design exploration before coding — spec doc with 2-3 approach comparison and spec reviewer loop |
-| `writing-plans` | Convert spec/design into TDD-structured exec-plans with executable task cards |
-| `exec-plan-runner` | Execute or resume exec-plans with dependency batches, conflict checks, review/fix convergence, verification, and finishing |
+| `discuss` | Requirement discussion and PRD refinement — clarify vague requirements, use HTML visual aids when useful, then run a conclusion review loop and human approval gate |
+| `writing-plans` | Convert approved discussion conclusions, specs, or direct requirements into compact proof-oriented exec-plan packages |
+| `plan-impl` | Execute or resume exec-plans by reading `plan.md + review-contract.md`, optionally consuming `context.md/tasks.md`; prefer team mode, fall back to lightweight / parallel / single-agent execution, then review, verify, and finish |
+| `plan-impl-lightweight` | Lightweight path for medium-small tasks: scope_check, proof-oriented implementation, local verification, limited review/fix loop, and escalation to the full runner |
 | `dev-docs` | Doc router — delegates exec-plan to `writing-plans`, handles other doc types directly |
 | `dev-docs-maintain` | Doc gardening — scan and fix stale, missing, or invalid docs on demand |
-| `init-harness-engineering` | Bootstrap a project's Harness Engineering knowledge base from scratch |
+| `setup-power-agent` | Bootstrap a project's Harness Engineering knowledge base from scratch |
 | `using-git-worktrees` | Detect or prepare isolated worktrees before large execution tasks |
 | `writing-skills` | Create, modify, review, and pressure-test skills |
 | `systematic-debugging` | Four-phase root-cause-first debugging (no fixes without root cause analysis) |
-| `test-driven-development` | Pragmatic incremental test loop with anti-pattern reference |
+| `proof-oriented-development` | Proof-oriented implementation loop with minimal relevant verification and Proof Block output |
 | `requesting-code-review` | Orchestrate code review via subagent with structured findings |
 | `receiving-code-review` | Technical evaluation of review feedback (not performative agreement) |
 | `verification-before-completion` | Evidence-first verification — no completion claims without fresh proof |
-| `dispatching-parallel-agents` | Schedule independent tasks as parallel subagents |
 | `harness-engineering-review` | Audit a project's agent workflow against Harness Engineering best practices |
 | `finishing-a-development-branch` | Wrap up a completed branch (merge/PR/keep/discard) |
 
 ### Workflow
 
 ```
-discuss skill          ← optional: design exploration → spec doc
-    ↓ (spec approved)
-writing-plans skill    ← create TDD-structured exec-plan
+discuss skill          ← optional: requirement discussion / PRD refinement → inline discussion conclusion (spec doc only when needed)
+    ↓ (conclusion approved)
+writing-plans skill    ← create compact proof-oriented exec-plan (required `plan.md + review-contract.md`, optional `context.md/tasks.md`)
     ↓
-exec-plan-runner skill ← BOOTSTRAP(using-git-worktrees) → TDD subagents, parallel
-                     └── internal review → verification → branch finishing
+plan-impl skill ← BOOTSTRAP(using-git-worktrees) → lightweight start notice → optional plan-impl-lightweight for medium-small tasks
+                     └── prefer team mode; without team tools, fall back to proof-oriented implementation subagents in parallel or serial flow → internal review → verification → branch finishing
 
 Bug / test failure → systematic-debugging skill
-                         └── → test-driven-development + verification-before-completion
+                         └── → proof-oriented-development + verification-before-completion
 ```
 
 `requesting-code-review` is mandatory before merge/PR by default unless the user explicitly asks to skip it and the reason is recorded. `dev-docs-maintain` remains an on-demand doc maintenance skill, not a mandatory step for every development run.
@@ -91,15 +91,13 @@ Use `.cursor-plugin/plugin.json` via Cursor's plugin manager, or copy the `skill
 
 This project is inspired by and builds on:
 
-- **superpowers** by [obra](https://github.com/obra/superpowers) — MIT License. Currently tracking **v5.1.0**. The following skills are derived from superpowers: `discuss` (from `brainstorming`), `writing-plans`, `exec-plan-runner` (merged with `subagent-driven-development`), `test-driven-development`, `requesting-code-review`, `receiving-code-review`, `verification-before-completion`, `dispatching-parallel-agents`, `systematic-debugging`, `using-git-worktrees`, `writing-skills`.
+- **superpowers** by [obra](https://github.com/obra/superpowers) — MIT License. The following skills are derived from or inspired by superpowers: `discuss` (from `brainstorming`), `writing-plans`, `plan-impl` (merged with `subagent-driven-development`), `proof-oriented-development` (evolved from the original test-first implementation loop into proof-oriented implementation), `requesting-code-review`, `receiving-code-review`, `verification-before-completion`, `systematic-debugging`, `using-git-worktrees`, `writing-skills`.
 
-- **Harness Engineering** — [Ryan Lopopolo, OpenAI, Feb 11, 2026](https://openai.com/index/harness-engineering/). The `harness-engineering-review`, `init-harness-engineering`, `dev-docs`, `dev-docs-maintain` skills and the overall repo-as-SSOT philosophy are derived from this methodology.
+- **Harness Engineering** — [Ryan Lopopolo, OpenAI, Feb 11, 2026](https://openai.com/index/harness-engineering/). The `harness-engineering-review`, `setup-power-agent`, `dev-docs`, `dev-docs-maintain` skills and the overall repo-as-SSOT philosophy are derived from this methodology.
 
 ### Tracking upstream
 
-This project tracks superpowers releases. When superpowers releases a new version, review RELEASE-NOTES and port relevant improvements:
-
-| Upstream | Tracked version | Source |
-|----------|----------------|--------|
-| superpowers | v5.1.0 | https://github.com/obra/superpowers |
-| Harness Engineering | Feb 2026 | https://openai.com/index/harness-engineering/ |
+| Upstream | Source |
+|----------|--------|
+| superpowers | https://github.com/obra/superpowers |
+| Harness Engineering | https://openai.com/index/harness-engineering/ |

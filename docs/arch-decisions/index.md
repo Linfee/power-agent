@@ -1,4 +1,4 @@
-<!-- verified: 2026-05-05 -->
+<!-- verified: 2026-06-05 -->
 <!-- scope: arch-decisions -->
 
 # 设计决策索引

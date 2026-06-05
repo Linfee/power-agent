@@ -1,4 +1,4 @@
-<!-- verified: 2026-04-21 -->
+<!-- verified: 2026-06-05 -->
 <!-- scope: architecture -->
 <!-- status: accepted -->
 
@@ -24,10 +24,10 @@
 
 ## 决定
 
-选择方案 B：Skill 为执行单元，人类为决策者。每个 Skill 只做一件事，通过产出物（文件）与其他 Skill 协作。Agent 在关键 gate 点停下等待人类决策。
+选择方案 B：Skill 为执行单元，人类为决策者。每个 Skill 只做一件事，通过产出物（文件）与其他 Skill 协作。规划阶段的人类决策与实现阶段自主闭环遵循 DD-006。
 
 ## 后果
 
 - Skill 数量增长需要清晰的分层和导航
 - 需要定义 Skill 间的产出物流转协议
-- 编排层由 writing-plans + exec-plan-runner 直接串联
+- 编排层由 writing-plans + plan-impl 直接串联

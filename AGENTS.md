@@ -23,19 +23,19 @@ AI 编码 Agent 工作流插件系统，融合 superpowers + Harness Engineering
 | Skill 设计 | [docs/skill-and-harness-design.md](docs/skill-and-harness-design.md) | Skill 结构规范、Harness 设计原则 |
 | 设计决策 | [docs/arch-decisions/](docs/arch-decisions/index.md) | 重要技术决策索引 |
 | 执行计划 | [docs/exec-plans/](docs/exec-plans/) | active/ 进行中，completed/ 已归档 |
-| Spec 文档 | [docs/specs/](docs/specs/) | 经过审查的需求规格 |
+| 需求结论 / Spec 文档 | discuss / 用户 | 默认内联需求结论；按需落盘 `docs/specs/` |
 
 ## 核心工作流
 
 ```
-discuss skill [需求]      → docs/specs/*.md
+discuss skill [需求]      → 内联需求结论（按需 docs/specs/*.md）
     ↓
-writing-plans             → exec-plan
+writing-plans             → compact exec-plan（plan.md + review-contract.md，按需 context/tasks）
     ↓
-exec-plan-runner          → BOOTSTRAP(using-git-worktrees) → 默认先并行委派，不能并行则单代理推进 → 内部审查 → 验证 → 分支收尾
+plan-impl          → BOOTSTRAP(using-git-worktrees) → 中小任务可走 plan-impl-lightweight → 优先 team 模式，缺失 team 工具时回退并行/单代理委派 → 内部审查 → 验证 → 分支收尾
 ```
 
-**调试路径**: `systematic-debugging` → `test-driven-development` → `verification-before-completion`
+**调试路径**: `systematic-debugging` → `proof-oriented-development` → `verification-before-completion`
 
 **合并前审查**: `requesting-code-review`（全量审查）在合并/PR 前默认强制执行，除非用户明确要求跳过并记录原因；`dev-docs-maintain`（文档维护）按需手动调用。
 
@@ -43,22 +43,22 @@ exec-plan-runner          → BOOTSTRAP(using-git-worktrees) → 默认先并行
 
 | Skill | 用途 | 触发词 |
 |-------|------|--------|
-| `discuss` | 设计探索，产出 spec | '需求讨论', '方案对比' |
-| `writing-plans` | 创建 TDD 结构 exec-plan | '创建实现计划', 'exec-plan' |
-| `exec-plan-runner` | 执行 exec-plan | 恢复执行 |
+| `discuss` | 需求讨论与 PRD 细化，必要时用 HTML 可视化辅助，默认产出内联需求结论，按需落盘 spec | '需求讨论', 'PRD 细化', '可视化讨论' |
+| `writing-plans` | 创建包含验收与验证路径的 compact exec-plan | '创建实现计划', 'exec-plan' |
+| `plan-impl` | 执行 exec-plan | 恢复执行 |
+| `plan-impl-lightweight` | 中小任务轻量执行路径：scope_check、proof-oriented 实现、局部验证、有限 review/fix 循环、必要时升级完整 runner | '轻量执行', 'lightweight path', 'targeted verify' |
 | `systematic-debugging` | 四阶段根因调试 | 'bug', '测试失败', 'debug' |
-| `test-driven-development` | 务实增量测试闭环 | '实现功能', 'TDD' |
+| `proof-oriented-development` | 证明导向开发闭环：小步实现、最小相关验证、交付 Proof Block | '实现功能', 'Proof Block', '最小有效验证', '目标验证' |
 | `requesting-code-review` | 代码审查编排 | '代码审查', 'code review' |
 | `receiving-code-review` | 审查反馈技术评估 | '收到审查', '审查反馈' |
-| `verification-before-completion` | 证据优先验证 | '验证完成', 'verification' |
+| `verification-before-completion` | 完成前审计 Proof Block 并输出 verification_evidence | '验证完成', 'verification', 'Proof Block 审计' |
 | `dev-docs` | 文档路由器 | '写文档', 'architecture' |
 | `dev-docs-maintain` | 文档维护 | 手动调用 |
-| `dispatching-parallel-agents` | 并行调度 | '并行执行', 'parallel agents' |
 | `using-git-worktrees` | 隔离 worktree 准备 | 'worktree', '隔离执行' |
-| `init-harness-engineering` | 项目初始化 | 手动调用 |
+| `setup-power-agent` | 项目初始化 | 手动调用 |
 | `harness-engineering-review` | 实践审查 | 'agent最佳实践' |
 | `writing-skills` | 创建/修改/验证 Skill | '写skill', '修改skill' |
-| `finishing-a-development-branch` | 分支收尾：merge/PR/保留/丢弃（exec-plan-runner 自动调用） | 手动调用 |
+| `finishing-a-development-branch` | 分支收尾：merge/PR/保留/丢弃（plan-impl 自动调用） | 手动调用 |
 
 ## 约束（硬规则）
 
@@ -66,11 +66,10 @@ exec-plan-runner          → BOOTSTRAP(using-git-worktrees) → 默认先并行
 |------|------|
 | 依赖方向 | 只能从上层指向下层，禁止反向 |
 | 子代理一次性 | 不重用子代理，每次启动新代理 |
-| Gate 强制等待 | discuss spec 批准（规划 Gate）；实现阶段改为轻量启动通知（DD-006） |
+| 规划 Gate 与证据 Gate | discuss 需求结论批准保留强制 Gate；实现阶段使用轻量启动通知，完成声明依赖 Proof Block 与验证证据（DD-006） |
 | 证据优先 | 没有运行验证不得声称完成 |
 | 根因优先 | 没有根本原因分析没有修复 |
 | 并发限制 | 最大并行度 3 |
-| 提交前版本同步 | 修改 Skill 内容后提交前：1) 更新 `VERSION` 文件 2) 运行 `bash scripts/sync-version.sh` 3) 确认输出"版本同步完成" |
 
 ## 文档规范
 
@@ -97,7 +96,7 @@ exec-plan-runner          → BOOTSTRAP(using-git-worktrees) → 默认先并行
 
 ## 上游追踪
 
-| 项目 | 版本 | 来源 |
-|------|------|------|
-| superpowers | v5.1.0 | github.com/obra/superpowers |
-| Harness Engineering | 2026-02 | openai.com/index/harness-engineering |
+| 项目 | 来源 |
+|------|------|
+| superpowers | github.com/obra/superpowers |
+| Harness Engineering | openai.com/index/harness-engineering |

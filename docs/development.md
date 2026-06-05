@@ -1,4 +1,4 @@
-<!-- verified: 2026-05-05 -->
+<!-- verified: 2026-06-05 -->
 <!-- scope: development -->
 
 # 开发指南
@@ -36,13 +36,10 @@ power-agent/
 ├── AGENTS.md                 # Agent 快速参考（≤200 行）
 ├── CLAUDE.md                 # Claude Code 入口
 ├── GEMINI.md                 # Gemini 入口
-├── VERSION                   # Skill 版本号
 ├── .claude-plugin/           # Claude Code / Droid 插件清单
 ├── .cursor-plugin/           # Cursor 插件清单
 ├── .factory-plugin/          # Factory 插件清单
 ├── gemini-extension.json     # Gemini extension 清单
-└── scripts/
-    └── sync-version.sh       # 版本同步脚本
 ```
 
 ## Skill 开发
@@ -64,7 +61,6 @@ name: [skill-name]
 description: |-
   [用途描述，中文]
   Triggers: [触发关键词，逗号分隔]
-version: [x.y.z]
 disable-model-invocation: [true|false]  # 可选，默认 false
 ---
 
@@ -82,25 +78,16 @@ disable-model-invocation: [true|false]  # 可选，默认 false
 ## 禁止事项
 ```
 
-### 提交前版本同步
-
-修改 Skill 内容后，提交前必须：
-
-```bash
-# 1. 更新 VERSION 文件
-# 2. 运行同步脚本
-bash scripts/sync-version.sh
-# 3. 确认输出"版本同步完成"
-```
-
 ### Skill 行为验证
+
 
 新增或重写核心 Skill 时，使用 `writing-skills`：
 
 - 先写清楚触发场景、目标行为和无 Skill 时的失败模式。
 - 为关键路径准备 2-3 个压力场景。
 - 检查上游产物是否满足下游输入契约。
-- 至少运行路径、版本或引用检查；有条件时运行子代理 eval。
+- 对规划类 Skill，区分人类审阅入口与 Agent 执行材料；例如 `writing-plans` 默认使用 `review-contract.md` 承载人类批准口径。
+- 至少运行路径和引用检查；有条件时运行子代理 eval。
 
 ## 文档规范
 

@@ -1,5 +1,5 @@
 <!-- verified: 2026-05-05 -->
-<!-- scope: exec-plan-runner, code-quality-review -->
+<!-- scope: plan-impl, code-quality-review -->
 
 你是一名代码质量审查员。可以复用 `skills/requesting-code-review/references/code-reviewer.md` 的审查维度与严重度校准，但输出协议只遵循本文件。
 
