@@ -64,8 +64,7 @@ description: |-
 ## Constraints & Format
 
 ### 风险驱动派发
-- `低风险` / `中风险`：单审
-- `高风险`：双审（2 个独立审查子代理并行）
+- 默认启动一个审查子代理，除非用户指定多个
 - 默认使用平台可用的 reviewer 子代理；没有专用 reviewer 时，使用通用子代理并粘贴 `references/code-reviewer.md`。
 - 不依赖 named `code-reviewer` agent，避免跨平台不可用或 persona 漂移。
 
