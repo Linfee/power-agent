@@ -29,3 +29,7 @@ npm-debug.log*
 .env.*.local
 .worktrees/
 .claude/worktrees/
+
+# Raw Pi evaluation transcripts; retain externally when audit replay is required.
+evals/documentation-skills/baselines/baseline-sealed*.json
+evals/documentation-skills/baselines/candidate-sealed.json
