@@ -1,6 +1,15 @@
-<!-- verified: YYYY-MM-DD -->
-<!-- scope: [涉及范围] -->
-<!-- status: active -->
+---
+type: Execution Plan
+scope:
+  - <affected-scope>
+status: active
+runner:
+  state: READY
+  batch: 0/0
+  phase: ready
+  fix_round: 0/0
+  next_action: start
+---
 
 # [主题] 实现计划
 
@@ -41,6 +50,15 @@
 - 不可自行决策：[哪些范围、协议、关键 UX、权限、发布/迁移或风险等级不能擅自改变]
 - 必须保持的不变量：[执行期间必须始终成立的契约]
 - 触发升级条件：[遇到什么情况必须 BLOCKED 并请求用户 / 人类确认]
+
+## Plan Review Gate
+
+- Gate Revision：r1；每次 material amendment 递增。
+- Plan Risk：low / medium / high
+- Review Path：self-review / self-review + independent reviewer
+- Plan Review Status：SELF_REVIEWED / PENDING_INDEPENDENT_REVIEW / APPROVED / ISSUES_FOUND
+- Independent Review：not_required / pending / approved / issues_found
+- Independent Review Basis：[not_required 时写 not_required；pending 时写 pending；approved / issues_found 时写 `gate_revision=rN; kind=independent-review; record=<稳定位置>`]
 
 ## Evidence Cache（仅记录非显然事实）
 

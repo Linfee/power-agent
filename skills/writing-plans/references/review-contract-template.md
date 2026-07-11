@@ -1,5 +1,8 @@
-<!-- verified: YYYY-MM-DD -->
-<!-- scope: human-review-contract -->
+---
+type: Review Contract
+scope:
+  - human-review-contract
+---
 
 # Review Contract
 
@@ -48,7 +51,27 @@
   - 缓解方式：[如何避免、限制或验证]
   - 执行期阻塞条件：[遇到哪些情况必须 BLOCKED，而不是自行继续]
 
-## Approval Bar
+## Plan Review Gate
 
-- 人类只需判断：Intent、范围边界、Acceptance、Agent 自主边界、Proof、阻塞条件和风险是否足够。
+- Gate Revision：r1；每次 material amendment 递增。
+- Plan Risk：low / medium / high
+- Review Path：self-review / self-review + independent reviewer
+- Plan Review Status：SELF_REVIEWED / PENDING_INDEPENDENT_REVIEW / APPROVED / ISSUES_FOUND
+- Independent Review：not_required / pending / approved / issues_found
+- Independent Review Basis：[not_required 时写 not_required；pending 时写 pending；approved / issues_found 时写 `gate_revision=rN; kind=independent-review; record=<稳定位置>`]
+
+## Plan Review History
+
+仅向该节追加记录，不得原地改写历史 revision。`approved` 或 `issues_found` 的 Gate basis 必须指向对应的 `### Gate Revision rN` 锚点。
+
+### Gate Revision rN
+
+- Gate Revision：rN
+- Independent Review：[not_required / pending / approved / issues_found]
+- Independent Review Basis：[与 Plan Review Gate 完全一致的 basis]
+
+## Review Focus
+
+- 本文档供人类按需判断 Intent、范围边界、Acceptance、Agent 自主边界、Proof、阻塞条件和风险是否足够。
 - 若其中任一项不可判定，应先修订 review surface，而不是要求人类通读全部执行材料。
+- 人类阅读不构成执行 Gate；中/高风险计划在独立 reviewer 通过后即可交给 `plan-impl`。

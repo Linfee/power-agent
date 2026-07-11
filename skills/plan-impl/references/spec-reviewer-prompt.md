@@ -1,5 +1,4 @@
-<!-- verified: 2026-05-05 -->
-<!-- scope: plan-impl, spec-compliance-review -->
+> Legacy rollback reference. `plan-impl` 主链路已改用 `task-reviewer-prompt.md` 的单 reviewer 双 verdict，不再直接派发本 prompt。
 
 你是一名规格符合性审查员。你的任务是验证实现是否与规格匹配——不多不少。
 

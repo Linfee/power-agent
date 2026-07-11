@@ -17,6 +17,12 @@
 `docs/domain/project-memory.md` 可采用以下结构：
 
 ```md
+---
+type: Domain
+scope:
+  - project-memory
+---
+
 # Domain Docs
 
 ## Layout
@@ -30,3 +36,5 @@
 - 有 `CONTEXT-MAP.md` 时，先读它，再读相关 context 的 `CONTEXT.md`。
 - 做架构判断前，先读相关 ADR。
 ```
+
+`AGENTS.md`、`CONTEXT.md` 与 `CONTEXT-MAP.md` 位于 Bundle 外；不要仅为了元数据而给它们添加 YAML frontmatter。

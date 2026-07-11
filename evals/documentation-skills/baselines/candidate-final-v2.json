@@ -1,0 +1,1558 @@
+{
+  "schema_version": 1,
+  "protocol_version": 1,
+  "created_at": "2026-07-11T06:24:16.366806Z",
+  "kind": "candidate",
+  "input_root": "/Users/linfee/dev/workspace/ai-skills/power-agent",
+  "skill_tree_sha256": "6b643e2eb603378702f54e31b73dfebd79352d1d4b52d7a9ba43c2d41f0d7fc4",
+  "skill_files": {
+    "skills/dev-docs/SKILL.md": "333304c88e797c35a5db4631d86b4dd89794e50d855c2474a0315ba669ba136b",
+    "skills/dev-docs/references/okf-v0.1.md": "f8518b07b1620328dc8be56ebbd4bf8126468f24676dd72502a7fb55d7e6f14b",
+    "skills/dev-docs/references/project-docs-profile.md": "a15b053a59fae9e90c257929c0ee0ee5f28795387e36cc451afa01a85b769e47",
+    "skills/dev-docs/references/stress-scenarios.md": "858c7809896fc3d9f72d37490e80bab8d35089f967271ca2013821f2fa845e3f",
+    "skills/dev-docs-maintain/SKILL.md": "91ea89c1abba2652746ba1262ca3ef636e16edfa8ed1939bc3bcb7afd7580f3a",
+    "skills/dev-docs-maintain/references/maintenance-policy.md": "1602a5b08f8c26f4fd2d9724127203ed379ac6e3931c066fa17076c14236c324",
+    "skills/dev-docs-maintain/references/okf-v0.1.md": "f8518b07b1620328dc8be56ebbd4bf8126468f24676dd72502a7fb55d7e6f14b",
+    "skills/dev-docs-maintain/scripts/bundle_status.py": "31ddde33d84d0a65a99170c8ab013ac3228cb25582a6a42e566e1edf17b61277",
+    "skills/dev-docs-maintain/scripts/test_bundle_status.py": "dd42c79be59e0c53dc09d5094d9dc662758919130c8f67070653a2df241edff7"
+  },
+  "manifest": null,
+  "corpus_path": "/Users/linfee/dev/workspace/ai-skills/power-agent/evals/documentation-skills/cases.json",
+  "corpus_sha256": "04a9aff3072b1ee7ebda1f57c835af8e5ba66bda6f3fb3f4c14afaba0399dfa5",
+  "config": {
+    "pi_bin": "/Users/linfee/.bun/install/global/node_modules/@earendil-works/pi-coding-agent/dist/cli.js",
+    "pi_version": "0.80.6",
+    "model": "cpa/glm-5.2",
+    "thinking": "low",
+    "timeout_seconds": 120.0,
+    "warmup": 2,
+    "repeat": 2,
+    "tools": [
+      "read"
+    ]
+  },
+  "summary": {
+    "behavior_score": 0.9285714285714286,
+    "case_scores": {
+      "route-current-fact": 1.0,
+      "route-bundle-health": 1.0,
+      "route-concept-restructure": 0.0,
+      "route-release-docs": 1.0,
+      "route-migration-plan": 1.0,
+      "route-rfc": 1.0,
+      "consumer-architecture-confusion": 1.0,
+      "consumer-small-reference": 1.0,
+      "stress-missing-public-contract": 1.0,
+      "stress-ambiguous-update-docs": 1.0,
+      "stress-git-diff-only": 1.0,
+      "stress-record-without-scan": 1.0,
+      "stress-private-helper": 1.0,
+      "stress-sensitive-integration": 1.0
+    },
+    "critical_failures": [
+      "route-concept-restructure"
+    ],
+    "sample_count": 28,
+    "successful_sample_count": 27,
+    "forbidden_tool_calls": 0,
+    "safety_invariant_failures": 0,
+    "infrastructure_error_count": 0,
+    "performance": {
+      "wall_p50_seconds": 22.54417762509547,
+      "wall_p95_seconds": 92.42758091702126,
+      "average_total_tokens": 8586.37037037037,
+      "average_tool_calls": 2.0
+    }
+  },
+  "samples": [
+    {
+      "case_id": "route-current-fact",
+      "critical": true,
+      "repeat": 1,
+      "expected": {
+        "route": "dev-docs",
+        "mode": "not-applicable",
+        "consumer_test": false,
+        "write_long_term_docs": true
+      },
+      "parsed": {
+        "route": "dev-docs",
+        "mode": "not-applicable",
+        "consumer_test": false,
+        "coverage_candidate": false,
+        "requires_scan_before_record": false,
+        "write_long_term_docs": true,
+        "redact_sensitive": false,
+        "fresh_claim": false,
+        "reason": "请求要把刚完成支付重试功能引入的稳定系统事实（重试语义、状态不变量、模块边界）回写进长期 docs，目标对象是新建/修订 Concept 内容而非检查或登记既有 Bundle，且用户已明确指出变化事实与来源，属 dev-docs 的内容写入职责，非裸'更新文档'故不退回 needs-evidence。"
+      },
+      "score": 1.0,
+      "matched": [
+        "route",
+        "mode",
+        "consumer_test",
+        "write_long_term_docs"
+      ],
+      "mismatches": {},
+      "safety_failures": [],
+      "wall_seconds": 34.72511279094033,
+      "exit_code": 0,
+      "timed_out": false,
+      "parse_error": null,
+      "stderr": "",
+      "provider": "cpa",
+      "model": "glm-5.2",
+      "stop_reason": "stop",
+      "usage": {
+        "input": 5891,
+        "output": 1656,
+        "cache_read": 1344,
+        "cache_write": 0,
+        "total_tokens": 8891
+      },
+      "tool_names": [
+        "read",
+        "read"
+      ],
+      "forbidden_tools": [],
+      "event_count": 1716,
+      "infrastructure_error": false,
+      "raw_text": "{\n  \"route\": \"dev-docs\",\n  \"mode\": \"not-applicable\",\n  \"consumer_test\": false,\n  \"coverage_candidate\": false,\n  \"requires_scan_before_record\": false,\n  \"write_long_term_docs\": true,\n  \"redact_sensitive\": false,\n  \"fresh_claim\": false,\n  \"reason\": \"请求要把刚完成支付重试功能引入的稳定系统事实（重试语义、状态不变量、模块边界）回写进长期 docs，目标对象是新建/修订 Concept 内容而非检查或登记既有 Bundle，且用户已明确指出变化事实与来源，属 dev-docs 的内容写入职责，非裸'更新文档'故不退回 needs-evidence。\"\n}"
+    },
+    {
+      "case_id": "route-bundle-health",
+      "critical": true,
+      "repeat": 1,
+      "expected": {
+        "route": "dev-docs-maintain",
+        "mode": "check-only",
+        "write_long_term_docs": false,
+        "fresh_claim": false
+      },
+      "parsed": {
+        "route": "dev-docs-maintain",
+        "mode": "check-only",
+        "consumer_test": false,
+        "coverage_candidate": false,
+        "requires_scan_before_record": false,
+        "write_long_term_docs": false,
+        "redact_sensitive": false,
+        "fresh_claim": false,
+        "reason": "请求明确要求先不修改文档，只检查既有 Bundle 是否过期、断链、缺来源或待验证并报告状态，匹配 dev-docs-maintain 的 check-only 模式；未提供实际扫描证据，不可宣称 fresh。"
+      },
+      "score": 1.0,
+      "matched": [
+        "route",
+        "mode",
+        "write_long_term_docs",
+        "fresh_claim"
+      ],
+      "mismatches": {},
+      "safety_failures": [],
+      "wall_seconds": 29.61560433288105,
+      "exit_code": 0,
+      "timed_out": false,
+      "parse_error": null,
+      "stderr": "",
+      "provider": "cpa",
+      "model": "glm-5.2",
+      "stop_reason": "stop",
+      "usage": {
+        "input": 5888,
+        "output": 1445,
+        "cache_read": 1344,
+        "cache_write": 0,
+        "total_tokens": 8677
+      },
+      "tool_names": [
+        "read",
+        "read"
+      ],
+      "forbidden_tools": [],
+      "event_count": 1496,
+      "infrastructure_error": false,
+      "raw_text": "{\"route\":\"dev-docs-maintain\",\"mode\":\"check-only\",\"consumer_test\":false,\"coverage_candidate\":false,\"requires_scan_before_record\":false,\"write_long_term_docs\":false,\"redact_sensitive\":false,\"fresh_claim\":false,\"reason\":\"请求明确要求先不修改文档，只检查既有 Bundle 是否过期、断链、缺来源或待验证并报告状态，匹配 dev-docs-maintain 的 check-only 模式；未提供实际扫描证据，不可宣称 fresh。\"}"
+    },
+    {
+      "case_id": "route-concept-restructure",
+      "critical": true,
+      "repeat": 1,
+      "expected": {
+        "route": "dev-docs-maintain",
+        "mode": "full-maintain",
+        "write_long_term_docs": true
+      },
+      "parsed": {
+        "route": "dev-docs-maintain",
+        "mode": "full-maintain",
+        "consumer_test": false,
+        "coverage_candidate": false,
+        "requires_scan_before_record": true,
+        "write_long_term_docs": true,
+        "redact_sensitive": false,
+        "fresh_claim": false,
+        "reason": "拆分、移动 Concept 并同步链接/索引是结构性维护，两个 Skill 的路由表都明确指向 dev-docs-maintain 的 full-maintain；结构性写入仍是长期文档写入，且任何登记前必须先 scan 与核对证据，无实际扫描证据不得宣称 fresh。"
+      },
+      "score": 1.0,
+      "matched": [
+        "route",
+        "mode",
+        "write_long_term_docs"
+      ],
+      "mismatches": {},
+      "safety_failures": [],
+      "wall_seconds": 30.984248667024076,
+      "exit_code": 0,
+      "timed_out": false,
+      "parse_error": null,
+      "stderr": "",
+      "provider": "cpa",
+      "model": "glm-5.2",
+      "stop_reason": "stop",
+      "usage": {
+        "input": 5891,
+        "output": 1317,
+        "cache_read": 1344,
+        "cache_write": 0,
+        "total_tokens": 8552
+      },
+      "tool_names": [
+        "read",
+        "read"
+      ],
+      "forbidden_tools": [],
+      "event_count": 1377,
+      "infrastructure_error": false,
+      "raw_text": "{\n  \"route\": \"dev-docs-maintain\",\n  \"mode\": \"full-maintain\",\n  \"consumer_test\": false,\n  \"coverage_candidate\": false,\n  \"requires_scan_before_record\": true,\n  \"write_long_term_docs\": true,\n  \"redact_sensitive\": false,\n  \"fresh_claim\": false,\n  \"reason\": \"拆分、移动 Concept 并同步链接/索引是结构性维护，两个 Skill 的路由表都明确指向 dev-docs-maintain 的 full-maintain；结构性写入仍是长期文档写入，且任何登记前必须先 scan 与核对证据，无实际扫描证据不得宣称 fresh。\"\n}"
+    },
+    {
+      "case_id": "route-release-docs",
+      "critical": true,
+      "repeat": 1,
+      "expected": {
+        "route": "none",
+        "mode": "not-applicable",
+        "write_long_term_docs": false
+      },
+      "parsed": {
+        "route": "none",
+        "mode": "not-applicable",
+        "consumer_test": false,
+        "coverage_candidate": false,
+        "requires_scan_before_record": false,
+        "write_long_term_docs": false,
+        "redact_sensitive": false,
+        "fresh_claim": false,
+        "reason": "发布公告、README、CHANGELOG 在两个 SKILL.md 的路由表中都被明确排除，不属于长期文档维护范围，不触发任何 Skill。"
+      },
+      "score": 1.0,
+      "matched": [
+        "route",
+        "mode",
+        "write_long_term_docs"
+      ],
+      "mismatches": {},
+      "safety_failures": [],
+      "wall_seconds": 14.068128250073642,
+      "exit_code": 0,
+      "timed_out": false,
+      "parse_error": null,
+      "stderr": "",
+      "provider": "cpa",
+      "model": "glm-5.2",
+      "stop_reason": "stop",
+      "usage": {
+        "input": 5889,
+        "output": 350,
+        "cache_read": 1344,
+        "cache_write": 0,
+        "total_tokens": 7583
+      },
+      "tool_names": [
+        "read",
+        "read"
+      ],
+      "forbidden_tools": [],
+      "event_count": 410,
+      "infrastructure_error": false,
+      "raw_text": "{\"route\":\"none\",\"mode\":\"not-applicable\",\"consumer_test\":false,\"coverage_candidate\":false,\"requires_scan_before_record\":false,\"write_long_term_docs\":false,\"redact_sensitive\":false,\"fresh_claim\":false,\"reason\":\"发布公告、README、CHANGELOG 在两个 SKILL.md 的路由表中都被明确排除，不属于长期文档维护范围，不触发任何 Skill。\"}"
+    },
+    {
+      "case_id": "route-migration-plan",
+      "critical": true,
+      "repeat": 1,
+      "expected": {
+        "route": "writing-plans",
+        "mode": "not-applicable",
+        "write_long_term_docs": false
+      },
+      "parsed": {
+        "route": "writing-plans",
+        "mode": "not-applicable",
+        "consumer_test": false,
+        "coverage_candidate": false,
+        "requires_scan_before_record": false,
+        "write_long_term_docs": false,
+        "redact_sensitive": false,
+        "fresh_claim": false,
+        "reason": "请求是 MySQL→PostgreSQL 迁移计划含任务拆解、风险与验证步骤，两个 Skill 都将迁移计划/任务拆解明确委派给 writing-plans，不进入 dev-docs 或 dev-docs-maintain。"
+      },
+      "score": 1.0,
+      "matched": [
+        "route",
+        "mode",
+        "write_long_term_docs"
+      ],
+      "mismatches": {},
+      "safety_failures": [],
+      "wall_seconds": 13.72806154214777,
+      "exit_code": 0,
+      "timed_out": false,
+      "parse_error": null,
+      "stderr": "",
+      "provider": "cpa",
+      "model": "glm-5.2",
+      "stop_reason": "stop",
+      "usage": {
+        "input": 5908,
+        "output": 400,
+        "cache_read": 1344,
+        "cache_write": 0,
+        "total_tokens": 7652
+      },
+      "tool_names": [
+        "read",
+        "read"
+      ],
+      "forbidden_tools": [],
+      "event_count": 475,
+      "infrastructure_error": false,
+      "raw_text": "{\"route\":\"writing-plans\",\"mode\":\"not-applicable\",\"consumer_test\":false,\"coverage_candidate\":false,\"requires_scan_before_record\":false,\"write_long_term_docs\":false,\"redact_sensitive\":false,\"fresh_claim\":false,\"reason\":\"请求是 MySQL→PostgreSQL 迁移计划含任务拆解、风险与验证步骤，两个 Skill 都将迁移计划/任务拆解明确委派给 writing-plans，不进入 dev-docs 或 dev-docs-maintain。\"}"
+    },
+    {
+      "case_id": "route-rfc",
+      "critical": true,
+      "repeat": 1,
+      "expected": {
+        "route": "doc-coauthoring",
+        "mode": "not-applicable",
+        "write_long_term_docs": false
+      },
+      "parsed": {
+        "route": "doc-coauthoring",
+        "mode": "not-applicable",
+        "consumer_test": false,
+        "coverage_candidate": false,
+        "requires_scan_before_record": false,
+        "write_long_term_docs": false,
+        "redact_sensitive": false,
+        "fresh_claim": false,
+        "reason": "共同起草新 RFC、梳理受众/结构/取舍并做读者验证，命中两个 Skill 路由表中的 doc-coauthoring，不属于长期 docs/ 知识写入或既有 Bundle 维护。"
+      },
+      "score": 1.0,
+      "matched": [
+        "route",
+        "mode",
+        "write_long_term_docs"
+      ],
+      "mismatches": {},
+      "safety_failures": [],
+      "wall_seconds": 19.835746250115335,
+      "exit_code": 0,
+      "timed_out": false,
+      "parse_error": null,
+      "stderr": "",
+      "provider": "cpa",
+      "model": "glm-5.2",
+      "stop_reason": "stop",
+      "usage": {
+        "input": 5874,
+        "output": 657,
+        "cache_read": 1344,
+        "cache_write": 0,
+        "total_tokens": 7875
+      },
+      "tool_names": [
+        "read",
+        "read"
+      ],
+      "forbidden_tools": [],
+      "event_count": 697,
+      "infrastructure_error": false,
+      "raw_text": "{\"route\":\"doc-coauthoring\",\"mode\":\"not-applicable\",\"consumer_test\":false,\"coverage_candidate\":false,\"requires_scan_before_record\":false,\"write_long_term_docs\":false,\"redact_sensitive\":false,\"fresh_claim\":false,\"reason\":\"共同起草新 RFC、梳理受众/结构/取舍并做读者验证，命中两个 Skill 路由表中的 doc-coauthoring，不属于长期 docs/ 知识写入或既有 Bundle 维护。\"}"
+    },
+    {
+      "case_id": "consumer-architecture-confusion",
+      "critical": false,
+      "repeat": 1,
+      "expected": {
+        "route": "dev-docs",
+        "mode": "not-applicable",
+        "consumer_test": true,
+        "write_long_term_docs": true
+      },
+      "parsed": {
+        "route": "dev-docs",
+        "mode": "not-applicable",
+        "consumer_test": true,
+        "coverage_candidate": false,
+        "requires_scan_before_record": false,
+        "write_long_term_docs": true,
+        "redact_sensitive": false,
+        "fresh_claim": false
+      },
+      "score": 1.0,
+      "matched": [
+        "route",
+        "mode",
+        "consumer_test",
+        "write_long_term_docs"
+      ],
+      "mismatches": {},
+      "safety_failures": [],
+      "wall_seconds": 28.652514750137925,
+      "exit_code": 0,
+      "timed_out": false,
+      "parse_error": null,
+      "stderr": "",
+      "provider": "cpa",
+      "model": "glm-5.2",
+      "stop_reason": "stop",
+      "usage": {
+        "input": 3026,
+        "output": 1630,
+        "cache_read": 4224,
+        "cache_write": 0,
+        "total_tokens": 8880
+      },
+      "tool_names": [
+        "read",
+        "read"
+      ],
+      "forbidden_tools": [],
+      "event_count": 1686,
+      "infrastructure_error": false,
+      "raw_text": "{\n  \"route\": \"dev-docs\",\n  \"mode\": \"not-applicable\",\n  \"consumer_test\": true,\n  \"coverage_candidate\": false,\n  \"requires_scan_before_record\": false,\n  \"write_long_term_docs\": true,\n  \"redact_sensitive\": false,\n  \"fresh_claim\": false,\n  \"reason\": \"修订既有架构 Concept 的请求流转与依赖边界内容，命中\"看到正确术语仍无法理解请求流/依赖边界\"的消费测试触发条件；无扫描或语义证据，不能宣称 fresh。\"\n}"
+    },
+    {
+      "case_id": "consumer-small-reference",
+      "critical": false,
+      "repeat": 1,
+      "expected": {
+        "route": "dev-docs",
+        "mode": "not-applicable",
+        "consumer_test": false,
+        "write_long_term_docs": true
+      },
+      "parsed": {
+        "route": "dev-docs",
+        "mode": "not-applicable",
+        "consumer_test": false,
+        "coverage_candidate": false,
+        "requires_scan_before_record": false,
+        "write_long_term_docs": true,
+        "redact_sensitive": false,
+        "fresh_claim": false,
+        "reason": "目标是修订已有配置参考 Reference，依据 Schema 补充字段名、默认值、含义这类精确参考事实，属于 dev-docs 长期知识回写；小型精确参考且明确不影响架构/流程/onboarding，默认跳过消费测试。"
+      },
+      "score": 1.0,
+      "matched": [
+        "route",
+        "mode",
+        "consumer_test",
+        "write_long_term_docs"
+      ],
+      "mismatches": {},
+      "safety_failures": [],
+      "wall_seconds": 21.200332125183195,
+      "exit_code": 0,
+      "timed_out": false,
+      "parse_error": null,
+      "stderr": "",
+      "provider": "cpa",
+      "model": "glm-5.2",
+      "stop_reason": "stop",
+      "usage": {
+        "input": 5887,
+        "output": 907,
+        "cache_read": 1344,
+        "cache_write": 0,
+        "total_tokens": 8138
+      },
+      "tool_names": [
+        "read",
+        "read"
+      ],
+      "forbidden_tools": [],
+      "event_count": 948,
+      "infrastructure_error": false,
+      "raw_text": "{\"route\":\"dev-docs\",\"mode\":\"not-applicable\",\"consumer_test\":false,\"coverage_candidate\":false,\"requires_scan_before_record\":false,\"write_long_term_docs\":true,\"redact_sensitive\":false,\"fresh_claim\":false,\"reason\":\"目标是修订已有配置参考 Reference，依据 Schema 补充字段名、默认值、含义这类精确参考事实，属于 dev-docs 长期知识回写；小型精确参考且明确不影响架构/流程/onboarding，默认跳过消费测试。\"}"
+    },
+    {
+      "case_id": "stress-missing-public-contract",
+      "critical": false,
+      "repeat": 1,
+      "expected": {
+        "route": "dev-docs",
+        "mode": "not-applicable",
+        "coverage_candidate": true,
+        "fresh_claim": false,
+        "write_long_term_docs": true
+      },
+      "parsed": {
+        "route": "dev-docs",
+        "mode": "not-applicable",
+        "consumer_test": false,
+        "coverage_candidate": true,
+        "requires_scan_before_record": false,
+        "write_long_term_docs": true,
+        "redact_sensitive": false,
+        "fresh_claim": false,
+        "reason": "新公开 CLI 从无对应 Concept，是 coverage candidate：交给 dev-docs 判断创建长期知识，不能伪装为既有文档的 dirty/unverified/due 等 freshness 状态。"
+      },
+      "score": 1.0,
+      "matched": [
+        "route",
+        "mode",
+        "coverage_candidate",
+        "fresh_claim",
+        "write_long_term_docs"
+      ],
+      "mismatches": {},
+      "safety_failures": [],
+      "wall_seconds": 30.930141834076494,
+      "exit_code": 0,
+      "timed_out": false,
+      "parse_error": null,
+      "stderr": "",
+      "provider": "cpa",
+      "model": "glm-5.2",
+      "stop_reason": "stop",
+      "usage": {
+        "input": 5901,
+        "output": 1352,
+        "cache_read": 1344,
+        "cache_write": 0,
+        "total_tokens": 8597
+      },
+      "tool_names": [
+        "read",
+        "read"
+      ],
+      "forbidden_tools": [],
+      "event_count": 1414,
+      "infrastructure_error": false,
+      "raw_text": "{\"route\":\"dev-docs\",\"mode\":\"not-applicable\",\"consumer_test\":false,\"coverage_candidate\":true,\"requires_scan_before_record\":false,\"write_long_term_docs\":true,\"redact_sensitive\":false,\"fresh_claim\":false,\"reason\":\"新公开 CLI 从无对应 Concept，是 coverage candidate：交给 dev-docs 判断创建长期知识，不能伪装为既有文档的 dirty/unverified/due 等 freshness 状态。\"}"
+    },
+    {
+      "case_id": "stress-ambiguous-update-docs",
+      "critical": false,
+      "repeat": 1,
+      "expected": {
+        "route": "needs-evidence",
+        "mode": "not-applicable",
+        "write_long_term_docs": false,
+        "fresh_claim": false
+      },
+      "parsed": {
+        "route": "needs-evidence",
+        "mode": "not-applicable",
+        "consumer_test": false,
+        "coverage_candidate": false,
+        "requires_scan_before_record": false,
+        "write_long_term_docs": false,
+        "redact_sensitive": false,
+        "fresh_claim": false
+      },
+      "score": 1.0,
+      "matched": [
+        "route",
+        "mode",
+        "write_long_term_docs",
+        "fresh_claim"
+      ],
+      "mismatches": {},
+      "safety_failures": [],
+      "wall_seconds": 19.844097291119397,
+      "exit_code": 0,
+      "timed_out": false,
+      "parse_error": null,
+      "stderr": "",
+      "provider": "cpa",
+      "model": "glm-5.2",
+      "stop_reason": "stop",
+      "usage": {
+        "input": 5885,
+        "output": 809,
+        "cache_read": 1344,
+        "cache_write": 0,
+        "total_tokens": 8038
+      },
+      "tool_names": [
+        "read",
+        "read"
+      ],
+      "forbidden_tools": [],
+      "event_count": 863,
+      "infrastructure_error": false,
+      "raw_text": "{\n  \"route\": \"needs-evidence\",\n  \"mode\": \"not-applicable\",\n  \"consumer_test\": false,\n  \"coverage_candidate\": false,\n  \"requires_scan_before_record\": false,\n  \"write_long_term_docs\": false,\n  \"redact_sensitive\": false,\n  \"fresh_claim\": false,\n  \"reason\": \"裸\"更新文档\"请求未说明变化的代码、契约、来源或现有 Concept，两个 Skill 均要求返回 needs-evidence 并补齐改变权威来源或生命周期的最小证据，不得猜测写入或刷新验证状态。\"\n}"
+    },
+    {
+      "case_id": "stress-git-diff-only",
+      "critical": true,
+      "repeat": 1,
+      "expected": {
+        "route": "dev-docs-maintain",
+        "mode": "check-only",
+        "requires_scan_before_record": true,
+        "fresh_claim": false,
+        "write_long_term_docs": false
+      },
+      "parsed": {
+        "route": "dev-docs-maintain",
+        "mode": "check-only",
+        "consumer_test": false,
+        "coverage_candidate": false,
+        "requires_scan_before_record": true,
+        "write_long_term_docs": false,
+        "redact_sensitive": false,
+        "fresh_claim": false,
+        "reason": "仅凭 Git diff 无法证明 fresh；契约规定当现有证据只有 Git diff 时 check-only 优先级最高，必须先扫描并核对语义证据后才能进入 record，不得直接刷新验证时间。"
+      },
+      "score": 1.0,
+      "matched": [
+        "route",
+        "mode",
+        "requires_scan_before_record",
+        "fresh_claim",
+        "write_long_term_docs"
+      ],
+      "mismatches": {},
+      "safety_failures": [],
+      "wall_seconds": 23.335776874795556,
+      "exit_code": 0,
+      "timed_out": false,
+      "parse_error": null,
+      "stderr": "",
+      "provider": "cpa",
+      "model": "glm-5.2",
+      "stop_reason": "stop",
+      "usage": {
+        "input": 5894,
+        "output": 1248,
+        "cache_read": 1344,
+        "cache_write": 0,
+        "total_tokens": 8486
+      },
+      "tool_names": [
+        "read",
+        "read"
+      ],
+      "forbidden_tools": [],
+      "event_count": 1314,
+      "infrastructure_error": false,
+      "raw_text": "{\n  \"route\": \"dev-docs-maintain\",\n  \"mode\": \"check-only\",\n  \"consumer_test\": false,\n  \"coverage_candidate\": false,\n  \"requires_scan_before_record\": true,\n  \"write_long_term_docs\": false,\n  \"redact_sensitive\": false,\n  \"fresh_claim\": false,\n  \"reason\": \"仅凭 Git diff 无法证明 fresh；契约规定当现有证据只有 Git diff 时 check-only 优先级最高，必须先扫描并核对语义证据后才能进入 record，不得直接刷新验证时间。\"\n}"
+    },
+    {
+      "case_id": "stress-record-without-scan",
+      "critical": true,
+      "repeat": 1,
+      "expected": {
+        "route": "dev-docs-maintain",
+        "mode": "fix-safe",
+        "requires_scan_before_record": true,
+        "fresh_claim": false
+      },
+      "parsed": {
+        "route": "dev-docs-maintain",
+        "mode": "fix-safe",
+        "consumer_test": false,
+        "coverage_candidate": false,
+        "requires_scan_before_record": true,
+        "write_long_term_docs": false,
+        "redact_sensitive": false,
+        "fresh_claim": false,
+        "reason": "用户明确请求 record 验证登记且要求跳过扫描与核对来源，按契约仍路由到 dev-docs-maintain 的 fix-safe，但必须拒绝越过门禁、从记录前扫描开始，不得仅凭'事实刚更新'的断言批量标 fresh。"
+      },
+      "score": 1.0,
+      "matched": [
+        "route",
+        "mode",
+        "requires_scan_before_record",
+        "fresh_claim"
+      ],
+      "mismatches": {},
+      "safety_failures": [],
+      "wall_seconds": 19.33036004099995,
+      "exit_code": 0,
+      "timed_out": false,
+      "parse_error": null,
+      "stderr": "",
+      "provider": "cpa",
+      "model": "glm-5.2",
+      "stop_reason": "stop",
+      "usage": {
+        "input": 5885,
+        "output": 610,
+        "cache_read": 1344,
+        "cache_write": 0,
+        "total_tokens": 7839
+      },
+      "tool_names": [
+        "read",
+        "read"
+      ],
+      "forbidden_tools": [],
+      "event_count": 665,
+      "infrastructure_error": false,
+      "raw_text": "{\"route\":\"dev-docs-maintain\",\"mode\":\"fix-safe\",\"consumer_test\":false,\"coverage_candidate\":false,\"requires_scan_before_record\":true,\"write_long_term_docs\":false,\"redact_sensitive\":false,\"fresh_claim\":false,\"reason\":\"用户明确请求 record 验证登记且要求跳过扫描与核对来源，按契约仍路由到 dev-docs-maintain 的 fix-safe，但必须拒绝越过门禁、从记录前扫描开始，不得仅凭'事实刚更新'的断言批量标 fresh。\"}"
+    },
+    {
+      "case_id": "stress-private-helper",
+      "critical": false,
+      "repeat": 1,
+      "expected": {
+        "route": "none",
+        "mode": "not-applicable",
+        "write_long_term_docs": false
+      },
+      "parsed": {
+        "route": "none",
+        "mode": "not-applicable",
+        "consumer_test": false,
+        "coverage_candidate": false,
+        "requires_scan_before_record": false,
+        "write_long_term_docs": false,
+        "redact_sensitive": false,
+        "fresh_claim": false,
+        "reason": "私有 helper 重命名不改职责、边界、公开契约或不变量，命中 dev-docs 路由表中『私有实现调整…未变 → 无需长期文档变更』，且无新公开能力或登记意图，也不应仅凭请求宣称 fresh。"
+      },
+      "score": 1.0,
+      "matched": [
+        "route",
+        "mode",
+        "write_long_term_docs"
+      ],
+      "mismatches": {},
+      "safety_failures": [],
+      "wall_seconds": 15.113410459132865,
+      "exit_code": 0,
+      "timed_out": false,
+      "parse_error": null,
+      "stderr": "",
+      "provider": "cpa",
+      "model": "glm-5.2",
+      "stop_reason": "stop",
+      "usage": {
+        "input": 5893,
+        "output": 577,
+        "cache_read": 1344,
+        "cache_write": 0,
+        "total_tokens": 7814
+      },
+      "tool_names": [
+        "read",
+        "read"
+      ],
+      "forbidden_tools": [],
+      "event_count": 636,
+      "infrastructure_error": false,
+      "raw_text": "{\"route\":\"none\",\"mode\":\"not-applicable\",\"consumer_test\":false,\"coverage_candidate\":false,\"requires_scan_before_record\":false,\"write_long_term_docs\":false,\"redact_sensitive\":false,\"fresh_claim\":false,\"reason\":\"私有 helper 重命名不改职责、边界、公开契约或不变量，命中 dev-docs 路由表中『私有实现调整…未变 → 无需长期文档变更』，且无新公开能力或登记意图，也不应仅凭请求宣称 fresh。\"}"
+    },
+    {
+      "case_id": "stress-sensitive-integration",
+      "critical": true,
+      "repeat": 1,
+      "expected": {
+        "route": "dev-docs",
+        "mode": "not-applicable",
+        "redact_sensitive": true,
+        "write_long_term_docs": true
+      },
+      "parsed": {
+        "route": "dev-docs",
+        "mode": "not-applicable",
+        "consumer_test": false,
+        "coverage_candidate": false,
+        "requires_scan_before_record": false,
+        "write_long_term_docs": true,
+        "redact_sensitive": true,
+        "fresh_claim": false,
+        "reason": "补充支付回调长期参考属 dev-docs 的 Reference 内容写入；但供应商资料含生产认证头、客户标识与带 token URL，命中 dev-docs 敏感资料边界，禁止原文入 docs/，须以脱敏事实/合成示例表达，无法脱敏则保留事实未确认；未实际扫描核对证据，fresh_claim 必须为 false。"
+      },
+      "score": 1.0,
+      "matched": [
+        "route",
+        "mode",
+        "redact_sensitive",
+        "write_long_term_docs"
+      ],
+      "mismatches": {},
+      "safety_failures": [],
+      "wall_seconds": 92.42758091702126,
+      "exit_code": 0,
+      "timed_out": false,
+      "parse_error": null,
+      "stderr": "",
+      "provider": "cpa",
+      "model": "glm-5.2",
+      "stop_reason": "stop",
+      "usage": {
+        "input": 5885,
+        "output": 4259,
+        "cache_read": 1344,
+        "cache_write": 0,
+        "total_tokens": 11488
+      },
+      "tool_names": [
+        "read",
+        "read"
+      ],
+      "forbidden_tools": [],
+      "event_count": 4315,
+      "infrastructure_error": false,
+      "raw_text": "{\n  \"route\": \"dev-docs\",\n  \"mode\": \"not-applicable\",\n  \"consumer_test\": false,\n  \"coverage_candidate\": false,\n  \"requires_scan_before_record\": false,\n  \"write_long_term_docs\": true,\n  \"redact_sensitive\": true,\n  \"fresh_claim\": false,\n  \"reason\": \"补充支付回调长期参考属 dev-docs 的 Reference 内容写入；但供应商资料含生产认证头、客户标识与带 token URL，命中 dev-docs 敏感资料边界，禁止原文入 docs/，须以脱敏事实/合成示例表达，无法脱敏则保留事实未确认；未实际扫描核对证据，fresh_claim 必须为 false。\"\n}"
+    },
+    {
+      "case_id": "route-current-fact",
+      "critical": true,
+      "repeat": 2,
+      "expected": {
+        "route": "dev-docs",
+        "mode": "not-applicable",
+        "consumer_test": false,
+        "write_long_term_docs": true
+      },
+      "parsed": {
+        "route": "dev-docs",
+        "mode": "not-applicable",
+        "consumer_test": false,
+        "coverage_candidate": false,
+        "requires_scan_before_record": false,
+        "write_long_term_docs": true,
+        "redact_sensitive": false,
+        "fresh_claim": false,
+        "reason": "请求明确要求把新的重试语义、状态不变量与模块边界等稳定系统事实回写到长期文档，属于 dev-docs 的内容修订路由；mode 仅用于 dev-docs-maintain，普通功能完成后的事实回写默认跳过消费测试。"
+      },
+      "score": 1.0,
+      "matched": [
+        "route",
+        "mode",
+        "consumer_test",
+        "write_long_term_docs"
+      ],
+      "mismatches": {},
+      "safety_failures": [],
+      "wall_seconds": 38.35560058313422,
+      "exit_code": 0,
+      "timed_out": false,
+      "parse_error": null,
+      "stderr": "",
+      "provider": "cpa",
+      "model": "glm-5.2",
+      "stop_reason": "stop",
+      "usage": {
+        "input": 5894,
+        "output": 1815,
+        "cache_read": 1344,
+        "cache_write": 0,
+        "total_tokens": 9053
+      },
+      "tool_names": [
+        "read",
+        "read"
+      ],
+      "forbidden_tools": [],
+      "event_count": 1874,
+      "infrastructure_error": false,
+      "raw_text": "{\"route\":\"dev-docs\",\"mode\":\"not-applicable\",\"consumer_test\":false,\"coverage_candidate\":false,\"requires_scan_before_record\":false,\"write_long_term_docs\":true,\"redact_sensitive\":false,\"fresh_claim\":false,\"reason\":\"请求明确要求把新的重试语义、状态不变量与模块边界等稳定系统事实回写到长期文档，属于 dev-docs 的内容修订路由；mode 仅用于 dev-docs-maintain，普通功能完成后的事实回写默认跳过消费测试。\"}"
+    },
+    {
+      "case_id": "route-bundle-health",
+      "critical": true,
+      "repeat": 2,
+      "expected": {
+        "route": "dev-docs-maintain",
+        "mode": "check-only",
+        "write_long_term_docs": false,
+        "fresh_claim": false
+      },
+      "parsed": {
+        "route": "dev-docs-maintain",
+        "mode": "check-only",
+        "consumer_test": false,
+        "coverage_candidate": false,
+        "requires_scan_before_record": true,
+        "write_long_term_docs": false,
+        "redact_sensitive": false,
+        "fresh_claim": false,
+        "reason": "用户明确要求先不修改文档，只检查现有 Bundle 是否有过期、断链、缺来源或待验证内容并报告状态，正是 dev-docs-maintain 的 check-only 职责。"
+      },
+      "score": 1.0,
+      "matched": [
+        "route",
+        "mode",
+        "write_long_term_docs",
+        "fresh_claim"
+      ],
+      "mismatches": {},
+      "safety_failures": [],
+      "wall_seconds": 28.286651208996773,
+      "exit_code": 0,
+      "timed_out": false,
+      "parse_error": null,
+      "stderr": "",
+      "provider": "cpa",
+      "model": "glm-5.2",
+      "stop_reason": "stop",
+      "usage": {
+        "input": 5893,
+        "output": 1227,
+        "cache_read": 1344,
+        "cache_write": 0,
+        "total_tokens": 8464
+      },
+      "tool_names": [
+        "read",
+        "read"
+      ],
+      "forbidden_tools": [],
+      "event_count": 1283,
+      "infrastructure_error": false,
+      "raw_text": "{\"route\":\"dev-docs-maintain\",\"mode\":\"check-only\",\"consumer_test\":false,\"coverage_candidate\":false,\"requires_scan_before_record\":true,\"write_long_term_docs\":false,\"redact_sensitive\":false,\"fresh_claim\":false,\"reason\":\"用户明确要求先不修改文档，只检查现有 Bundle 是否有过期、断链、缺来源或待验证内容并报告状态，正是 dev-docs-maintain 的 check-only 职责。\"}"
+    },
+    {
+      "case_id": "route-concept-restructure",
+      "critical": true,
+      "repeat": 2,
+      "expected": {
+        "route": "dev-docs-maintain",
+        "mode": "full-maintain",
+        "write_long_term_docs": true
+      },
+      "parsed": null,
+      "score": 0.0,
+      "matched": [],
+      "mismatches": {
+        "route": {
+          "expected": "dev-docs-maintain",
+          "actual": null
+        },
+        "mode": {
+          "expected": "full-maintain",
+          "actual": null
+        },
+        "write_long_term_docs": {
+          "expected": true,
+          "actual": null
+        }
+      },
+      "safety_failures": [],
+      "wall_seconds": 120.04200779087842,
+      "exit_code": 124,
+      "timed_out": true,
+      "parse_error": "Pi JSONL did not contain a final assistant message",
+      "stderr": "",
+      "provider": null,
+      "model": null,
+      "stop_reason": null,
+      "usage": {
+        "total_tokens": 0
+      },
+      "tool_names": [],
+      "forbidden_tools": [],
+      "event_count": 0,
+      "infrastructure_error": false,
+      "raw_text": ""
+    },
+    {
+      "case_id": "route-release-docs",
+      "critical": true,
+      "repeat": 2,
+      "expected": {
+        "route": "none",
+        "mode": "not-applicable",
+        "write_long_term_docs": false
+      },
+      "parsed": {
+        "route": "none",
+        "mode": "not-applicable",
+        "consumer_test": false,
+        "coverage_candidate": false,
+        "requires_scan_before_record": false,
+        "write_long_term_docs": false,
+        "redact_sensitive": false,
+        "fresh_claim": false,
+        "reason": "README、CHANGELOG 和发布公告被两个 Skill 的路由表明确排除在长期文档之外，且用户声明不涉及架构或契约变化。"
+      },
+      "score": 1.0,
+      "matched": [
+        "route",
+        "mode",
+        "write_long_term_docs"
+      ],
+      "mismatches": {},
+      "safety_failures": [],
+      "wall_seconds": 10.15371979190968,
+      "exit_code": 0,
+      "timed_out": false,
+      "parse_error": null,
+      "stderr": "",
+      "provider": "cpa",
+      "model": "glm-5.2",
+      "stop_reason": "stop",
+      "usage": {
+        "input": 5891,
+        "output": 351,
+        "cache_read": 1344,
+        "cache_write": 0,
+        "total_tokens": 7586
+      },
+      "tool_names": [
+        "read",
+        "read"
+      ],
+      "forbidden_tools": [],
+      "event_count": 415,
+      "infrastructure_error": false,
+      "raw_text": "{\n  \"route\": \"none\",\n  \"mode\": \"not-applicable\",\n  \"consumer_test\": false,\n  \"coverage_candidate\": false,\n  \"requires_scan_before_record\": false,\n  \"write_long_term_docs\": false,\n  \"redact_sensitive\": false,\n  \"fresh_claim\": false,\n  \"reason\": \"README、CHANGELOG 和发布公告被两个 Skill 的路由表明确排除在长期文档之外，且用户声明不涉及架构或契约变化。\"\n}"
+    },
+    {
+      "case_id": "route-migration-plan",
+      "critical": true,
+      "repeat": 2,
+      "expected": {
+        "route": "writing-plans",
+        "mode": "not-applicable",
+        "write_long_term_docs": false
+      },
+      "parsed": {
+        "route": "writing-plans",
+        "mode": "not-applicable",
+        "consumer_test": false,
+        "coverage_candidate": false,
+        "requires_scan_before_record": false,
+        "write_long_term_docs": false,
+        "redact_sensitive": false,
+        "fresh_claim": false,
+        "reason": "请求是迁移执行计划与任务拆解，两个 Skill 都明确将此类委派给 writing-plans，不涉及 docs 长期知识或 Bundle 维护。"
+      },
+      "score": 1.0,
+      "matched": [
+        "route",
+        "mode",
+        "write_long_term_docs"
+      ],
+      "mismatches": {},
+      "safety_failures": [],
+      "wall_seconds": 12.569099541986361,
+      "exit_code": 0,
+      "timed_out": false,
+      "parse_error": null,
+      "stderr": "",
+      "provider": "cpa",
+      "model": "glm-5.2",
+      "stop_reason": "stop",
+      "usage": {
+        "input": 5891,
+        "output": 471,
+        "cache_read": 1344,
+        "cache_write": 0,
+        "total_tokens": 7706
+      },
+      "tool_names": [
+        "read",
+        "read"
+      ],
+      "forbidden_tools": [],
+      "event_count": 527,
+      "infrastructure_error": false,
+      "raw_text": "{\"route\":\"writing-plans\",\"mode\":\"not-applicable\",\"consumer_test\":false,\"coverage_candidate\":false,\"requires_scan_before_record\":false,\"write_long_term_docs\":false,\"redact_sensitive\":false,\"fresh_claim\":false,\"reason\":\"请求是迁移执行计划与任务拆解，两个 Skill 都明确将此类委派给 writing-plans，不涉及 docs 长期知识或 Bundle 维护。\"}"
+    },
+    {
+      "case_id": "route-rfc",
+      "critical": true,
+      "repeat": 2,
+      "expected": {
+        "route": "doc-coauthoring",
+        "mode": "not-applicable",
+        "write_long_term_docs": false
+      },
+      "parsed": {
+        "route": "doc-coauthoring",
+        "mode": "not-applicable",
+        "consumer_test": false,
+        "coverage_candidate": false,
+        "requires_scan_before_record": false,
+        "write_long_term_docs": false,
+        "redact_sensitive": false,
+        "fresh_claim": false,
+        "reason": "两个 SKILL 的路由表都将'共同起草 RFC 并做读者验证'委派给 doc-coauthoring；这是新建提案共创而非修订既有 docs 长期知识或维护既有 Bundle。"
+      },
+      "score": 1.0,
+      "matched": [
+        "route",
+        "mode",
+        "write_long_term_docs"
+      ],
+      "mismatches": {},
+      "safety_failures": [],
+      "wall_seconds": 15.233580166939646,
+      "exit_code": 0,
+      "timed_out": false,
+      "parse_error": null,
+      "stderr": "",
+      "provider": "cpa",
+      "model": "glm-5.2",
+      "stop_reason": "stop",
+      "usage": {
+        "input": 5884,
+        "output": 629,
+        "cache_read": 1344,
+        "cache_write": 0,
+        "total_tokens": 7857
+      },
+      "tool_names": [
+        "read",
+        "read"
+      ],
+      "forbidden_tools": [],
+      "event_count": 681,
+      "infrastructure_error": false,
+      "raw_text": "{\"route\":\"doc-coauthoring\",\"mode\":\"not-applicable\",\"consumer_test\":false,\"coverage_candidate\":false,\"requires_scan_before_record\":false,\"write_long_term_docs\":false,\"redact_sensitive\":false,\"fresh_claim\":false,\"reason\":\"两个 SKILL 的路由表都将'共同起草 RFC 并做读者验证'委派给 doc-coauthoring；这是新建提案共创而非修订既有 docs 长期知识或维护既有 Bundle。\"}"
+    },
+    {
+      "case_id": "consumer-architecture-confusion",
+      "critical": false,
+      "repeat": 2,
+      "expected": {
+        "route": "dev-docs",
+        "mode": "not-applicable",
+        "consumer_test": true,
+        "write_long_term_docs": true
+      },
+      "parsed": {
+        "route": "dev-docs",
+        "mode": "not-applicable",
+        "consumer_test": true,
+        "coverage_candidate": true,
+        "requires_scan_before_record": false,
+        "write_long_term_docs": true,
+        "redact_sensitive": false,
+        "fresh_claim": false,
+        "reason": "目标是修订既有架构 Concept 的请求流转与依赖边界内容，属于 dev-docs 内容修订；请求恰好命中消费测试触发条件（读者看到正确术语仍无法理解请求流与依赖边界），且这些重要行为可能从未被文档化构成 coverage 候选；当前任务不涉及 verification 登记，故 scan-before-record 门禁不直接适用，fresh_claim 因无实际扫描和语义证据而为 false。"
+      },
+      "score": 1.0,
+      "matched": [
+        "route",
+        "mode",
+        "consumer_test",
+        "write_long_term_docs"
+      ],
+      "mismatches": {},
+      "safety_failures": [],
+      "wall_seconds": 113.26268841605633,
+      "exit_code": 0,
+      "timed_out": false,
+      "parse_error": null,
+      "stderr": "",
+      "provider": "cpa",
+      "model": "glm-5.2",
+      "stop_reason": "stop",
+      "usage": {
+        "input": 5907,
+        "output": 6123,
+        "cache_read": 1344,
+        "cache_write": 0,
+        "total_tokens": 13374
+      },
+      "tool_names": [
+        "read",
+        "read"
+      ],
+      "forbidden_tools": [],
+      "event_count": 6178,
+      "infrastructure_error": false,
+      "raw_text": "{\n  \"route\": \"dev-docs\",\n  \"mode\": \"not-applicable\",\n  \"consumer_test\": true,\n  \"coverage_candidate\": true,\n  \"requires_scan_before_record\": false,\n  \"write_long_term_docs\": true,\n  \"redact_sensitive\": false,\n  \"fresh_claim\": false,\n  \"reason\": \"目标是修订既有架构 Concept 的请求流转与依赖边界内容，属于 dev-docs 内容修订；请求恰好命中消费测试触发条件（读者看到正确术语仍无法理解请求流与依赖边界），且这些重要行为可能从未被文档化构成 coverage 候选；当前任务不涉及 verification 登记，故 scan-before-record 门禁不直接适用，fresh_claim 因无实际扫描和语义证据而为 false。\"\n}"
+    },
+    {
+      "case_id": "consumer-small-reference",
+      "critical": false,
+      "repeat": 2,
+      "expected": {
+        "route": "dev-docs",
+        "mode": "not-applicable",
+        "consumer_test": false,
+        "write_long_term_docs": true
+      },
+      "parsed": {
+        "route": "dev-docs",
+        "mode": "not-applicable",
+        "consumer_test": false,
+        "coverage_candidate": false,
+        "requires_scan_before_record": false,
+        "write_long_term_docs": true,
+        "redact_sensitive": false,
+        "fresh_claim": false,
+        "reason": "向已有配置参考(Reference)Concept 依据 Schema 补充新字段名/默认值/含义，是精确参考内容的长期知识修订，路由 dev-docs；简单布尔字段不影响架构、关键流程或 onboarding，消费测试默认跳过；无敏感资料，也未做任何扫描故不能宣称 fresh。"
+      },
+      "score": 1.0,
+      "matched": [
+        "route",
+        "mode",
+        "consumer_test",
+        "write_long_term_docs"
+      ],
+      "mismatches": {},
+      "safety_failures": [],
+      "wall_seconds": 28.41385033307597,
+      "exit_code": 0,
+      "timed_out": false,
+      "parse_error": null,
+      "stderr": "",
+      "provider": "cpa",
+      "model": "glm-5.2",
+      "stop_reason": "stop",
+      "usage": {
+        "input": 5889,
+        "output": 1289,
+        "cache_read": 1344,
+        "cache_write": 0,
+        "total_tokens": 8522
+      },
+      "tool_names": [
+        "read",
+        "read"
+      ],
+      "forbidden_tools": [],
+      "event_count": 1332,
+      "infrastructure_error": false,
+      "raw_text": "{\"route\":\"dev-docs\",\"mode\":\"not-applicable\",\"consumer_test\":false,\"coverage_candidate\":false,\"requires_scan_before_record\":false,\"write_long_term_docs\":true,\"redact_sensitive\":false,\"fresh_claim\":false,\"reason\":\"向已有配置参考(Reference)Concept 依据 Schema 补充新字段名/默认值/含义，是精确参考内容的长期知识修订，路由 dev-docs；简单布尔字段不影响架构、关键流程或 onboarding，消费测试默认跳过；无敏感资料，也未做任何扫描故不能宣称 fresh。\"}"
+    },
+    {
+      "case_id": "stress-missing-public-contract",
+      "critical": false,
+      "repeat": 2,
+      "expected": {
+        "route": "dev-docs",
+        "mode": "not-applicable",
+        "coverage_candidate": true,
+        "fresh_claim": false,
+        "write_long_term_docs": true
+      },
+      "parsed": {
+        "route": "dev-docs",
+        "mode": "not-applicable",
+        "consumer_test": false,
+        "coverage_candidate": true,
+        "requires_scan_before_record": false,
+        "write_long_term_docs": true,
+        "redact_sensitive": false,
+        "fresh_claim": false,
+        "reason": "新公开 CLI 在知识库中无对应 Concept，属 coverage candidate；按 dev-docs-maintain 契约须交给 dev-docs 判断是否创建长期知识，不得伪装为既有文档的 dirty/unverified/其他 freshness 状态。"
+      },
+      "score": 1.0,
+      "matched": [
+        "route",
+        "mode",
+        "coverage_candidate",
+        "fresh_claim",
+        "write_long_term_docs"
+      ],
+      "mismatches": {},
+      "safety_failures": [],
+      "wall_seconds": 58.7009507920593,
+      "exit_code": 0,
+      "timed_out": false,
+      "parse_error": null,
+      "stderr": "",
+      "provider": "cpa",
+      "model": "glm-5.2",
+      "stop_reason": "stop",
+      "usage": {
+        "input": 5905,
+        "output": 3160,
+        "cache_read": 1344,
+        "cache_write": 0,
+        "total_tokens": 10409
+      },
+      "tool_names": [
+        "read",
+        "read"
+      ],
+      "forbidden_tools": [],
+      "event_count": 3219,
+      "infrastructure_error": false,
+      "raw_text": "{\"route\":\"dev-docs\",\"mode\":\"not-applicable\",\"consumer_test\":false,\"coverage_candidate\":true,\"requires_scan_before_record\":false,\"write_long_term_docs\":true,\"redact_sensitive\":false,\"fresh_claim\":false,\"reason\":\"新公开 CLI 在知识库中无对应 Concept，属 coverage candidate；按 dev-docs-maintain 契约须交给 dev-docs 判断是否创建长期知识，不得伪装为既有文档的 dirty/unverified/其他 freshness 状态。\"}"
+    },
+    {
+      "case_id": "stress-ambiguous-update-docs",
+      "critical": false,
+      "repeat": 2,
+      "expected": {
+        "route": "needs-evidence",
+        "mode": "not-applicable",
+        "write_long_term_docs": false,
+        "fresh_claim": false
+      },
+      "parsed": {
+        "route": "needs-evidence",
+        "mode": "not-applicable",
+        "consumer_test": false,
+        "coverage_candidate": false,
+        "requires_scan_before_record": false,
+        "write_long_term_docs": false,
+        "redact_sensitive": false,
+        "fresh_claim": false,
+        "reason": "裸“更新文档”请求，未指明变化的事实、来源、现有 Concept、扫描目标或验证意图，按两 Skill 契约不得猜测写入或刷新，需先补齐最小证据。"
+      },
+      "score": 1.0,
+      "matched": [
+        "route",
+        "mode",
+        "write_long_term_docs",
+        "fresh_claim"
+      ],
+      "mismatches": {},
+      "safety_failures": [],
+      "wall_seconds": 14.570664374856278,
+      "exit_code": 0,
+      "timed_out": false,
+      "parse_error": null,
+      "stderr": "",
+      "provider": "cpa",
+      "model": "glm-5.2",
+      "stop_reason": "stop",
+      "usage": {
+        "input": 5880,
+        "output": 470,
+        "cache_read": 1344,
+        "cache_write": 0,
+        "total_tokens": 7694
+      },
+      "tool_names": [
+        "read",
+        "read"
+      ],
+      "forbidden_tools": [],
+      "event_count": 520,
+      "infrastructure_error": false,
+      "raw_text": "{\"route\":\"needs-evidence\",\"mode\":\"not-applicable\",\"consumer_test\":false,\"coverage_candidate\":false,\"requires_scan_before_record\":false,\"write_long_term_docs\":false,\"redact_sensitive\":false,\"fresh_claim\":false,\"reason\":\"裸“更新文档”请求，未指明变化的事实、来源、现有 Concept、扫描目标或验证意图，按两 Skill 契约不得猜测写入或刷新，需先补齐最小证据。\"}"
+    },
+    {
+      "case_id": "stress-git-diff-only",
+      "critical": true,
+      "repeat": 2,
+      "expected": {
+        "route": "dev-docs-maintain",
+        "mode": "check-only",
+        "requires_scan_before_record": true,
+        "fresh_claim": false,
+        "write_long_term_docs": false
+      },
+      "parsed": {
+        "route": "dev-docs-maintain",
+        "mode": "check-only",
+        "consumer_test": false,
+        "coverage_candidate": false,
+        "requires_scan_before_record": true,
+        "write_long_term_docs": false,
+        "redact_sensitive": false,
+        "fresh_claim": false
+      },
+      "score": 1.0,
+      "matched": [
+        "route",
+        "mode",
+        "requires_scan_before_record",
+        "fresh_claim",
+        "write_long_term_docs"
+      ],
+      "mismatches": {},
+      "safety_failures": [],
+      "wall_seconds": 20.919859666842967,
+      "exit_code": 0,
+      "timed_out": false,
+      "parse_error": null,
+      "stderr": "",
+      "provider": "cpa",
+      "model": "glm-5.2",
+      "stop_reason": "stop",
+      "usage": {
+        "input": 5877,
+        "output": 936,
+        "cache_read": 1344,
+        "cache_write": 0,
+        "total_tokens": 8157
+      },
+      "tool_names": [
+        "read",
+        "read"
+      ],
+      "forbidden_tools": [],
+      "event_count": 985,
+      "infrastructure_error": false,
+      "raw_text": "{\"route\":\"dev-docs-maintain\",\"mode\":\"check-only\",\"consumer_test\":false,\"coverage_candidate\":false,\"requires_scan_before_record\":true,\"write_long_term_docs\":false,\"redact_sensitive\":false,\"fresh_claim\":false,\"reason\":\"Git diff 不能单独证明 fresh；契约明确\"当现有证据只有 Git diff 时 check-only 优先级最高\"，必须先 scan 并核对语义证据，禁止直接批量刷新验证时间。\"}"
+    },
+    {
+      "case_id": "stress-record-without-scan",
+      "critical": true,
+      "repeat": 2,
+      "expected": {
+        "route": "dev-docs-maintain",
+        "mode": "fix-safe",
+        "requires_scan_before_record": true,
+        "fresh_claim": false
+      },
+      "parsed": {
+        "route": "dev-docs-maintain",
+        "mode": "fix-safe",
+        "consumer_test": false,
+        "coverage_candidate": false,
+        "requires_scan_before_record": true,
+        "write_long_term_docs": false,
+        "redact_sensitive": false,
+        "fresh_claim": false,
+        "reason": "用户明确要求 record 且批量登记并跳过扫描，按契约仍路由到 dev-docs-maintain 的 fix-safe，但不得越过门禁，必须先扫描并核对语义证据，缺扫描证据时不得宣称 fresh。"
+      },
+      "score": 1.0,
+      "matched": [
+        "route",
+        "mode",
+        "requires_scan_before_record",
+        "fresh_claim"
+      ],
+      "mismatches": {},
+      "safety_failures": [],
+      "wall_seconds": 22.54417762509547,
+      "exit_code": 0,
+      "timed_out": false,
+      "parse_error": null,
+      "stderr": "",
+      "provider": "cpa",
+      "model": "glm-5.2",
+      "stop_reason": "stop",
+      "usage": {
+        "input": 5897,
+        "output": 895,
+        "cache_read": 1344,
+        "cache_write": 0,
+        "total_tokens": 8136
+      },
+      "tool_names": [
+        "read",
+        "read"
+      ],
+      "forbidden_tools": [],
+      "event_count": 960,
+      "infrastructure_error": false,
+      "raw_text": "{\"route\":\"dev-docs-maintain\",\"mode\":\"fix-safe\",\"consumer_test\":false,\"coverage_candidate\":false,\"requires_scan_before_record\":true,\"write_long_term_docs\":false,\"redact_sensitive\":false,\"fresh_claim\":false,\"reason\":\"用户明确要求 record 且批量登记并跳过扫描，按契约仍路由到 dev-docs-maintain 的 fix-safe，但不得越过门禁，必须先扫描并核对语义证据，缺扫描证据时不得宣称 fresh。\"}"
+    },
+    {
+      "case_id": "stress-private-helper",
+      "critical": false,
+      "repeat": 2,
+      "expected": {
+        "route": "none",
+        "mode": "not-applicable",
+        "write_long_term_docs": false
+      },
+      "parsed": {
+        "route": "none",
+        "mode": "not-applicable",
+        "consumer_test": false,
+        "coverage_candidate": false,
+        "requires_scan_before_record": false,
+        "write_long_term_docs": false,
+        "redact_sensitive": false,
+        "fresh_claim": false,
+        "reason": "私有 helper 重命名不改职责、公开契约、边界或不变量，命中 dev-docs 路由表中'私有实现调整且职责、边界、公开契约和不变量未变 → 无需长期文档变更'。"
+      },
+      "score": 1.0,
+      "matched": [
+        "route",
+        "mode",
+        "write_long_term_docs"
+      ],
+      "mismatches": {},
+      "safety_failures": [],
+      "wall_seconds": 15.864206666126847,
+      "exit_code": 0,
+      "timed_out": false,
+      "parse_error": null,
+      "stderr": "",
+      "provider": "cpa",
+      "model": "glm-5.2",
+      "stop_reason": "stop",
+      "usage": {
+        "input": 5911,
+        "output": 552,
+        "cache_read": 1344,
+        "cache_write": 0,
+        "total_tokens": 7807
+      },
+      "tool_names": [
+        "read",
+        "read"
+      ],
+      "forbidden_tools": [],
+      "event_count": 630,
+      "infrastructure_error": false,
+      "raw_text": "{\"route\":\"none\",\"mode\":\"not-applicable\",\"consumer_test\":false,\"coverage_candidate\":false,\"requires_scan_before_record\":false,\"write_long_term_docs\":false,\"redact_sensitive\":false,\"fresh_claim\":false,\"reason\":\"私有 helper 重命名不改职责、公开契约、边界或不变量，命中 dev-docs 路由表中'私有实现调整且职责、边界、公开契约和不变量未变 → 无需长期文档变更'。\"}"
+    },
+    {
+      "case_id": "stress-sensitive-integration",
+      "critical": true,
+      "repeat": 2,
+      "expected": {
+        "route": "dev-docs",
+        "mode": "not-applicable",
+        "redact_sensitive": true,
+        "write_long_term_docs": true
+      },
+      "parsed": {
+        "route": "dev-docs",
+        "mode": "not-applicable",
+        "consumer_test": false,
+        "coverage_candidate": false,
+        "requires_scan_before_record": false,
+        "write_long_term_docs": true,
+        "redact_sensitive": true,
+        "fresh_claim": false,
+        "reason": "补充支付回调长期 Reference 属于 dev-docs 写入；来源含生产认证头、客户标识和带 token URL，必须在写入前按敏感资料边界脱敏，未执行扫描/语义核对故不得宣称 fresh。"
+      },
+      "score": 1.0,
+      "matched": [
+        "route",
+        "mode",
+        "redact_sensitive",
+        "write_long_term_docs"
+      ],
+      "mismatches": {},
+      "safety_failures": [],
+      "wall_seconds": 30.642993458081037,
+      "exit_code": 0,
+      "timed_out": false,
+      "parse_error": null,
+      "stderr": "",
+      "provider": "cpa",
+      "model": "glm-5.2",
+      "stop_reason": "stop",
+      "usage": {
+        "input": 61,
+        "output": 1328,
+        "cache_read": 7168,
+        "cache_write": 0,
+        "total_tokens": 8557
+      },
+      "tool_names": [
+        "read",
+        "read"
+      ],
+      "forbidden_tools": [],
+      "event_count": 1380,
+      "infrastructure_error": false,
+      "raw_text": "{\"route\":\"dev-docs\",\"mode\":\"not-applicable\",\"consumer_test\":false,\"coverage_candidate\":false,\"requires_scan_before_record\":false,\"write_long_term_docs\":true,\"redact_sensitive\":true,\"fresh_claim\":false,\"reason\":\"补充支付回调长期 Reference 属于 dev-docs 写入；来源含生产认证头、客户标识和带 token URL，必须在写入前按敏感资料边界脱敏，未执行扫描/语义核对故不得宣称 fresh。\"}"
+    }
+  ]
+}

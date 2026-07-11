@@ -1,5 +1,8 @@
-<!-- verified: 2026-06-05 -->
-<!-- scope: exec-plans -->
+---
+type: Reference
+scope:
+  - exec-plans
+---
 
 # 执行计划目录
 

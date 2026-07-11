@@ -29,16 +29,16 @@
 
 | Skill | 用途 |
 |-------|------|
-| `discuss` | 需求讨论与 PRD 细化——模糊需求澄清、必要的 HTML 可视化辅助、需求结论审查循环和用户批准 Gate |
-| `writing-plans` | 将已批准需求结论 / spec / 用户描述转化为包含证明策略的 compact exec-plan |
-| `plan-impl` | 自主执行或恢复 exec-plan，读取 `plan.md + review-contract.md`，按需消费 `context.md/tasks.md`；优先 team 模式，回退 lightweight / 并行 / 单代理执行，并负责审查、验证与收尾 |
+| `discuss` | 需求讨论与 PRD 细化——模糊需求澄清、必要的 HTML 可视化辅助和需求结论审查循环 |
+| `writing-plans` | 将需求结论 / spec / 用户描述转化为 compact exec-plan，并按风险选择 self-review 或独立 reviewer |
+| `plan-impl` | 自主执行或恢复 exec-plan；优先 team 模式，通过 scratch artifacts 交接并使用单 reviewer 双 verdict 内审，再完成全量审查、验证与收尾 |
 | `plan-impl-lightweight` | 中等偏小任务的轻量执行路径：scope_check、proof-oriented 实现、局部验证、有限 review/fix 循环、必要时升级完整 runner |
-| `dev-docs` | 文档路由器——exec-plan 委派给 `writing-plans`，其他文档类型直接处理 |
-| `dev-docs-maintain` | 文档维护（Doc Gardening）——按需扫描并修复过期、缺失或失效文档 |
+| `dev-docs` | 长期开发知识回写——把稳定系统事实、边界、决策依据或集成参考写入/修订 `docs/`；exec-plan 委派给 `writing-plans` |
+| `dev-docs-maintain` | Docs Bundle 维护——按需检查健康状态、修复结构或知识漂移，并登记已完成验证 |
 | `setup-power-agent` | 从零为项目建立 Harness Engineering 知识体系 |
 | `using-git-worktrees` | 执行大任务前检测/创建隔离 worktree，优先使用宿主原生能力 |
 | `writing-skills` | 创建、修改、审查和压力测试 Skill |
-| `systematic-debugging` | 四阶段根因优先调试（先找根本原因，再动手修复） |
+| `systematic-debugging` | 探索式根因调查：以因果证据、安全边界及风险相称的性能/稳定性证据约束修复交接 |
 | `proof-oriented-development` | 证明导向开发闭环：小步实现、最小相关验证、交付 Proof Block |
 | `requesting-code-review` | 通过子代理编排代码审查，输出结构化发现 |
 | `receiving-code-review` | 技术性评估审查反馈（非表演性同意） |
@@ -50,18 +50,18 @@
 
 ```
 discuss skill          ← 需求讨论 / PRD 细化 → 内联需求结论（按需落盘 spec）
-    ↓（需求结论批准后）
-writing-plans skill    ← 创建包含证明策略的 compact exec-plan（必需 `plan.md + review-contract.md`，按需 `context.md/tasks.md`）
+    ↓（独立审查通过后）
+writing-plans skill    ← 创建 compact exec-plan，并按 low/medium/high 选择 self-review 或独立 reviewer
     ↓
 plan-impl skill ← BOOTSTRAP(using-git-worktrees) → 轻量启动通知 → 中小任务可走 plan-impl-lightweight
-                     └── 优先 team 模式；缺失 team 工具时回退 proof-oriented 实现子代理并行/单代理推进 → 内部审查 → 全量审查 → 验证 → 分支收尾
+                     └── 优先 team 模式；缺失 team 工具时回退 proof-oriented 实现子代理并行/单代理推进 → scratch artifacts + 单 reviewer 双 verdict → 全量审查 → 验证 → 分支收尾
 
 Bug / 测试失败 → systematic-debugging skill
                      └── → proof-oriented-development + verification-before-completion
 ```
 
 `requesting-code-review` 在最终验证前默认强制执行；合并/PR 前不得跳过未通过的审查结果，除非用户明确要求跳过并记录原因。
-`dev-docs-maintain` 是按需或用户要求调用的文档维护 Skill，不是每次开发执行的固定主流程。
+`dev-docs-maintain` 是在 docs 健康检查、漂移修复或 verification ledger 登记需要时按需触发的普通 Skill，不是每次开发执行的固定主流程。
 
 详细的 Skill 协调机制见 [docs/workflow.md](docs/workflow.md)。
 
@@ -136,7 +136,7 @@ claude plugin install power-agent@power-agent --scope project
 > "The repository's knowledge base lives in a structured docs/ directory treated as the system of record... Design documentation is catalogued and indexed, including verification status and a set of core beliefs that define agent-first operating principles."
 > — §We made repository knowledge the system of record
 
-**本项目状态：** `dev-docs` skill 将文档分为 architecture / adr / exec-plan / domain / development / reference 六类，其中 exec-plan 立即委派给 `writing-plans`；普通 docs 文档使用固定路径和 `<!-- verified: YYYY-MM-DD -->` 元信息，ADR 作为历史决策记录不参与普通新鲜度刷新。`dev-docs-maintain` skill 负责检查普通文档新鲜度和导航指针有效性。
+**本项目状态：** `dev-docs` skill 将文档分为 architecture / adr / exec-plan / domain / development / reference 六类，其中 exec-plan 立即委派给 `writing-plans`；`docs/` Knowledge Bundle 内的 Concept 使用具有非空 `type` 的 YAML frontmatter，验证运行状态由 `docs/.okf/verification.json` ledger 表示。ADR 作为历史决策记录使用 `type: Decision` 与 YAML lifecycle status。`dev-docs-maintain` skill 负责检查普通文档新鲜度和导航指针有效性。
 
 ---
 
@@ -173,7 +173,7 @@ claude plugin install power-agent@power-agent --scope project
 
 博客在描述开发循环时反复强调 agent 的自我验证能力和修复质量，并指出当 agent 遇到失败时，人类的任务不是"试更努力"，而是识别缺失了什么能力并补充到仓库中。
 
-**本项目状态：** `systematic-debugging` skill 提供四阶段根因优先调试框架，明确禁止在没有根本原因分析的情况下动手修复，并包含 `root-cause-tracing.md`、`defense-in-depth.md` 等支撑文件。
+**本项目状态：** `systematic-debugging` skill 允许前沿模型自主选择高信息增益的调查路径，以 feedback loop 质量、区分性证据、因果闭合和 original/minimal repro 约束根因声明；性能或稳定性存在合理影响面时，POD 与 VBC 要求同口径 baseline/candidate 或重复观测，功能绿色不能替代非退化证明。`root-cause-tracing.md`、`performance-and-flakiness.md`、`defense-in-depth.md` 等 references 按需加载。
 
 ---
 
@@ -182,7 +182,7 @@ claude plugin install power-agent@power-agent --scope project
 > "A recurring 'doc-gardening' agent scans for stale or obsolete documentation that does not reflect the real code behavior and opens fix-up pull requests."
 > — §We made repository knowledge the system of record
 
-**本项目状态：** `dev-docs-maintain` skill 覆盖了 doc gardening 的逻辑（新鲜度检查、内容对照代码验证、P0/P1/P2 修复优先级），但它是**按需手动触发的 skill**，不属于每次开发执行的固定阶段。博客描述的是在 CI 中定时自动运行、自动开 PR 的后台任务，两者的可靠性和覆盖度有根本差异。
+**本项目状态：** `dev-docs-maintain` skill 覆盖了 doc gardening 的逻辑（新鲜度检查、内容对照代码验证、P0/P1/P2 修复优先级），并可在文档变更、来源变化或用户请求时按需触发；它不属于每次开发执行的固定阶段。博客描述的是在 CI 中定时自动运行、自动开 PR 的后台任务，两者的可靠性和覆盖度有根本差异。
 
 ---
 
@@ -191,7 +191,7 @@ claude plugin install power-agent@power-agent --scope project
 > "Humans may review pull requests, but aren't required to. Over time, we've pushed almost all review effort towards being handled agent-to-agent."
 > — §Redefining the role of the engineer
 
-**本项目状态：** `requesting-code-review` skill 通过 subagent 执行结构化代码审查，`plan-impl` 在实现阶段以内审循环保障质量，`review-contract.md` 承载默认人审边界；人工决策仍主要保留在需求结论批准和分支收尾选择上。
+**本项目状态：** `requesting-code-review` skill 通过 subagent 执行结构化代码审查，`plan-impl` 在实现阶段以内审循环保障质量，`review-contract.md` 提供按需审阅面；人工决策可按需参与，分支丢弃等破坏性操作仍遵守明确授权边界。
 
 ---
 

@@ -78,7 +78,15 @@ description: |-
 - Proof Block 的未验证项若影响验收标准，必须 `PARTIAL` 或 `BLOCKED`。
 - Proof Block 与完成声明不匹配时，必须 `BLOCKED`。
 - 证据过期或与当前 HEAD / 工作树状态不匹配时，必须 `BLOCKED` 或重新验证。
+- `commit_sha`、`verified_at`、退出码和运行时间只能来自工具输出、CI 或用户提供的可复查记录；不可观察时写 `unknown / not_provided`，不得推测或编造，且不能据此给出 `DONE`。
 - 只要存在阻塞项，不得给出“可以声称完成”的结论。
+
+#### 条件性完成门槛
+
+- **bugfix 复现**：`original_repro` 是真实场景的主要证明。若同时记录 original 和 minimal，二者都必须有与当前 HEAD / 工作树匹配的新鲜结果；若仅记录 original，original 必须有新鲜结果；仅有 minimal 永远不足以 `DONE`，必须回到 POD 补 original 或说明为什么只能使用等价外部观测。
+- **正确接缝**：缺少理想测试 seam、或现有测试只能浅层覆盖时，不得单独阻塞一个边界清楚且合理的修复。此时 original repro 必须是主要证明，并在风险 / 未验证项中明确 seam 缺口、受影响边界和为何未能补足；若 original repro 也未通过或未新鲜运行，才不得 `DONE`。
+- **临时产物**：上游、本轮工具记录或证据显示创建过 `temporary_artifacts` 时，必须逐项审计位置或标识、敏感性/安全影响、`removed | retained` disposition、保留原因（仅 retained）、责任人和处置验证。字段省略且没有已知创建记录时不触发额外工作区扫描；这只表示 `not_reported`，不构成“已证明从未创建”。已有创建证据但清单缺失，或显式为 `unknown` 时一律不得 `DONE`。
+- **性能 / 稳定性**：任务有性能验收，或改动存在合理性能影响面时，功能验证不能替代性能证据。性能证据必须在相同 workload、环境和口径下比较 baseline 与 candidate，并说明非退化结论；没有合理影响面时，必须以 `not_applicable` 说明理由。flaky 修复还必须提供风险相称的受控重复观测，或 baseline / candidate 的失败率、触发条件对照；单次绿色结果不足以 `DONE`。不预设次数、阈值或固定工具菜单。
 
 ### 决策边界：只阻塞，不补定义
 
@@ -88,6 +96,9 @@ description: |-
 - 缺根因证据、验证失败且原因不清：`BLOCKED`，next_action=`return_to_systematic-debugging`。
 - 缺 Proof Block 或 Proof Block 与声明不匹配：`BLOCKED`，next_action=`return_to_proof-oriented-development`。
 - 证据过期或 HEAD 不匹配，但任务定义清晰：`BLOCKED` 或 `PARTIAL`，next_action=`rerun_minimal_verification`。
+- 已记录的 bugfix original repro 无新鲜结果、或只以 minimal repro 代替：`BLOCKED`，next_action=`return_to_proof-oriented-development` 或 `rerun_minimal_verification`。
+- 已知或已报告的 `temporary_artifacts` 缺少统一字段、处置验证，或仍为 `unknown`：`BLOCKED`，next_action=`return_to_proof-oriented-development`。
+- 性能 / flaky 证据被触发但缺少相称对照：`PARTIAL` 或 `BLOCKED`，next_action=`return_to_proof-oriented-development` 或 `rerun_minimal_verification`；性能影响面或验收不清时，next_action=`return_to_writing-plans`。
 
 ### Proof Block 兼容与完整性规则
 
@@ -102,6 +113,16 @@ POD 主链路的 Proof Block 至少必须能直接或通过任务卡映射出：
 - 验证方式（命令、截图、日志、CI、diff 或人工核对路径）
 - 运行结果
 - 风险或未验证项
+
+#### 条件性完整性要求
+
+仅在相应事实存在时，Proof Block 或可映射任务材料还必须包含：
+
+- bugfix 的 original repro、minimal repro（如有）及各自的新鲜运行结果；并标明 original repro 是修复证明。
+- 正确 seam 不可用或覆盖浅层时的 seam 缺口、风险边界，以及 original repro 的运行结果。
+- 已知或已报告的 `temporary_artifacts` 清单；每项包含位置或标识、敏感性/安全影响、`removed | retained`、保留原因（仅 retained）、责任人和处置验证。没有已知创建记录时可省略。
+- 性能验收或合理影响面触发时的 baseline / candidate 对照：workload、环境、测量口径、结果和非退化判断；未触发时的 `not_applicable` 理由。
+- flaky 修复的受控重复观测，或 baseline / candidate 失败率与触发条件对照。
 
 #### 可映射字段
 
@@ -119,6 +140,8 @@ POD 主链路的 Proof Block 至少必须能直接或通过任务卡映射出：
 | Proof Block 含全部硬要求字段，且关键字段无需外部补齐 | 完整 |
 | Proof Block 缺少部分上下文字段，但可从任务卡 / review-contract 明确映射，且运行结果与风险/未验证项存在 | 部分 |
 | 缺少验证方式、运行结果、风险/未验证项，或无法映射目标/验收 | 缺失 |
+
+触发上述条件性要求但缺少其证据、理由或 disposition 时，完整性至少为“部分”；若该缺口会使完成声明无法成立，则为“缺失”并不得 `DONE`。
 
 #### 审计结论判定
 
@@ -155,6 +178,8 @@ POD 主链路的 Proof Block 至少必须能直接或通过任务卡映射出：
 
 不满足最低字段时，不能 `DONE`。
 
+存在 bugfix repro、seam 缺口、已知或已报告的 `temporary_artifacts`、性能影响面或 flaky 修复时，等价证据块也必须满足相同的条件性完整性要求。
+
 ### 状态映射矩阵
 
 | Proof Block 审计结论 | 额外验证 | 缺口类型 | VBC 状态 | passed | next_action |
@@ -187,6 +212,11 @@ verified_at：<timestamp>
 - 可复现性：可复现 / 部分可复现 / 不可复现
 - 未验证项影响：无影响 / 可接受 / 阻塞
 - 结论：accepted / needs_more_verification / rejected
+- bugfix 复现：original / minimal / 不适用；新鲜结果：<各路径结果>
+- seam 审计：充分 / 浅层或缺失（列入风险） / 不适用
+- temporary_artifacts：已全部移除 / 已逐项 disposition / `not_reported`（无已知创建记录） / unknown / 缺失；不得把 `not_reported` 写成“已证明未创建”
+- 性能影响面：已对照 / `not_applicable`（理由） / 缺失
+- flaky 观测：风险相称对照已提供 / 不适用 / 缺失
 
 ### 证据
 - [proof_block_audit / test / check / build / manual / ci / screenshot / log / other] <command_or_path>
@@ -197,7 +227,7 @@ verified_at：<timestamp>
   - 摘要：<summary>
 
 ### 阻塞项
-- [无证据 / 证据过期 / 检查失败 / 范围不匹配 / Proof Block 不足 / 计划缺口 / 根因未明] <message>
+- [无证据 / 证据过期 / 检查失败 / 范围不匹配 / Proof Block 不足 / 计划缺口 / 根因未明 / original repro 缺失 / 临时产物无 disposition / 性能或 flaky 证据不足] <message>
   - 需要动作：<required_action>
 
 ### 非阻塞建议
@@ -231,6 +261,8 @@ summary: <summary>
 - `scope`: 本次完成声明覆盖范围
 - `summary`: 必须包含 `accepted|needs_more_verification|rejected` 和关键缺口摘要
 
+- `summary` 还必须概述任何触发的 original/minimal repro、seam 风险、已知 `temporary_artifacts` disposition、性能对照或 `not_applicable` 理由，以及 flaky 观测；临时产物没有已知创建记录时写 `not_reported` 即可，不额外扫描证明。
+
 示例：
 
 ```text
@@ -245,9 +277,9 @@ summary: accepted；Proof Block 完整、验证命令与声明强相关，未验
 
 ### 判定规则
 
-- `status=DONE`：至少一条相关且成功的证据，Proof Block 审计为 `accepted` 或缺口已由额外验证覆盖，且 `blocking_issues=[]`。
-- `status=PARTIAL`：有证据但不完整，或存在非致命缺口。
-- `status=BLOCKED`：无证据、证据失败、Proof Block 被 rejected、证据与声明不匹配、计划缺口、根因未明、证据过期或 HEAD 不匹配。
+- `status=DONE`：至少一条相关且成功的证据，Proof Block 审计为 `accepted` 或缺口已由额外验证覆盖，`blocking_issues=[]`，并满足所有被触发的条件性完成门槛。
+- `status=PARTIAL`：有证据但不完整，或存在非致命缺口；触发的性能 / flaky 对照不足、但任务定义清晰且可补验时适用。
+- `status=BLOCKED`：无证据、证据失败、Proof Block 被 rejected、证据与声明不匹配、计划缺口、根因未明、证据过期或 HEAD 不匹配；亦适用于 original repro 缺失、临时产物无 disposition，或条件性缺口使完成声明无法成立。
 
 ### 编排层消费规则
 

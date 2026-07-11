@@ -1,6 +1,3 @@
-<!-- verified: 2026-06-03 -->
-<!-- scope: plan-impl-lightweight, stress-scenarios -->
-
 # Lightweight Exec Path 压力场景
 
 ### 场景：局部文档或 Skill 小改

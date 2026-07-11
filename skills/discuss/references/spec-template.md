@@ -1,4 +1,12 @@
+---
+type: Specification
+status: reviewed
+---
+
 ## Discussion Conclusion / 需求结论
+
+### 审查状态
+- [DRAFT / APPROVED / ISSUES_FOUND]
 
 ### 背景与目标
 - 用户问题：[用户问题、PRD 缺口、期望结果]
@@ -67,9 +75,8 @@
 ### 约束与假设
 - [业务/产品约束，或影响范围/验收/planning 的上层技术约束；不包含可直接编码的实现细节]
 
-### 审批状态
-- 结论状态：[proposed / approved]
-- 用户确认：[待确认 / 已明确批准]
+### 审查记录
+- 独立 reviewer：[待审查 / APPROVED / ISSUES_FOUND]
 
-> 默认将以上内容作为对话中的内联 `Discussion Conclusion` / `需求结论` 输出。
-> 仅在用户明确要求、合规/流程要求，或需要独立长期维护的产品文档时，才落盘为 spec/doc。
+> 默认将以上正文作为对话中的内联 `Discussion Conclusion` / `需求结论` 输出，不展示本文件的 YAML frontmatter。
+> 仅在用户明确要求、合规/流程要求，或需要独立长期维护的产品文档时，才将完整模板（包括 YAML frontmatter）落盘为 spec/doc；将 `status` 更新为实际审查状态。

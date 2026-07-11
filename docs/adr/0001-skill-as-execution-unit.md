@@ -1,4 +1,7 @@
-<!-- status: accepted -->
+---
+type: Decision
+status: accepted
+---
 
 # ADR-0001: Skill 作为执行单元
 

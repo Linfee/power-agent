@@ -27,16 +27,16 @@ Three principles from Harness Engineering:
 
 | Skill | Purpose |
 |-------|---------|
-| `discuss` | Requirement discussion and PRD refinement — clarify vague requirements, use HTML visual aids when useful, then run a conclusion review loop and human approval gate |
-| `writing-plans` | Convert approved discussion conclusions, specs, or direct requirements into compact proof-oriented exec-plan packages |
-| `plan-impl` | Execute or resume exec-plans by reading `plan.md + review-contract.md`, optionally consuming `context.md/tasks.md`; prefer team mode, fall back to lightweight / parallel / single-agent execution, then review, verify, and finish |
+| `discuss` | Requirement discussion and PRD refinement — clarify vague requirements, use HTML visual aids when useful, then run a conclusion review loop |
+| `writing-plans` | Convert discussion conclusions, specs, or direct requirements into compact proof-oriented exec-plans, selecting self-review or independent review by risk |
+| `plan-impl` | Execute or resume exec-plans; prefer team mode, hand review inputs off as scratch artifacts, use one internal reviewer for separate spec and quality verdicts, then run full review, verification, and finishing |
 | `plan-impl-lightweight` | Lightweight path for medium-small tasks: scope_check, proof-oriented implementation, local verification, limited review/fix loop, and escalation to the full runner |
-| `dev-docs` | Doc router — delegates exec-plan to `writing-plans`, handles other doc types directly |
-| `dev-docs-maintain` | Doc gardening — scan and fix stale, missing, or invalid docs on demand |
+| `dev-docs` | Maintain durable engineering knowledge in `docs/` — stable system facts, boundaries, decision rationale, and integration references; hand execution, refactoring, migration, and task-breakdown plans to `writing-plans` |
+| `dev-docs-maintain` | On demand, assess an existing `docs/` OKF Bundle’s health, repair structural or knowledge drift, and record completed verification in its verification ledger |
 | `setup-power-agent` | Bootstrap a project's Harness Engineering knowledge base from scratch |
 | `using-git-worktrees` | Detect or prepare isolated worktrees before large execution tasks |
 | `writing-skills` | Create, modify, review, and pressure-test skills |
-| `systematic-debugging` | Four-phase root-cause-first debugging (no fixes without root cause analysis) |
+| `systematic-debugging` | Exploratory root-cause investigation with evidence, safety, and risk-proportionate performance/stability proof governing fix handoff |
 | `proof-oriented-development` | Proof-oriented implementation loop with minimal relevant verification and Proof Block output |
 | `requesting-code-review` | Orchestrate code review via subagent with structured findings |
 | `receiving-code-review` | Technical evaluation of review feedback (not performative agreement) |
@@ -48,11 +48,11 @@ Three principles from Harness Engineering:
 
 ```
 discuss skill          ← optional: requirement discussion / PRD refinement → inline discussion conclusion (spec doc only when needed)
-    ↓ (conclusion approved)
-writing-plans skill    ← create compact proof-oriented exec-plan (required `plan.md + review-contract.md`, optional `context.md/tasks.md`)
+    ↓ (independent review passed)
+writing-plans skill    ← create a compact proof-oriented exec-plan and choose self-review or independent review by plan risk
     ↓
 plan-impl skill ← BOOTSTRAP(using-git-worktrees) → lightweight start notice → optional plan-impl-lightweight for medium-small tasks
-                     └── prefer team mode; without team tools, fall back to proof-oriented implementation subagents in parallel or serial flow → internal review → full code review → verification → branch finishing
+                     └── prefer team mode; without team tools, fall back to proof-oriented implementation subagents in parallel or serial flow → scratch artifacts + one reviewer with two verdicts → full code review → verification → branch finishing
 
 Bug / test failure → systematic-debugging skill
                          └── → proof-oriented-development + verification-before-completion

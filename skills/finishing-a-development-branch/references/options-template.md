@@ -1,6 +1,3 @@
-<!-- verified: 2026-05-05 -->
-<!-- scope: finishing-a-development-branch -->
-
 # 选项展示模板
 
 ## 标准展示

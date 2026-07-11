@@ -1,6 +1,3 @@
-<!-- verified: 2026-05-05 -->
-<!-- scope: receiving-code-review, examples -->
-
 # receiving-code-review 响应示例
 
 ## 1) accept 示例

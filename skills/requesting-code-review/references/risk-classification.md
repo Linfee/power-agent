@@ -1,6 +1,3 @@
-<!-- verified: 2026-04-21 -->
-<!-- scope: code-review -->
-
 # 风险分级指南
 
 用于 `requesting-code-review` 在发起全量审查前选择审查策略。

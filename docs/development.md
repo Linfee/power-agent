@@ -1,5 +1,8 @@
-<!-- verified: 2026-06-05 -->
-<!-- scope: development -->
+---
+type: Playbook
+scope:
+  - development
+---
 
 # 开发指南
 
@@ -86,19 +89,25 @@ disable-model-invocation: [true|false]  # 可选，默认 false
 - 先写清楚触发场景、目标行为和无 Skill 时的失败模式。
 - 为关键路径准备 2-3 个压力场景。
 - 检查上游产物是否满足下游输入契约。
-- 对规划类 Skill，区分人类审阅入口与 Agent 执行材料；例如 `writing-plans` 默认使用 `review-contract.md` 承载人类批准口径。
+- 对规划类 Skill，区分人类按需阅读入口与 Agent 执行材料；例如 `writing-plans` 默认使用 `review-contract.md` 提供压缩审阅面，但它不构成执行 Gate。
+- 计划审查按风险分层：低风险只做 self-review，中/高风险增加独立 reviewer。
+- 高体积、可重建的 task brief、实现报告和 review diff 使用 `.power-agent/review-runs/` scratch artifacts 交接；它们不进入 commit，也不替代 exec-plan Session Log。
 - 至少运行路径和引用检查；有条件时运行子代理 eval。
 
 ## 文档规范
 
-### 元信息（ADR 除外，普通 docs 文档必须包含）
+### YAML frontmatter（ADR 除外，普通 docs Concept 必须包含）
 
-```markdown
-<!-- verified: YYYY-MM-DD -->
-<!-- scope: [范围] -->
+```yaml
+---
+type: Concept # 替换为能表达文档用途的非空类型
+scope:
+  - src/area/**
+status: active # 仅在生命周期有实际语义时添加
+---
 ```
 
-ADR 是历史架构决策记录，不要求 `verified` / `scope` 元信息；需要表达状态时使用 `<!-- status: accepted | proposed | superseded -->`。
+验证运行状态不写入 Concept；由 `docs/.okf/verification.json` ledger 维护。ADR 是历史架构决策记录，使用 `type: Decision` 和 YAML `status`（如 `accepted`、`proposed`、`superseded`）。
 
 ### 命名约定
 
@@ -109,11 +118,11 @@ ADR 是历史架构决策记录，不要求 `verified` / `scope` 元信息；需
 | Spec | `YYYY-MM-DD-topic.md` |
 | Exec-plan 目录 | `YYYY-MM-DD-title/` |
 
-### 时间戳维护
+### 验证维护
 
-- verified 超过 30 天：需验证内容是否仍准确
-- verified 超过 90 天：必须修复或更新
-- ADR 不刷新 verified；决策变化时新增 ADR 或标记 superseded
+- 来源变化或 freshness 策略到期时，运行文档验证并更新 `docs/.okf/verification.json`。
+- 不将历史验证日期迁入 Concept frontmatter 或 ledger。
+- ADR 使用历史策略；决策变化时新增 ADR 或以 YAML status 标记 superseded。
 
 ## 约束（硬规则）
 

@@ -1,5 +1,4 @@
-<!-- verified: 2026-05-05 -->
-<!-- scope: plan-impl, code-quality-review -->
+> Legacy rollback reference. `plan-impl` 主链路已改用 `task-reviewer-prompt.md` 的单 reviewer 双 verdict，不再直接派发本 prompt。
 
 你是一名代码质量审查员。可以复用 `skills/requesting-code-review/references/code-reviewer.md` 的审查维度与严重度校准，但输出协议只遵循本文件。
 

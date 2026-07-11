@@ -28,7 +28,7 @@ disable-model-invocation: true
 **必须项：**
 1. `AGENTS.md` 可读、可导航（建议 ≤ 200 行）。
 2. `docs/architecture.md` 与 `docs/development.md` 存在。
-3. 核心文档包含 `verified` 与 `scope` 元信息。
+3. `docs/` Knowledge Bundle 内的核心 Concept 使用具有非空 `type` 的 YAML frontmatter；验证运行状态由 `docs/.okf/verification.json` ledger 维护。
 4. 项目记忆布局已初始化并写入 AGENTS/CLAUDE 入口：
    - 单 context：仓库根目录 `CONTEXT.md` + `docs/adr/`
    - 多 context：仓库根目录 `CONTEXT-MAP.md` + 各 context 的 `CONTEXT.md` + 根级 `docs/adr/`
@@ -48,6 +48,7 @@ disable-model-invocation: true
    - 多 context：创建根目录 `CONTEXT-MAP.md`，并为每个已确认的 context 创建对应 `CONTEXT.md`
    - 创建 `docs/adr/` 目录
    - 在 AGENTS/CLAUDE 入口中写明 `CONTEXT.md` / `CONTEXT-MAP.md` / `docs/adr/` 的用途与读取规则
+   - 只为 `docs/` Concept 创建 YAML frontmatter；Bundle 外的 `AGENTS.md`、`CONTEXT.md` 与 `CONTEXT-MAP.md` 不机械添加 frontmatter
 4. **导航校验**：确认 `AGENTS.md` 指针有效。
 5. **最小验证**：检查元信息、关键命令可执行性（如环境允许）。
 
@@ -66,6 +67,7 @@ disable-model-invocation: true
 ### ADR
 - ADR 存放在 `docs/adr/`，采用 `0001-slug.md` 命名。
 - `setup-power-agent` 初始化时创建 `docs/adr/` 目录；ADR 文件仍只在真实决策出现时写入。
+- ADR 使用 `type: Decision`，并以 YAML `status` 表示 `proposed`、`accepted` 或 `superseded` 等历史生命周期。
 - 只记录难以逆转、没有上下文会显得反直觉、且确实存在权衡的决策。
 - ADR 保持最小：标题 + 1 到 3 句上下文、决策与原因即可。
 
@@ -86,7 +88,7 @@ disable-model-invocation: true
 当项目已有骨架时，仅允许：
 1. 补齐缺失文件与最小结构。
 2. 修复失效导航指针。
-3. 刷新文档 `verified` 时间戳。
+3. 为新增或实质修改的 `docs/` Concept 补齐有实际语义的 YAML frontmatter；需要验证时更新 ledger，而不迁移历史验证日期。
 4. 补充缺失的项目记忆文件或入口说明，不重写已有术语与 ADR 内容。
 
 不做持续园艺、归档搬运与大范围内容改写。

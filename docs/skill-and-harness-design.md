@@ -1,5 +1,8 @@
-<!-- verified: 2026-06-05 -->
-<!-- scope: skill-design -->
+---
+type: Playbook
+scope:
+  - skill-design
+---
 
 # Skill 与 Harness 设计指南
 

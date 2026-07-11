@@ -1,4 +1,9 @@
-<!-- status: superseded by ADR-0006 (2026-03-25) -->
+---
+type: Decision
+status: superseded
+superseded_by: 0006-gate-restructuring.md
+superseded_at: 2026-03-25
+---
 
 # ADR-0005: Gate 机制强制人工确认
 

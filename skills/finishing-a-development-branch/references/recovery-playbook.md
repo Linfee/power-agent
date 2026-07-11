@@ -1,6 +1,3 @@
-<!-- verified: 2026-05-05 -->
-<!-- scope: finishing-a-development-branch -->
-
 # 失败恢复模板
 
 ## 常见阻塞

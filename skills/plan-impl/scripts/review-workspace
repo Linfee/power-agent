@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+usage() {
+  echo "usage: review-workspace [run-id]" >&2
+  exit 2
+}
+
+if [[ $# -gt 1 ]]; then
+  usage
+fi
+
+run_id="${1:-$(date +%Y%m%d-%H%M%S)-$$}"
+if [[ ! "$run_id" =~ ^[A-Za-z0-9._-]+$ ]]; then
+  echo "invalid run id: $run_id" >&2
+  exit 2
+fi
+
+root=$(git rev-parse --show-toplevel)
+workspace="$root/.power-agent/review-runs/$run_id"
+
+for path in "$root/.power-agent" "$root/.power-agent/review-runs" "$workspace"; do
+  if [[ -L "$path" ]]; then
+    echo "review workspace must not traverse a symbolic link: $path" >&2
+    exit 2
+  fi
+done
+
+if [[ -e "$workspace" || -L "$workspace" ]]; then
+  echo "refusing to reuse existing review workspace: $workspace" >&2
+  exit 2
+fi
+
+umask 077
+mkdir -p "$workspace"
+printf '*\n' > "$workspace/.gitignore"
+
+cd "$workspace"
+pwd -P

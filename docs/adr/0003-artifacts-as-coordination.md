@@ -1,4 +1,7 @@
-<!-- status: accepted -->
+---
+type: Decision
+status: accepted
+---
 
 # ADR-0003: 产出物作为协调介质
 

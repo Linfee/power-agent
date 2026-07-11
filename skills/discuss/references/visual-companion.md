@@ -1,6 +1,3 @@
-<!-- verified: 2026-06-05 -->
-<!-- scope: discuss, html-visual-companion -->
-
 # Discuss Visual Companion Guide
 
 本指南用于 `discuss` 在需求讨论和 PRD 细化中启用本地 HTML 可视化辅助。脚本复用自 superpowers `brainstorming` companion，并按本项目命名落地；会话文件默认写入 `/tmp`，不假设项目内存在持久目录。

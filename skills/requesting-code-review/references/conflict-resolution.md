@@ -1,6 +1,3 @@
-<!-- verified: 2026-05-05 -->
-<!-- scope: code-review, conflict-resolution -->
-
 # 双审冲突归并规则
 
 用于 `风险等级=高风险` 时两个独立审查结果的合并。

@@ -1,122 +1,36 @@
-# 纵深防御验证
+# 边界防护与不变量
 
-## 概述
+根因修复后，只在具有独立责任的边界增加必要防护。数据经过某层，不代表该层应该重复校验。
 
-修复由无效数据引起的 Bug 时，在一个地方添加验证看起来已经足够了。但单个检查可能被不同的代码路径、重构或 mock 绕过。
+## Ownership test
 
-**核心原则：** 在数据流经的每一层都添加验证。让 Bug 在结构上不可能发生。
+考虑增加防护时，判断：
 
-## 为什么需要多层防御
+- 这一层是否拥有被保护的不变量，或位于信任、安全、不可逆操作边界？
+- 它能否阻断其它边界无法捕获的独立失败模式，并给出更准确的处置？
+- 防护是否会重复上游契约、制造分支漂移或掩盖根因？
+- 类型、状态机、权限模型或单一 API 入口能否以更简单的方式约束非法状态？
 
-单层验证："我们修复了这个 Bug"  
-多层防御："我们让这个 Bug 不可能再发生"
+没有独立责任时，保留单一权威校验点。
 
-不同的层捕获不同的情况：
-- 入口验证捕获大多数 Bug
-- 业务逻辑捕获边界情况
-- 环境守卫防止特定上下文的危险操作
-- 调试日志在其他层失效时提供帮助
+## 设计原则
 
-## 四层防御
+### 根因修复优先
 
-### 第一层：入口验证
-**目的：** 在 API 边界拒绝明显无效的输入
+先修复产生错误状态的原因。下游 fallback 或重复空值检查不能替代根因修复。
 
-```typescript
-function createProject(name: string, workingDirectory: string) {
-  if (!workingDirectory || workingDirectory.trim() === '') {
-    throw new Error('workingDirectory 不能为空');
-  }
-  if (!existsSync(workingDirectory)) {
-    throw new Error(`workingDirectory 不存在: ${workingDirectory}`);
-  }
-  if (!statSync(workingDirectory).isDirectory()) {
-    throw new Error(`workingDirectory 不是目录: ${workingDirectory}`);
-  }
-  // ... 继续执行
-}
-```
+### 结构性约束优先
 
-### 第二层：业务逻辑验证
-**目的：** 确保数据对该操作有意义
+优先用类型、构造边界、状态机、权限模型或 API 契约表达不变量，再考虑分散的运行时守卫。
 
-```typescript
-function initializeWorkspace(projectDir: string, sessionId: string) {
-  if (!projectDir) {
-    throw new Error('初始化工作空间需要 projectDir');
-  }
-  // ... 继续执行
-}
-```
+### 安全边界不可弱化
 
-### 第三层：环境守卫
-**目的：** 防止在特定上下文中执行危险操作
+防护不能绕过或改变既有安全语义。涉及权限、敏感数据、生产或破坏性操作时，遵守主 Skill 和项目授权规则；缺少授权则 `BLOCKED`。
 
-```typescript
-async function gitInit(directory: string) {
-  // 测试环境中，拒绝在临时目录之外执行 git init
-  if (process.env.NODE_ENV === 'test') {
-    const normalized = normalize(resolve(directory));
-    const tmpDir = normalize(resolve(tmpdir()));
+### 观测不是防护
 
-    if (!normalized.startsWith(tmpDir)) {
-      throw new Error(
-        `测试期间拒绝在临时目录之外执行 git init: ${directory}`
-      );
-    }
-  }
-  // ... 继续执行
-}
-```
+日志和 trace 用于观察，不等于防止错误。临时 instrumentation 只记录区分当前解释所需的信息，必须脱敏、控制影响并在调查后清理，除非其长期运维价值被独立证明。
 
-### 第四层：调试诊断
-**目的：** 捕获上下文信息用于排查
+### 验证真实契约
 
-```typescript
-async function gitInit(directory: string) {
-  const stack = new Error().stack;
-  logger.debug('即将执行 git init', {
-    directory,
-    cwd: process.cwd(),
-    stack,
-  });
-  // ... 继续执行
-}
-```
-
-## 应用模式
-
-发现 Bug 时：
-
-1. **追踪数据流** — 错误值从哪里产生？在哪里被使用？
-2. **绘制检查点** — 列出数据流经的所有位置
-3. **在每一层添加验证** — 入口、业务、环境、调试
-4. **测试每一层** — 尝试绕过第一层，验证第二层能捕获
-
-## 真实案例
-
-**Bug：** 空的 `projectDir` 导致 `git init` 在源码目录执行
-
-**数据流：**
-1. 测试初始化 → 空字符串
-2. `Project.create(name, '')`
-3. `WorkspaceManager.createWorkspace('')`
-4. `git init` 在 `process.cwd()` 执行
-
-**添加的四层防御：**
-- 第一层：`Project.create()` 验证非空、存在、可写
-- 第二层：`WorkspaceManager` 验证 projectDir 非空
-- 第三层：`WorktreeManager` 在测试中拒绝在 tmpdir 之外执行 git init
-- 第四层：git init 之前记录堆栈跟踪
-
-**结果：** 全部 1847 个测试通过，Bug 不可能再复现
-
-## 关键洞见
-
-四层防御都是必要的。测试过程中，每一层捕获了其他层遗漏的 Bug：
-- 不同的代码路径绕过了入口验证
-- Mock 绕过了业务逻辑检查
-- 不同平台上的边界情况需要环境守卫
-- 调试日志识别出了结构性误用
-
-**不要只在一个地方添加验证。** 在每一层都添加检查。
+验证应证明边界不变量和可观察行为，而不是仅证明某个 `if` 存在。若合法路径能绕过防护，重新检查所有权和 API 设计，不要继续堆叠检查。

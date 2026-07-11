@@ -1,4 +1,8 @@
-<!-- status: accepted -->
+---
+type: Decision
+status: accepted
+supersedes: 0005-gate-mechanism.md
+---
 
 # ADR-0006: Gate 机制重构
 

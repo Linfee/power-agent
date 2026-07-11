@@ -1,4 +1,7 @@
-<!-- status: accepted -->
+---
+type: Decision
+status: accepted
+---
 
 # ADR-0002: 子代理一次性原则
 

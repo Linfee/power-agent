@@ -1,5 +1,8 @@
-<!-- verified: 2026-06-05 -->
-<!-- scope: harness-engineering -->
+---
+type: Concept
+scope:
+  - harness-engineering
+---
 
 # Harness Engineering 体系设计
 
@@ -126,14 +129,18 @@ docs/
 └── specs/                   # 需求规格文档
 ```
 
-**文档元信息（ADR 除外，普通 docs 文档必须包含）：**
+**文档 YAML frontmatter（ADR 除外，普通 docs Concept 必须包含）：**
 
-```markdown
-<!-- verified: YYYY-MM-DD -->
-<!-- scope: [architecture|frontend|backend|security|...] -->
+```yaml
+---
+type: Concept # 替换为能表达文档用途的非空类型
+scope:
+  - architecture
+status: active # 按生命周期需要添加
+---
 ```
 
-ADR 是历史决策记录，不参与普通文档新鲜度刷新；需要表达状态时使用 `<!-- status: accepted | proposed | superseded -->`。
+验证运行状态由 `docs/.okf/verification.json` ledger 维护，不写入 Concept。ADR 是历史决策记录，使用 `type: Decision` 和 YAML `status` 表示生命周期。
 
 ---
 

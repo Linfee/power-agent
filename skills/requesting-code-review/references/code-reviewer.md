@@ -1,6 +1,3 @@
-<!-- verified: 2026-05-05 -->
-<!-- scope: code-review, prompt-template -->
-
 # 代码审查子代理 Prompt 模板
 
 dispatch 审查子代理时使用此模板。默认使用平台可用的代码审查子代理；若没有专用 reviewer，则使用通用子代理并粘贴本模板。不要依赖 named `code-reviewer` agent。

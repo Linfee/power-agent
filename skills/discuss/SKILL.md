@@ -7,12 +7,11 @@ description: |-
 
 # 产品需求讨论与 PRD 细化
 
-把模糊需求或不完整 PRD 收敛成可评审、可批准、可交给 `writing-plans` 的 `Discussion Conclusion` / `需求结论`。
+把模糊需求或不完整 PRD 收敛成可评审、可交给 `writing-plans` 的 `Discussion Conclusion` / `需求结论`。
 
-## Gate
+## 准入
 
 - 仅在需求不清、PRD 不完整、范围/流程/验收缺失，或存在真实产品取舍时启用。
-- 启用后，在需求结论经用户明确批准前，不写代码、不脚手架、不执行实现动作，也不进入 `writing-plans`。
 - 若目标、范围和验收已清楚，建议跳过 discuss，直接实现或进入 `writing-plans`。
 
 ## 边界
@@ -44,15 +43,14 @@ description: |-
    - 一屏只解决一个主题；终端文字反馈优先于 HTML 点击事件。
 
 5. **输出需求结论**
-   - 默认在对话中输出内联 `Discussion Conclusion` / `需求结论`，使用 `references/spec-template.md`。
+   - 默认在对话中输出内联 `Discussion Conclusion` / `需求结论`，使用 `references/spec-template.md` 的正文；不得展示其 YAML frontmatter。
    - 结论沉淀最终决定，不转录对话；未确认内容进入 Open Questions，并标明 blocking / non-blocking。
-   - 只有用户明确要求、合规/流程要求，或需要长期维护的产品资产时，才额外落盘 spec/doc。
+   - 只有用户明确要求、合规/流程要求，或需要长期维护的产品资产时，才额外落盘 spec/doc；落盘时保留模板的 YAML frontmatter，并将 `status` 设为实际审查状态。
 
-6. **审查与批准**
+6. **审查与交棒**
    - 先自查：无占位符；目标、范围、流程、验收一致；上层技术方向只服务范围/验收/planning，未滑入可直接编码的实现细节；仍聚焦单个可计划闭环。
    - 使用 `references/spec-reviewer-prompt.md` 派发独立 reviewer 审查内联结论；blocking issue 修正后重审。
-   - reviewer `Status=APPROVED` 且 Evidence 非空、Missing Evidence 无 planning 阻塞缺口后，提交用户 Review Gate。
-   - 用户明确批准后，交给 `writing-plans`；默认由其折叠进 `plan.md`，不再单独持久化 spec。
+   - reviewer `Status=APPROVED` 且 Evidence 非空、Missing Evidence 无 planning 阻塞缺口后，交给 `writing-plans`；默认由其折叠进 `plan.md`，不再单独持久化 spec。
 
 ## 输出契约
 
@@ -64,7 +62,7 @@ description: |-
 - 上层技术方向与约束（如影响范围、验收或 planning）。
 - 可验证验收标准、成功指标或手动验收路径。
 - blocking / non-blocking open questions。
-- 审批状态：`proposed` 或 `approved`。
+- 审查状态：`DRAFT`、`APPROVED` 或 `ISSUES_FOUND`。
 
 ## 关键原则
 

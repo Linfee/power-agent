@@ -1,6 +1,3 @@
-<!-- verified: 2026-06-03 -->
-<!-- scope: plan-impl-lightweight, result-contract -->
-
 # Lightweight Exec Result Contract
 
 上游消费本结果时只依赖结构化字段，不依赖自由文本乐观声明。

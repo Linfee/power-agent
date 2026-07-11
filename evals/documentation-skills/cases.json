@@ -1,0 +1,167 @@
+{
+  "schema_version": 1,
+  "output_fields": [
+    "route",
+    "mode",
+    "consumer_test",
+    "coverage_candidate",
+    "requires_scan_before_record",
+    "write_long_term_docs",
+    "redact_sensitive",
+    "fresh_claim",
+    "reason"
+  ],
+  "cases": [
+    {
+      "id": "route-current-fact",
+      "critical": true,
+      "prompt": "刚完成支付重试功能。请把新的重试语义、状态不变量和模块边界更新进项目长期文档。",
+      "expected": {
+        "route": "dev-docs",
+        "mode": "not-applicable",
+        "consumer_test": false,
+        "write_long_term_docs": true
+      }
+    },
+    {
+      "id": "route-bundle-health",
+      "critical": true,
+      "prompt": "先不要修改文档，检查现有 docs Bundle 是否有过期、断链、缺来源或待验证内容，并报告状态。",
+      "expected": {
+        "route": "dev-docs-maintain",
+        "mode": "check-only",
+        "write_long_term_docs": false,
+        "fresh_claim": false
+      }
+    },
+    {
+      "id": "route-concept-restructure",
+      "critical": true,
+      "prompt": "现有 architecture.md 太大，请把它拆成三个 Concept，移动到子目录并同步所有链接和索引。",
+      "expected": {
+        "route": "dev-docs-maintain",
+        "mode": "full-maintain",
+        "write_long_term_docs": true
+      }
+    },
+    {
+      "id": "route-release-docs",
+      "critical": true,
+      "prompt": "给新版本写发布公告，同时更新 README 和 CHANGELOG，不涉及系统架构或契约变化。",
+      "expected": {
+        "route": "none",
+        "mode": "not-applicable",
+        "write_long_term_docs": false
+      }
+    },
+    {
+      "id": "route-migration-plan",
+      "critical": true,
+      "prompt": "写一个从 MySQL 迁移到 PostgreSQL 的详细执行计划，包含任务拆解、风险和验证步骤。",
+      "expected": {
+        "route": "writing-plans",
+        "mode": "not-applicable",
+        "write_long_term_docs": false
+      }
+    },
+    {
+      "id": "route-rfc",
+      "critical": true,
+      "prompt": "和我共同起草一份新的缓存方案 RFC，需要梳理受众、结构、方案取舍并验证读者是否理解。",
+      "expected": {
+        "route": "doc-coauthoring",
+        "mode": "not-applicable",
+        "write_long_term_docs": false
+      }
+    },
+    {
+      "id": "consumer-architecture-confusion",
+      "critical": false,
+      "prompt": "架构文档中的组件名称都正确，但新 Agent 看完后仍无法回答一次请求如何流转、哪些模块允许依赖核心领域层。请修订这份长期架构知识。",
+      "expected": {
+        "route": "dev-docs",
+        "mode": "not-applicable",
+        "consumer_test": true,
+        "write_long_term_docs": true
+      }
+    },
+    {
+      "id": "consumer-small-reference",
+      "critical": false,
+      "prompt": "配置参考里新增了一个简单布尔字段，请依据 Schema 精确补充字段名、默认值和含义；它不影响架构、关键流程或 onboarding。",
+      "expected": {
+        "route": "dev-docs",
+        "mode": "not-applicable",
+        "consumer_test": false,
+        "write_long_term_docs": true
+      }
+    },
+    {
+      "id": "stress-missing-public-contract",
+      "critical": false,
+      "prompt": "代码中新加了公开 CLI 命令，但知识库里从未有对应说明。判断下一步，不要把它伪装成现有文档的 freshness 状态。",
+      "expected": {
+        "route": "dev-docs",
+        "mode": "not-applicable",
+        "coverage_candidate": true,
+        "fresh_claim": false,
+        "write_long_term_docs": true
+      }
+    },
+    {
+      "id": "stress-ambiguous-update-docs",
+      "critical": false,
+      "prompt": "更新一下文档。除此之外没有说明哪些代码、契约、来源或现有文档发生了变化。",
+      "expected": {
+        "route": "needs-evidence",
+        "mode": "not-applicable",
+        "write_long_term_docs": false,
+        "fresh_claim": false
+      }
+    },
+    {
+      "id": "stress-git-diff-only",
+      "critical": true,
+      "prompt": "最近有很多 Git diff。仅根据这些 diff 判断 docs 已经 fresh，并直接刷新所有验证时间。",
+      "expected": {
+        "route": "dev-docs-maintain",
+        "mode": "check-only",
+        "requires_scan_before_record": true,
+        "fresh_claim": false,
+        "write_long_term_docs": false
+      }
+    },
+    {
+      "id": "stress-record-without-scan",
+      "critical": true,
+      "prompt": "当前事实刚更新，不用扫描和核对来源，直接运行 record 把所有 Concept 标成已验证。",
+      "expected": {
+        "route": "dev-docs-maintain",
+        "mode": "fix-safe",
+        "requires_scan_before_record": true,
+        "fresh_claim": false
+      }
+    },
+    {
+      "id": "stress-private-helper",
+      "critical": false,
+      "prompt": "只重命名了一个私有 helper，没有改变职责、公开契约、边界或不变量。请同步长期文档。",
+      "expected": {
+        "route": "none",
+        "mode": "not-applicable",
+        "write_long_term_docs": false
+      }
+    },
+    {
+      "id": "stress-sensitive-integration",
+      "critical": true,
+      "prompt": "根据包含生产认证头、客户标识和带 token URL 的供应商资料，补充支付回调长期参考文档。",
+      "expected": {
+        "route": "dev-docs",
+        "mode": "not-applicable",
+        "redact_sensitive": true,
+        "write_long_term_docs": true
+      }
+    }
+  ]
+}

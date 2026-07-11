@@ -19,7 +19,8 @@ description: |-
 - `plan.md` 作为执行真源；`review-contract.md` 作为人审边界；按需读取 `context.md / tasks.md`。
 - 优先检测并使用 team 模式；不可用时回退并行子代理或单子代理。
 - 对中等偏小、边界清楚、验证方式明确的任务，可调用 `plan-impl-lightweight`。
-- 在实现批次后执行 `conflict_check -> review -> fix loop`。
+- 在实现批次后执行 `conflict_check -> 单 reviewer 双 verdict -> fix loop`。
+- 通过 scratch artifacts 交接 task brief、实现报告和 review package，避免把大段内容复制进 dispatch prompt。
 - 先通过 `requesting-code-review` 完成最终全量审查，再通过 `verification-before-completion` 输出 `verification_evidence`。
 - 在收尾阶段串联 `finishing-a-development-branch`。
 
@@ -27,12 +28,13 @@ description: |-
 
 - 不把 `review-contract.md` 当第二套计划。
 - 不允许子代理创建 commit、branch 或 worktree。
+- 不把 scratch artifacts 当作 durable source of truth 或纳入 commit。
 - 不跳过验证、审查或分支收尾状态管理。
 
 ### 输入计划包
 
 - 必须存在 `plan.md`：目标、Scope、关键决策、Agent 边界、Tasks、Proof、阻塞条件和风险。
-- 必须存在 `review-contract.md`：执行时必读，但仅用于确认批准边界。
+- 必须存在 `review-contract.md`：执行时必读，用于确认计划边界与审查记录。
 - `context.md` 可选：补充证据缓存，不覆盖 `plan.md`。
 - `tasks.md` 可选：仅用于复杂任务图、多 Agent 分发或长交接。
 - 任一拆分文档与 `plan.md` 冲突时，以 `plan.md` 为准；若冲突影响执行，回到 `writing-plans` 修订。
@@ -52,22 +54,23 @@ description: |-
 
 ### 状态持久化
 
-将恢复点写入 exec-plan：
+将恢复点写入 `plan.md` 顶部 YAML frontmatter 的 `runner` mapping：
 
-```markdown
-<!-- runner-state: EXECUTING -->
-<!-- runner-batch: 2/4 -->
-<!-- runner-phase: implement|conflict_check|review|fix -->
-<!-- runner-fix-round: 1/3 -->
-<!-- runner-next-action: <下一步动作> -->
+```yaml
+runner:
+  state: EXECUTING
+  batch: 2/4
+  phase: implement # implement | conflict_check | review | fix
+  fix_round: 1/3
+  next_action: <下一步动作>
 ```
 
-恢复时优先读取这些标记与 Session Log 的“下一步”。
+恢复时优先读取该 mapping 与 Session Log 的“下一步”。不再创建、读取或迁移旧式 runner HTML 注释；缺少或不完整的 `runner` mapping 时，从 `READY` 重新判定，而不是猜测旧状态。
 
 ### 转移原则
 
 - `BOOTSTRAP -> READY`：工作区/恢复点/基线检查可继续。
-- `READY -> EXECUTING`：任务、依赖、Proof、阻塞条件可判定，且无致命 plan 缺陷。
+- `READY -> EXECUTING`：任务、依赖、Proof、阻塞条件可判定，Plan Review Gate 已通过，且无致命 plan 缺陷。
 - `EXECUTING -> REVIEWING`：所有 batch 完成，且内部阻塞问题已清零。
 - `REVIEWING -> VERIFYING`：`requesting-code-review` 通过，或用户明确要求跳过并记录原因。
 - `VERIFYING -> FINALIZING`：`verification-before-completion` 返回 `DONE` 且 `passed=true`。
@@ -86,7 +89,7 @@ description: |-
 
 轻量路径返回映射：
 
-- `状态=DONE/DONE_WITH_CONCERNS` 且 `path_decision=lightweight`：并入当前 batch 结果；若已完成全部任务，进入 `VERIFYING`。
+- `状态=DONE/DONE_WITH_CONCERNS` 且 `path_decision=lightweight`：并入当前 batch 结果；若已完成全部任务，进入 `REVIEWING`。
 - `状态=BLOCKED/UNKNOWN`、`path_decision=ask_user` 或 `path_decision=escalate_to_full`：停止轻量执行，补齐上下文、回到 full runner path，或升级给用户。
 - 轻量路径的 `fix_once` 上限不改变 full runner path 的收敛判据。
 
@@ -97,6 +100,7 @@ description: |-
 ### BOOTSTRAP
 
 - 读取 `plan.md`、`review-contract.md`，按需读取 `context.md / tasks.md`。
+- 读取 `plan.md` 的 `Plan Risk` 与 `review-contract.md` 的 `Plan Review Gate`；它们是执行许可，不是仅供展示的 planning 记录。
 - 调用 `using-git-worktrees` 检测或建立隔离工作区。
 - 判断是否为恢复执行，并读取最近恢复点。
 - 做最小基线检查；持续失败且无法定位可执行路径时 `ESCALATED`。
@@ -105,8 +109,21 @@ description: |-
 
 - 校验 `plan.md` 中任务、依赖、Proof、阻塞条件是否可判定。
 - 若存在 `tasks.md`，校验其任务图与 `plan.md` 对齐。
+- 强制校验 Plan Review Gate；所有首次执行和恢复执行都走这一步，不能因用户直接调用 `plan-impl` 而绕过。
 - 判定当前计划是走轻量路径还是 full runner path。
 - 若存在任务矛盾、关键验收缺失、边界冲突等致命缺陷，暂停执行并回到 `writing-plans` 或直接 `ESCALATED`。
+
+### Plan Review Gate
+
+先比较两份计划材料中同名的 `Gate Revision`、`Plan Risk`、`Review Path`、`Plan Review Status`、`Independent Review` 与 `Independent Review Basis` 字段。Independent Review 的 basis 按状态与 revision/history 校验。任一必需字段缺失、枚举非法、两份材料冲突或独立审查 revision/history 不匹配，都是致命 plan 缺陷：保持在 `READY`，写入恢复点并回到 `writing-plans`；不得选择轻量路径、派发任务或恢复旧 batch。
+
+| 风险 | 允许进入 `EXECUTING` 的最小 Gate |
+|---|---|
+| `low` | `plan_review_status=SELF_REVIEWED`；Independent Review 为 `not_required`。 |
+| `medium` | `plan_review_status=APPROVED`；独立审查为 `approved` 且有可定位依据。 |
+| `high` | `plan_review_status=APPROVED`；独立审查为 `approved` 且有可定位依据。 |
+
+`PENDING_INDEPENDENT_REVIEW`、`ISSUES_FOUND`、`pending`、`issues_found`、缺失 basis 或任意不一致都不允许执行。legacy plan 缺少 Gate 字段时同样回到 `writing-plans` 做最小补齐；不要以“旧计划”作为例外。
 
 ---
 
@@ -127,6 +144,7 @@ description: |-
 
 - 所有实现子代理必须使用 `references/implementer-prompt.md`，并通过 `proof-oriented-development` 完成实现。
 - 主代理必须在派发前分配清晰边界；单任务不得含糊到需要子代理自行拆范围。
+- 按 `references/review-artifact-protocol.md` 创建 task brief 和 report path；任务全文只写入 brief，完整 Proof Block 只写入 report。
 - 子代理只在当前工作目录处理分配边界，不创建 commit、branch 或 worktree。
 - 子代理统一返回：`DONE | DONE_WITH_CONCERNS | BLOCKED | UNKNOWN`。
 - `BLOCKED/UNKNOWN` 时，先检查工作树残留，再决定补上下文重试、拆分任务、回退轻量路径或升级。
@@ -141,9 +159,11 @@ description: |-
 
 ### review
 
-- 启动规格符合性审查与代码质量审查。
-- 使用 `references/spec-reviewer-prompt.md` 和 `references/code-quality-reviewer-prompt.md`。
-- 内部 reviewer 只允许返回 `DONE / DONE_WITH_CONCERNS / BLOCKED`。
+- 使用 `scripts/review-package` 为当前 task/batch 生成一次性 review package；dirty worktree 含目标外改动时必须传入显式 path scope。
+- 启动一个只读内部 reviewer，使用 `references/task-reviewer-prompt.md` 一次读取 task brief、实现 report 和 review package，分别输出 `Spec Compliance` 与 `Code Quality` verdict。
+- `Spec=FAIL` 或 `Quality=NEEDS_FIXES` 时返回 `BLOCKED`；两个 verdict 通过但含 `Cannot Verify From Diff` 时返回 `DONE_WITH_CONCERNS`，由主代理逐项核实后才能完成当前 task/batch。
+- reviewer 不重复 implementer 已运行的测试，不接受 implementer rationale 或 orchestrator 预判，不修改工作树/HEAD；只有明确 named risk 才扩大到 diff 外 focused check。
+- plan-mandated defect 必须报告并交给用户决定，不能因计划已写明而忽略，也不能自行修成与计划相反。
 - `receiving-code-review` 只用于处理外部审查反馈，不属于此处内部协议。
 
 ### fix loop
@@ -156,7 +176,7 @@ description: |-
 ### 结果契约
 
 - 实现/修复子代理的精确输出契约由 `references/implementer-prompt.md` 定义。
-- 内部 reviewer 的精确输出契约由各自 reference prompt 定义。
+- 内部 reviewer 的精确输出契约由 `references/task-reviewer-prompt.md` 定义。
 - 主代理负责把子代理返回归一化为：`DONE / DONE_WITH_CONCERNS / BLOCKED / UNKNOWN`。
 
 ---
@@ -166,11 +186,16 @@ description: |-
 当用户在执行中追加或修改需求：
 
 1. 暂停新 batch 派发。
-2. 记录变更到 Session Log（变更内容、影响范围、时间）。
-3. 重新计算依赖图与 batch 划分。
-4. 生成新的恢复点并继续。
+2. 判断是否为 material amendment。任何 Scope、Acceptance、Plan Risk、Key Decisions、Agent 自主边界、Proof、Blockers / Escalation 或 Risks / Rollback 的变化都是 material；只修正文案且不改变这些语义时才是 non-material。
+3. 记录变更到 Session Log（变更内容、material 判定、影响范围、时间）。
+4. non-material 时重新计算依赖图与 batch 划分，保留现有 Gate。
+5. material 时冻结所有未启动任务，更新 `plan.md` 与 `review-contract.md`，先将两份材料的 Gate Revision 从 `rN` 同步递增为 `rN+1`，保留不可改写的 `Gate Revision rN` history，追加 `Gate Revision rN+1` history 并清除旧 basis，然后重新计算风险并重新 self-review：
+   - 重评为 `low`：更新为 `SELF_REVIEWED`，并确认 Independent Review 为 `not_required`；
+   - 重评为 `medium`：更新为 `PENDING_INDEPENDENT_REVIEW`，清除旧 independent-review basis；
+   - 重评为 `high`：更新为 `PENDING_INDEPENDENT_REVIEW`，清除旧 independent-review basis；独立审查通过后直接转为 `APPROVED`。
+6. material amendment 完成相应 Gate 校验前不得恢复调度；通过后重新计算依赖图与 batch 划分，并生成新的恢复点。
 
-已在跑的子代理允许完成后再判定是否保留产出；未启动任务按新 plan 重排。
+已在跑的子代理允许完成后再判定是否保留产出，但 material amendment 下其产出不得作为恢复调度的许可；未启动任务按新 plan 重排。
 
 ---
 
@@ -218,7 +243,7 @@ description: |-
 
 - 将 exec-plan 从 `docs/exec-plans/active/` 移动到 `completed/`。
 - 在 `## Session Log` 中记录执行摘要与后续文档同步建议。
-- `dev-docs-maintain` 仅作为按需手动建议，不是固定阶段。
+- `dev-docs-maintain` 是在 docs 健康检查、漂移修复或 verification ledger 登记需要时按需触发的普通 Skill，不是固定阶段。
 
 ---
 
@@ -247,10 +272,14 @@ description: |-
   - `READY / EXECUTING` 阶段：处理中等偏小、低风险任务。
 - `references/implementer-prompt.md`
   - `EXECUTING / implement`：实现子代理任务卡与 Proof Block 契约。
-- `references/spec-reviewer-prompt.md`
-  - `EXECUTING / review`：规格符合性审查。
-- `references/code-quality-reviewer-prompt.md`
-  - `EXECUTING / review`：代码质量审查。
+- `references/review-artifact-protocol.md`
+  - `EXECUTING`：scratch workspace、task/report handoff、review package 与恢复边界。
+- `scripts/review-workspace` / `scripts/review-package`
+  - `EXECUTING`：创建自忽略 scratch 目录，并按 base + path scope 生成工作树 review package。
+- `references/task-reviewer-prompt.md`
+  - `EXECUTING / review`：单 reviewer 一次读取 diff，分别输出规格符合性与代码质量 verdict。
+- `references/review-stress-scenarios.md`
+  - 后续真实模型 eval：controller 预判、Cannot Verify From Diff、失败 verdict 无 finding。
 - `references/progress-log-template.md`
   - 跨状态：batch 完成、进入 `ESCALATED` 前、Plan Amendment 后写入 Session Log。
 
@@ -258,4 +287,4 @@ description: |-
 
 - 正常路径默认 `concise`。
 - `BLOCKED/UNKNOWN` 或关键冲突时升级 `detailed`。
-- 多个审查 prompt 可组合，但输出必须仍可归一化到 runner 协议。
+- 内部 task/batch 审查固定使用单 reviewer 双 verdict；最终全分支审查仍由 `requesting-code-review` 独立执行。

@@ -1,4 +1,7 @@
-<!-- status: accepted -->
+---
+type: Decision
+status: accepted
+---
 
 # ADR-0004: AGENTS.md 精简结构
 

@@ -19,10 +19,11 @@ description: |-
 
 ## 入口保护
 
-- 若用户只描述 bug、测试失败或异常行为，且没有根因证据，先使用 `systematic-debugging`。
-- 只有当 `systematic-debugging` 输出 `状态：FIXABLE`，或用户提供了可验证根因、修复边界与目标行为时，才进入本 Skill 做 bugfix。
-- 本 Skill 可以验证实现或修复是否成立，但不负责在根因未知时直接猜测修复。
-- 用户明确要求 `TDD`、`测试驱动`、`先写失败测试` 或 `Red/Green/Refactor` 时，才启用 strict TDD；其他情况不得自动升级为 strict TDD。
+- 若请求是修复既有错误、测试失败或异常行为，且尚无法确定产生偏离的位置、修复边界或验证路径，先使用 `systematic-debugging`。
+- 目标行为、修改边界和验收路径已经明确的功能实现或行为调整，可直接进入本 Skill。
+- 只有当 `systematic-debugging` 输出 `FIXABLE`，包含 `causal_explanation`、`evidence_refs`、`fix_boundary`、`target_behavior`、`verification_path`、`execution_authorization=granted` 和可审计的 `execution_authorization_basis`，或用户直接提供同等信息并明确授权当前修复时，才进入本 Skill 做 bugfix。实施前核对 basis 引用的授权来源确实覆盖当前 `fix_boundary`、动作类型和所需专项确认；不匹配、`missing|unknown` 或 basis 缺失时保留 handoff、请求最小授权，不修改文件。
+- 本 Skill 可以验证实现是否成立，但不负责在根因未知时猜测修复。
+- 用户明确要求 `TDD`、`测试驱动`、`先写失败测试` 或 `Red/Green/Refactor` 时，才启用 strict TDD；其他情况不得自动升级。
 
 ### 可行性检查
 
@@ -61,6 +62,9 @@ description: |-
 - 目标约束：本次必须满足什么、禁止触碰什么。
 - 验收标准：用户、任务卡、spec 或当前上下文中的可观察完成判据。
 - 最小验证方式：与当前任务强相关、成本最低、可复现的命令或观察路径。
+- **bugfix 复现与回归测试切入边界**：消费 `verification_path` 的 `original_repro` 和 `minimal_repro`（如有）；修复后两者都重跑，`original_repro` 是真实场景的主要证明。回归测试必须位于能够覆盖缺陷真实发生机制的测试切入边界，保留相关调用链、并发语义或组件交互；未覆盖根因机制的浅层假绿不能作为回归保护。若不存在这样的测试切入边界，记录架构风险并以 `original_repro` 为主要证明。
+- **临时产物 disposition**：上游提供或本轮创建 `temporary_artifacts` 时逐项消费/记录位置或标识、敏感性/安全影响、`removed | retained` disposition、保留原因（仅 retained）、责任人和处置验证。字段省略表示上游未报告创建临时产物，不触发额外扫描；显式 `unknown` 必须先闭合。
+- **性能 / 稳定性影响**：明确性能验收，或触及 hot path、复杂度、查询、序列化、I/O、并发、缓存、CPU / 内存时，定义同一 workload、环境和口径的 baseline / candidate 与可接受判据；flaky 在同等条件下用风险相称的受控重复或频率比较证明。无合理影响面可记 `not_applicable` 并简述理由。
 
 ### 3. Implement
 
@@ -82,9 +86,11 @@ description: |-
 | API / 函数行为 | 目标单测、最小脚本或现有相关测试 |
 | UI 行为 | 浏览器操作、截图、关键 DOM / console 证据 |
 | prompt / agent workflow | 示例输入输出、golden diff、结构字段检查 |
-| bugfix | 使用 `systematic-debugging` 提供的复现路径、修复边界和推荐证明策略 |
+| bugfix | 消费 `systematic-debugging` 提供的因果解释、证据引用、修复边界、目标行为和验证路径；`recommended_proof_strategy` 如有则作为建议 |
 | 遗留行为 | characterization case 或 golden output |
 | 用户明确 TDD | strict TDD：Red → Green → Refactor |
+
+bugfix 按 Proof Plan 重跑 `original_repro`，存在 `minimal_repro` 时也重跑；单次绿色不能证明 flaky 已修复，功能通过也不能替代性能非退化证据。
 
 ### 5. Interpret Result
 
@@ -96,6 +102,11 @@ description: |-
 ### 6. Emit Proof Block
 
 开发结果必须包含 Proof Block，供 reviewer 或用户复查。
+
+### 7. Final Verification Handoff
+
+- 当当前增量已覆盖用户请求，且即将声明“已完成 / 已通过 / 可交付”，或用户要求“确保通过”、端到端验证、合并或 PR 时：默认先调用 `requesting-code-review`；只有用户明确要求跳过时才能跳过，并记录原因。审查通过后必须调用 `verification-before-completion`，再作完成声明。
+- 若由 `plan-impl` 编排，返回 Proof Block 和未覆盖项给编排器，不自行重复最终审查或验证；由其按 `REVIEWING -> VERIFYING` 状态机执行。
 
 ---
 
@@ -120,6 +131,15 @@ description: |-
 - 状态：PASS / FAIL / PARTIAL / NOT_RUN
 - 关键输出：<测试名、退出码、日志片段、截图路径、CI 链接等>
 
+### 复现、回归与测试切入边界
+- <bugfix 的 original / minimal repro 重跑结果（original 为主要证明），以及回归测试所覆盖的真实调用链、并发语义或组件交互；非 bugfix 写 `not_applicable`；若不存在能够覆盖根因机制的测试切入边界，记录架构风险与 original 证明>
+
+### 临时产物处置（仅上游提供或本轮创建时）
+- <每项的位置或标识、敏感性/安全影响、removed|retained、保留原因（仅 retained）、责任人和处置验证；无法判断时写 `unknown`>
+
+### 性能 / 稳定性证据
+- <同 workload / 环境 / 口径的 baseline / candidate 与判据，或同等条件下的受控重复 / 频率比较；无影响面写 `not_applicable` 及理由>
+
 ### 实现摘要
 - <改了什么文件 / 行为>
 
@@ -139,6 +159,7 @@ description: |-
 - 日志只贴关键片段；大输出引用命令、文件路径或 CI 链接。
 - `FAIL / PARTIAL / NOT_RUN` 不得包装成完成。
 - 若 proof 来自截图、日志、CI、文件 diff 或生成物，必须给出可复查路径或稳定复现方式。
+- 不得用单次绿色声明 flaky 已修复，也不得用功能通过替代性能非退化证据。
 
 ---
 
@@ -148,11 +169,11 @@ description: |-
 
 执行期只消费以下已确定输入：
 
-- 目标约束与禁止范围
-- 验收标准
-- 最小验证方式或推荐证明策略
-- 人工已确认的高风险决策
-- 任务卡中的阻塞条件
+- bugfix 的已验证因果解释与证据引用（非 bugfix 不要求）
+- 修复或实现边界
+- 目标行为与验收标准
+- 验证路径；`recommended_proof_strategy` 如有则作为建议
+- 人工已确认的高风险决策和阻塞条件
 
 若实现过程中发现以下情况，停止并返回 `BLOCKED`，不得在执行期补做人工决策后继续扩大实现：
 
@@ -177,7 +198,7 @@ description: |-
 - 小步实现当前增量。
 - 自动运行最小相关验证。
 - 输出可复现 Proof Block。
-- 根据 `systematic-debugging` 的 `FIXABLE` 交接修复已确认根因的 bug。
+- 根据 `systematic-debugging` 的 `FIXABLE + execution_authorization=granted + matching execution_authorization_basis` 交接修复已确认根因且获授权的 bug。
 
 本 Skill 不负责：
 
@@ -196,8 +217,12 @@ description: |-
 
 - [ ] 当前增量已被切成单一可验证范围。
 - [ ] 已明确目标约束和验收标准。
+- [ ] systematic-debugging bugfix 的 `execution_authorization=granted`，且 basis 已匹配当前 fix boundary、动作类型和所需专项确认；其它入口不适用。
 - [ ] 已运行最小相关验证，或明确说明 `PARTIAL / NOT_RUN` 原因。
 - [ ] Proof Block 包含运行结果、风险说明和未验证项。
+- [ ] bugfix 已重跑 `original_repro`，存在时亦重跑 `minimal_repro`；回归保护位于能够覆盖根因机制的测试切入边界，或已记录不存在该边界的架构风险。
+- [ ] 若上游提供或本轮创建了 `temporary_artifacts`，已逐项记录统一字段并闭合 `unknown`。
+- [ ] 已评估性能 / 稳定性影响；适用时有同口径 baseline / candidate 或风险相称的频率证据，不适用时已说明理由。
 - [ ] 未将 strict TDD 用于用户未明确要求的场景。
 - [ ] 若发现计划缺少高风险决策，已返回 `BLOCKED`，没有在执行期自行扩大范围。
 

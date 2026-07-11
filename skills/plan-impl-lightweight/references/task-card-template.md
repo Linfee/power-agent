@@ -1,6 +1,3 @@
-<!-- verified: 2026-06-03 -->
-<!-- scope: plan-impl-lightweight, single-implementer-task-card -->
-
 # Single Implementer Task Card Template
 
 用于 `execution_mode=SINGLE_IMPLEMENTER`。该任务卡只适用于轻量路径，不得扩大为多任务计划。

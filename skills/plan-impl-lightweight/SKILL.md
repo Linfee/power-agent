@@ -96,6 +96,7 @@ description: |-
 
 无法验证时不得返回 `DONE`。验证失败且根因局部清楚时，可进入一次 `fix_once`；验证失败且原因跨模块或不明时，升级完整流程或调试流程。
 
+
 ### 4) review
 
 验证通过后执行轻量 review：
@@ -120,6 +121,12 @@ execute -> targeted_verify -> review -> fix_once -> targeted_verify -> review
 
 - targeted verification 或 review 首次失败时，可进入一次 `fix_once`。
 - 第二次仍失败、review 仍阻塞、需要扩大范围，或根因不再局部时，返回 `path_decision=escalate_to_full`。
+
+### 6) final_verification_handoff
+
+- 通过 targeted verification 和轻量 review 只证明局部增量，不等同于可对用户声明整个请求已完成。
+- 仅当最终轻量 review 为 `DONE` 或 `DONE_WITH_CONCERNS` 且无 blocking issue 时，独立轻量路径才可继续：默认调用 `requesting-code-review`；只有用户明确要求跳过时才能跳过，并记录原因。审查通过后必须调用 `verification-before-completion`。
+- 若本 Skill 由 `plan-impl` 调用，则返回局部证据，由完整编排器依次执行 `REVIEWING -> VERIFYING`。
 
 ---
 

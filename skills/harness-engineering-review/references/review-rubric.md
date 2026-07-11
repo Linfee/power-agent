@@ -1,6 +1,3 @@
-<!-- verified: 2026-04-21 -->
-<!-- scope: harness-engineering-review -->
-
 # 审查 Rubric
 
 七个维度的检查项、反模式与判据。供 `harness-engineering-review` skill 执行时参考。
@@ -86,19 +83,20 @@
 ## 5. 知识维护（Documentation Gardening）
 
 **检查项**
-- 核心文档是否有 `verified` 时间戳
-- 时间戳是否在 90 天内
+- 是否通过 scanner 结合 `.okf/verification.json` 与项目 `freshness` policy 判定核心文档的验证状态
+- 没有可信 verification ledger 时，是否明确判定为 `unverified`，而不是向 Concept metadata 写回验证结果
 - 文档内容是否与代码现状一致
 
 **反模式**
-- 文档描述已删除的模块
-- `verified` 超过 90 天未更新
+- 在 Concept metadata 中读写 `verified` 时间戳以替代 verification ledger
+- 没有可信 ledger 却将文档当作 `fresh` 或已验证
+- 未完成语义核对就通过 `record` 伪造验证状态
 - 架构图与实际目录结构不符
 
 **判据**
-- 优：所有核心文档 verified ≤30 天，内容与代码一致
-- 需改进：部分文档 30-90 天，存在小偏差
-- 缺失：无时间戳或严重过期（>90 天）
+- 优：核心文档的 scanner 状态为 `fresh`，且内容与代码一致
+- 需改进：存在 `due` 或 `dirty` 文档，但已有明确的核对或修复计划
+- 缺失：没有可信 ledger，状态为 `unverified`，或存在未解决的 `blocked` 文档
 
 ---
 

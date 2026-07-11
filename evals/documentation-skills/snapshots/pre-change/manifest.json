@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "created_at": "2026-07-11T04:50:51.096992Z",
+  "source_root": "/Users/linfee/dev/workspace/ai-skills/power-agent",
+  "source_head": "e4c3d59a59ff0957a391b4cf985c63625e87e63b",
+  "source_dirty_diff_sha256": "835fadf3b4b45545e8a87ae8c648844497888ab0b9fd9bade75c8c4927b924f9",
+  "snapshot_root": "/Users/linfee/dev/workspace/ai-skills/power-agent/evals/documentation-skills/snapshots/pre-change",
+  "tree_sha256": "5ec3bed39412c129b2898edf81e7b1a083eaabd6c6e132ac2878e10c9eea8ad7",
+  "files": {
+    "skills/dev-docs/SKILL.md": "5b52885ab2cbaa5ae89824fe45b6dca81db1884924751d1f5d0efa75f9b74303",
+    "skills/dev-docs/references/okf-v0.1.md": "f8518b07b1620328dc8be56ebbd4bf8126468f24676dd72502a7fb55d7e6f14b",
+    "skills/dev-docs/references/project-docs-profile.md": "a15b053a59fae9e90c257929c0ee0ee5f28795387e36cc451afa01a85b769e47",
+    "skills/dev-docs/references/stress-scenarios.md": "5cff91138ef3e3ba59435e09cd38019ff20fe1c942bcd2e90c2033d8cd483153",
+    "skills/dev-docs-maintain/SKILL.md": "d6ad5c25e544f8d1222a7e05611180800a2206f7b3290077f9fe02af186c722a",
+    "skills/dev-docs-maintain/references/maintenance-policy.md": "1602a5b08f8c26f4fd2d9724127203ed379ac6e3931c066fa17076c14236c324",
+    "skills/dev-docs-maintain/references/okf-v0.1.md": "f8518b07b1620328dc8be56ebbd4bf8126468f24676dd72502a7fb55d7e6f14b",
+    "skills/dev-docs-maintain/scripts/bundle_status.py": "31ddde33d84d0a65a99170c8ab013ac3228cb25582a6a42e566e1edf17b61277",
+    "skills/dev-docs-maintain/scripts/test_bundle_status.py": "dd42c79be59e0c53dc09d5094d9dc662758919130c8f67070653a2df241edff7"
+  }
+}

@@ -1,0 +1,139 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+usage() {
+  cat >&2 <<'EOF'
+usage: review-package --base BASE_SHA [--output FILE] [-- PATH...]
+EOF
+  exit 2
+}
+
+base=""
+output=""
+paths=()
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --base)
+      [[ $# -ge 2 ]] || usage
+      base=$2
+      shift 2
+      ;;
+    --output)
+      [[ $# -ge 2 ]] || usage
+      output=$2
+      shift 2
+      ;;
+    --)
+      shift
+      paths=("$@")
+      break
+      ;;
+    *)
+      usage
+      ;;
+  esac
+done
+
+[[ -n "$base" ]] || usage
+
+root=$(git rev-parse --show-toplevel)
+base_commit=$(git rev-parse --verify "$base^{commit}")
+caller_pwd=$(pwd -P)
+
+for path in "${paths[@]}"; do
+  if [[ "$path" = /* || "$path" == ".." || "$path" == ../* || "$path" == */../* || "$path" == */.. ]]; then
+    echo "path scope must stay inside the repository: $path" >&2
+    exit 2
+  fi
+done
+
+if [[ -z "$output" ]]; then
+  script_dir=$(cd "$(dirname "$0")" && pwd -P)
+  workspace=$($script_dir/review-workspace)
+  output="$workspace/review-$(git rev-parse --short "$base_commit")-worktree.diff"
+else
+  if [[ "$output" != /* ]]; then
+    output="$caller_pwd/$output"
+  fi
+  output_dir=$(dirname "$output")
+  [[ -d "$output_dir" ]] || {
+    echo "output directory does not exist: $output_dir" >&2
+    exit 2
+  }
+  output_dir=$(cd "$output_dir" && pwd -P)
+  output="$output_dir/$(basename "$output")"
+fi
+
+cd "$root"
+
+case "$output" in
+  "$root"/*)
+    relative_output=${output#"$root"/}
+    if ! git check-ignore -q -- "$relative_output"; then
+      echo "output inside the repository must already be ignored: $output" >&2
+      exit 2
+    fi
+    ;;
+esac
+
+[[ ! -e "$output" && ! -L "$output" ]] || {
+  echo "refusing to overwrite existing review package: $output" >&2
+  exit 2
+}
+
+path_args=(--)
+if [[ ${#paths[@]} -gt 0 ]]; then
+  path_args+=("${paths[@]}")
+fi
+
+scope_label="all tracked and untracked paths"
+if [[ ${#paths[@]} -gt 0 ]]; then
+  scope_label=$(printf '%q ' "${paths[@]}")
+  scope_label=${scope_label% }
+fi
+
+umask 077
+{
+  echo "# Review package"
+  echo
+  echo "- Base: $base_commit"
+  echo "- Worktree: $root"
+  echo "- Scope: $scope_label"
+  echo
+  echo "## Worktree status"
+  echo
+  GIT_LITERAL_PATHSPECS=1 git status --short "${path_args[@]}"
+  echo
+  echo "## Tracked diff stat"
+  echo
+  GIT_LITERAL_PATHSPECS=1 git diff --stat "$base_commit" "${path_args[@]}"
+  echo
+  echo "## Tracked diff"
+  echo
+  GIT_LITERAL_PATHSPECS=1 git diff -U10 "$base_commit" "${path_args[@]}"
+  echo
+  echo "## Untracked files"
+  echo
+  GIT_LITERAL_PATHSPECS=1 git ls-files --others --exclude-standard "${path_args[@]}"
+  echo
+  echo "## Untracked diffs"
+  echo
+
+  while IFS= read -r -d '' file; do
+    echo "### $file"
+    echo
+    set +e
+    git diff --no-index -- /dev/null "$file"
+    diff_status=$?
+    set -e
+    if [[ $diff_status -gt 1 ]]; then
+      echo "failed to render untracked file: $file" >&2
+      exit $diff_status
+    fi
+    echo
+  done < <(GIT_LITERAL_PATHSPECS=1 git ls-files --others --exclude-standard -z "${path_args[@]}")
+} > "$output"
+
+cd "$(dirname "$output")"
+printf '%s\n' "$(pwd -P)/$(basename "$output")"

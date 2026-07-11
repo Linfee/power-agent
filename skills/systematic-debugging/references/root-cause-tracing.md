@@ -1,159 +1,67 @@
 # 根本原因追踪
 
-## 概述
+Bug 常在调用栈、数据流或异步链路的下游显现。追踪的目标是找到第一处有证据支持且可操作的偏离，并证明它如何传播为真实症状。
 
-Bug 通常在调用栈深处显现（如 git init 在错误目录执行、文件创建在错误位置、数据库以错误路径打开）。直觉告诉我们在错误出现处修复，但那是在治症状。
+## 适用信号
 
-**核心原则：** 向后追踪调用链，直到找到原始触发器，然后在源头修复。
+- 症状点只消费了已经损坏的数据或状态；
+- 多个组件参与传播，报错位置无法解释触发条件；
+- 局部补丁能压住异常，却不能解释状态为什么变坏；
+- 同一请求、输入或环境有成功与失败两种运行结果。
 
-## 使用时机
+## 从原始错误开始
 
-```dot
-digraph when_to_use {
-    "Bug 出现在调用栈深处？" [shape=diamond];
-    "能向后追踪？" [shape=diamond];
-    "在症状处修复" [shape=box];
-    "追踪到原始触发器" [shape=box];
-    "更好的做法：同时添加纵深防御" [shape=box];
+保留原始错误或工作失败的语义：操作、输入类别、预期与实际、错误类型、关键上下文和可重复条件。不要把它过早归约成“失败”或仅凭摘要改写含义；敏感值仍须脱敏。
 
-    "Bug 出现在调用栈深处？" -> "能向后追踪？" [label="是"];
-    "能向后追踪？" -> "追踪到原始触发器" [label="是"];
-    "能向后追踪？" -> "在症状处修复" [label="否（死路）"];
-    "追踪到原始触发器" -> "更好的做法：同时添加纵深防御";
-}
+原始症状是修复后的真实验证锚点。若为缩小假设空间而构建 `minimal_repro`，记录它保留和省略了什么，并映射到 `original_repro`；minimal 用于诊断，不能替代原始场景。修复后复验 original，且存在 minimal 时也复验 minimal。
+
+## 因果链
+
+足以支持修复的解释应连接：
+
+```text
+触发条件
+  → 第一处状态或数据偏离
+  → 传播路径
+  → 直接失败机制
+  → 用户可观察症状
 ```
 
-**适用场景：**
-- 错误发生在执行深处（不在入口点）
-- 堆栈跟踪显示很长的调用链
-- 不清楚无效数据从哪里来
-- 需要找出哪个测试/代码触发了问题
+静态代码阅读可以产生候选解释，但不能单独证明失败运行实际经过该路径。沿链路追踪时，优先寻找能区分“入口已错误、传播中损坏、环境差异或其它调用路径”的观察。
 
-## 追踪过程
+## 差分与关键边界
 
-### 1. 观察症状
-```
-Error: git init failed in /Users/jesse/project/packages/core
-```
+比较可比的成功与失败运行：输入与派生状态、配置/feature flags、依赖响应、时序/并发、版本和环境。每个差分都要说明是原因、传播结果还是无关噪声；不要把相关性直接升级为根因。
 
-### 2. 找到直接原因
-**哪段代码直接导致了这个问题？**
-```typescript
-await execFileAsync('git', ['init'], { cwd: projectDir });
-```
+跨组件时，在能区分解释的 ingress/egress 处观察请求、数据、状态、配置或错误语义：
 
-### 3. 问：谁调用了这里？
-```typescript
-WorktreeManager.createSessionWorktree(projectDir, sessionId)
-  → 被 Session.initializeWorkspace() 调用
-  → 被 Session.create() 调用
-  → 被测试中的 Project.create() 调用
-```
+- ingress 已偏离，说明问题位于上游或边界契约；
+- ingress 正确而 egress 偏离，说明本组件或其依赖的传播路径可疑；
+- 两端一致而症状不同，继续检查消费、时序、环境或观测路径。
 
-### 4. 继续向上追踪
-**传入的是什么值？**
-- `projectDir = ''`（空字符串！）
-- 空字符串作为 `cwd` 会解析为 `process.cwd()`
-- 那正是源码目录！
+这些是定位第一处偏离的锚点，不是要求在每一层新增日志。
 
-### 5. 找到原始触发器
-**空字符串从哪里来？**
-```typescript
-const context = setupCoreTest(); // 返回 { tempDir: '' }
-Project.create('name', context.tempDir); // 在 beforeEach 之前访问！
-```
+## 证据设计
 
-## 添加堆栈跟踪
+- 高歧义时保留主要竞争性解释，不规定候选数量。
+- 选择能最大幅度降低不确定性的观察，而不是收集更多无区分力日志。
+- 观测点应对应明确预测，并靠近第一处偏离或关键传播边界。
+- 复用现有 debugger、trace 或结构化日志；只有确有信息缺口时才增加临时 instrumentation。
 
-无法手动追踪时，添加诊断代码：
+观测必须遵守主 Skill 的安全与授权边界：只采集当前判断需要的信息，排除或脱敏凭证、个人数据和敏感路径，并在调查后清理一次性代码。需要扩大权限、访问无授权数据或改变生产行为时返回 `BLOCKED`。
 
-```typescript
-// 在有问题的操作之前
-async function gitInit(directory: string) {
-  const stack = new Error().stack;
-  console.error('DEBUG git init:', {
-    directory,
-    cwd: process.cwd(),
-    nodeEnv: process.env.NODE_ENV,
-    stack,
-  });
+## 根因判据
 
-  await execFileAsync('git', ['init'], { cwd: directory });
-}
-```
+只有同时满足以下条件，才能把解释升级为已验证根因：
 
-**关键：** 在测试中使用 `console.error()`（不要用 logger，可能被抑制）
+- 解释能导出可证伪预测，且预测得到实际失败或等价观测支持；
+- 主要替代解释已被区分性证据排除；
+- 因果链连接第一处偏离与最终症状；
+- 剩余不确定性不会动摇修复边界、目标行为或验证判据；
+- 修复位置拥有相关不变量，而不是只抑制下游异常。
 
-**运行并捕获：**
-```bash
-npm test 2>&1 | grep 'DEBUG git init'
-```
+若只能证明相关性，保持工作假设或最可信解释，不得进入 `FIXABLE`。
 
-**分析堆栈跟踪：**
-- 查找测试文件名
-- 找到触发调用的行号
-- 识别模式（同一个测试？同一个参数？）
+## 与边界防护的关系
 
-## 找出导致污染的测试
-
-如果某些内容在测试中出现但不知道是哪个测试导致的，使用 `find-polluter.sh`：
-
-```bash
-./find-polluter.sh '.git' 'src/**/*.test.ts'
-```
-
-逐个运行测试，在发现污染者时停止。详见脚本注释。
-
-## 真实案例：空的 projectDir
-
-**症状：** `.git` 被创建在 `packages/core/`（源码目录）
-
-**追踪链：**
-1. `git init` 在 `process.cwd()` 执行 ← cwd 参数为空
-2. WorktreeManager 以空的 projectDir 被调用
-3. Session.create() 传入了空字符串
-4. 测试在 beforeEach 之前访问了 `context.tempDir`
-5. setupCoreTest() 初始返回 `{ tempDir: '' }`
-
-**根本原因：** 顶层变量初始化时访问了未就绪的值
-
-**修复：** 将 tempDir 改为 getter，在 beforeEach 之前访问时抛出异常
-
-**同时添加了纵深防御：**
-- 第一层：Project.create() 验证目录
-- 第二层：WorkspaceManager 验证非空
-- 第三层：NODE_ENV 守卫，拒绝在 tmpdir 以外执行 git init
-- 第四层：git init 之前记录堆栈跟踪
-
-## 核心原则
-
-```dot
-digraph principle {
-    "找到直接原因" [shape=ellipse];
-    "能向上追踪一层？" [shape=diamond];
-    "向后追踪" [shape=box];
-    "这是源头吗？" [shape=diamond];
-    "在源头修复" [shape=box];
-    "在每一层添加验证" [shape=box];
-    "Bug 不可能再发生" [shape=doublecircle];
-    "绝不只修复症状" [shape=octagon, style=filled, fillcolor=red, fontcolor=white];
-
-    "找到直接原因" -> "能向上追踪一层？";
-    "能向上追踪一层？" -> "向后追踪" [label="是"];
-    "能向上追踪一层？" -> "绝不只修复症状" [label="否"];
-    "向后追踪" -> "这是源头吗？";
-    "这是源头吗？" -> "向后追踪" [label="否，继续追"];
-    "这是源头吗？" -> "在源头修复" [label="是"];
-    "在源头修复" -> "在每一层添加验证";
-    "在每一层添加验证" -> "Bug 不可能再发生";
-}
-```
-
-**绝不只在错误出现处修复。** 向后追踪，找到原始触发器。
-
-## 堆栈跟踪技巧
-
-**在测试中：** 用 `console.error()` 而非 logger（logger 可能被抑制）  
-**在操作之前：** 在危险操作前记录日志，而不是在失败后  
-**包含上下文：** 目录、cwd、环境变量、时间戳  
-**捕获调用栈：** `new Error().stack` 显示完整调用链
+根因修复后，可参考 `defense-in-depth.md` 判断是否需要在所有权、安全或不可逆操作边界增加独立防护；不要默认在数据经过的每一层复制校验。

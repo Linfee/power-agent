@@ -1,6 +1,3 @@
-<!-- verified: 2026-06-03 -->
-<!-- scope: plan-impl-lightweight, scope-check -->
-
 # Lightweight Scope Check Template
 
 在执行任何实现前填写。缺少关键字段时不要启动实现。

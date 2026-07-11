@@ -1,6 +1,3 @@
-<!-- verified: 2026-05-05 -->
-<!-- scope: code-review, contract -->
-
 # 审查输出协议（Output Contract）
 
 `requesting-code-review` 与审查子代理之间统一使用以下 Markdown 结构：

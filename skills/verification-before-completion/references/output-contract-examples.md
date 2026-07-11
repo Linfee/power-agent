@@ -1,6 +1,3 @@
-<!-- verified: 2026-05-05 -->
-<!-- scope: verification-before-completion, examples -->
-
 # Output Contract Examples
 
 ## 1) DONE — Proof Block accepted

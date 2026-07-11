@@ -1,6 +1,3 @@
-<!-- verified: 2026-05-05 -->
-<!-- scope: plan-impl, progress-log -->
-
 # Session Log 模板
 
 每个 batch 完成后，在 exec-plan 文件的 `## Session Log` section 追加一条记录（最新在最上方）。
@@ -17,6 +14,7 @@
 - **已完成**: Task A (`path/to/file.py`), Task B (`path/to/other.py`)
 - **遇到的问题**: [描述 + 如何解决，或标注未解决]
 - **已验证假设**: [什么被证实/证伪]
+- **Review Artifacts**: [scratch progress/report/package 路径；已不可用时写 rebuilt/expired]
 - **下一步**: Batch N+1，从 Task X 开始
 - **环境状态**: lint ✅ | tests ✅ (N passed) | build ✅
 ```

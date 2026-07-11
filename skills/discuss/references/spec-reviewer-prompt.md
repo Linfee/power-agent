@@ -1,6 +1,3 @@
-<!-- verified: 2026-06-05 -->
-<!-- scope: discuss, discussion-conclusion-review -->
-
 # Discussion Conclusion Reviewer Prompt
 
 用于 `discuss` 产出 `Discussion Conclusion` / `需求结论` 后，派发独立子代理进行需求结论审查。审查目标是确认该结论是否清晰、可评审、可交给 `writing-plans`，允许包含影响范围、验收或 planning 的上层技术方向，但不能进入可直接编码的实现设计。
@@ -47,11 +44,11 @@ Advisory:
 - [非阻塞建议]
 
 Next Action:
-- approve_for_user_review | revise_conclusion | return_to_discuss | handoff_to_writing_plans
+- handoff_to_writing_plans | revise_conclusion | return_to_discuss
 
 规则：
 - `Status=APPROVED` 时，`Blocking Issues` 必须为空，`Evidence` 必须非空，`Missing Evidence` 只能为“无”或非阻塞缺口。
 - 如果验收标准、范围或用户目标缺少可引用证据，返回 `Status=ISSUES_FOUND`。
-- 不要只凭印象批准；每个关键批准结论都必须能指向结论文本、可选结论文件或用户原始需求。
+- 不要只凭印象给出通过结论；每个关键结论都必须能指向结论文本、可选结论文件或用户原始需求。
 - 不要用自审替代独立审查；你的职责是作为独立 reviewer 给出可追溯结论。
 ```

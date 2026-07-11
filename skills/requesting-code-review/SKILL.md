@@ -2,7 +2,7 @@
 name: requesting-code-review
 description: |-
   代码审查请求 Skill。编排全量代码审查并输出结构化发现；编码完成后、合并或 PR 前触发。
-  Triggers: 代码审查, code review, 请求审查, 合并前审查, 全量审查.
+  Triggers: 代码审查, code review, 请求审查, 审查当前实现, 多角度 review, 双重审查, double review, 合并前审查, 全量审查.
 ---
 
 # 请求代码审查
@@ -124,4 +124,4 @@ description: |-
 - 上游：`plan-impl`（已完成 batch 内审查）
 - 本 Skill：做收尾阶段全量审查编排
 - 下游：`receiving-code-review`（评估与采纳反馈）→ 修复采纳项 → 重新审查，直到通过或达到 3 轮上限 → `verification-before-completion`
-- `dev-docs-maintain` 是按需手动文档维护 Skill，不是每次代码审查后的固定步骤。
+- `dev-docs-maintain` 是在 docs 健康检查、漂移修复或 verification ledger 登记需要时按需触发的普通 Skill，不是每次代码审查后的固定步骤。

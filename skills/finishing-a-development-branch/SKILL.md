@@ -2,7 +2,7 @@
 name: finishing-a-development-branch
 description: |-
   分支收尾 Skill。基于 verification_evidence 给出 merge/PR/保留/丢弃选项；实现完成并需要处置分支时触发。
-  Triggers: 分支收尾, finishing, 完成后合并, 完成后创建 PR, 保留分支, 丢弃已完成工作.
+  Triggers: 分支收尾, finishing, 完成后合并, 提交并 push 后合并, 合并到 test/master/目标分支, 完成后创建 PR/MR, 发起 PR/MR, 保留分支, 丢弃已完成工作.
 ---
 
 # Finishing a Development Branch
