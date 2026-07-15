@@ -48,6 +48,6 @@ execution_mode：MAIN_AGENT / SINGLE_IMPLEMENTER / NONE
 
 ## 与 plan-impl 的映射
 
-- `path_decision=lightweight` 且 `状态=DONE/DONE_WITH_CONCERNS`：可并入当前批次结果或进入 runner 的 VERIFYING。
+- `path_decision=lightweight` 且 `状态=DONE/DONE_WITH_CONCERNS`：可并入当前批次结果；若该结果完成了整个实现目标，则进入 runner 的 `REVIEWING -> 工作区检查 -> VERIFYING`，不得直接跳到 VERIFYING。
 - `path_decision=escalate_to_full`：回到完整 runner path，重新计算任务边界或创建 exec-plan。
 - `path_decision=ask_user`：暂停实现，向用户请求缺失的目标、范围、验收或验证信息。

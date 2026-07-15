@@ -9,8 +9,13 @@
 2. Base branch 无法确定
 - 现象：`status=BLOCKED`，`blocking_issues.code=base_branch_unresolved`
 - 建议：由用户明确指定 base branch
+- 例外：工作区 dirty 或无 HEAD 时先走未提交提示，不要求提前解析 base
 
-3. destructive 确认失败
+3. 工作区尚未提交或仓库尚无 HEAD
+- 现象：`status=READY`，`mode=uncommitted`
+- 建议：提交后重新检查工作区，通过 gate 后再验证
+
+4. destructive 确认失败
 - 现象：`status=CANCELLED`
 - 建议：重新选择非 destructive 路径，或使用精确确认输入
 

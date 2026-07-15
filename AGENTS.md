@@ -32,10 +32,10 @@ discuss skill [需求]      → 内联需求结论（按需 docs/specs/*.md）
     ↓
 writing-plans             → compact exec-plan（plan.md + review-contract.md，按需 context/tasks）→ low self-review / medium/high 独立 reviewer
     ↓
-plan-impl          → BOOTSTRAP(using-git-worktrees) → 中小任务可走 plan-impl-lightweight → 优先 team 模式，缺失 team 工具时回退并行/单代理委派 → scratch artifacts + 单 reviewer 双 verdict → 全量审查 → 验证 → 分支收尾
+plan-impl          → BOOTSTRAP(using-git-worktrees) → 中小任务可走 plan-impl-lightweight → 优先 team 模式，缺失 team 工具时回退并行/单代理委派 → scratch artifacts + 单 reviewer 双 verdict → 全量审查 → 工作区检查（dirty / 无 HEAD 先提交）→ 验证 → 分支收尾
 ```
 
-**调试路径**: `systematic-debugging` → `proof-oriented-development` → `verification-before-completion`
+**调试路径**: `systematic-debugging` → `proof-oriented-development` → 全量审查 → 工作区检查 → `verification-before-completion`
 
 **最终验证前审查**: `requesting-code-review`（全量审查）在 `verification-before-completion` 前默认强制执行；合并/PR 前不得跳过未通过的审查结果，除非用户明确要求跳过并记录原因。`dev-docs-maintain`（文档维护）是按需触发的普通 Skill，不是每次开发执行的固定阶段。
 
@@ -58,7 +58,7 @@ plan-impl          → BOOTSTRAP(using-git-worktrees) → 中小任务可走 pla
 | `setup-power-agent` | 项目初始化 | 手动调用 |
 | `harness-engineering-review` | 实践审查 | 'agent最佳实践' |
 | `writing-skills` | 创建/修改/验证 Skill | '写skill', '修改skill' |
-| `finishing-a-development-branch` | 分支收尾：merge/PR/保留/丢弃（plan-impl 自动调用） | 手动调用 |
+| `finishing-a-development-branch` | dirty / 无 HEAD 待提交提示；clean 验证后 merge/PR/保留/丢弃 | 手动调用 |
 
 ## 约束（硬规则）
 

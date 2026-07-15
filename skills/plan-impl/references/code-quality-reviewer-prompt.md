@@ -32,7 +32,6 @@ git diff [BASE_SHA]..[HEAD_SHA]
 ## 内部代码质量审查结果
 
 状态：DONE / DONE_WITH_CONCERNS / BLOCKED
-风险等级：低风险 / 中风险 / 高风险
 
 ### 证据
 - <diff|test|log|review>（<file:line|command>）：<证据摘要>

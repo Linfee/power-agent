@@ -1,4 +1,4 @@
-# 高风险确认模板（discard_work）
+# 破坏性操作确认模板（discard_work）
 
 This action will permanently delete:
 - Branch: `<branch>`

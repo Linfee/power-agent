@@ -25,6 +25,7 @@ graph TB
         LEP[plan-impl-lightweight 轻量执行路径]
         POD[proof-oriented-development]
         DBG[systematic-debugging]
+        WTG[working-tree gate]
         VBC[verification-before-completion]
     end
 
@@ -48,15 +49,17 @@ graph TB
 
     EP --> LEP
     EP --> POD
-    EP --> VBC
     LEP --> POD
-    LEP --> VBC
     EP -.->|合并前强制审查| RCR
-    EP --> FAB
+    LEP --> RCR
+    POD --> RCR
+    EP -->|审查通过后| WTG
+    WTG -->|clean && has_head| VBC
+    WTG -->|dirty || !has_head 待提交| FAB
+    VBC --> FAB
     User -.->|按需维护| DDM
 
     DBG -->|FIXABLE + granted + matching basis| POD
-    DBG --> VBC
 ```
 
 `systematic-debugging` 的 `missing | unknown | basis mismatch` 只保留 `FIXABLE` handoff 并请求最小授权，不进入 POD。
@@ -68,17 +71,17 @@ graph TB
 | **规划层** | `discuss` | 需求讨论与 PRD 细化，必要时用 HTML 可视化辅助，默认产出内联需求结论，按需落盘 spec/doc |
 | | `writing-plans` | 需求结论 / spec / 用户描述 → compact exec-plan；所有计划 self-review，中/高风险增加独立 reviewer，`review-contract.md` 供人类按需审阅 |
 | | `dev-docs` | 维护 `docs/` 中可长期复用的工程知识：稳定系统事实、边界、决策依据与集成参考；实施、重构、迁移和任务拆解计划交给 `writing-plans` |
-| **实现层** | `plan-impl` | 状态机编排，驱动全生命周期；READY 校验计划材料的风险与独立审查记录，实质 amendment 递增 revision 并重新进入风险审查；优先使用 team 模式，缺失 team 工具时回退并行或单实现子代理；以 scratch artifacts 交接并执行单 reviewer 双 verdict 内审 |
+| **实现层** | `plan-impl` | 状态机编排，驱动全生命周期；READY 校验计划材料的风险与独立审查记录，实质 amendment 递增 revision 并重新进入风险审查；优先使用 team 模式，缺失 team 工具时回退并行或单实现子代理；以 scratch artifacts 交接并执行单 reviewer 双 verdict 内审；全量审查后以 working-tree gate 区分待提交提示与最终验证 |
 | | `plan-impl-lightweight` | 中等偏小任务的轻量执行路径：scope_check、proof-oriented 实现、局部验证、有限 review/fix 循环、必要时升级完整 runner |
 | | `proof-oriented-development` | 证明导向开发闭环：小步实现、最小相关验证、输出 Proof Block |
 | | `systematic-debugging` | 探索式根因调查：可区分 feedback loop、因果证据、original/minimal repro、安全边界，以及与执行授权解耦的修复交接 |
 | | `verification-before-completion` | 审计 Proof Block / 等价证据块、原始复现、临时产物和风险相称的性能/稳定性证据，输出 verification_evidence |
-| **审查层** | `requesting-code-review` | 风险分级全量审查编排 |
+| **审查层** | `requesting-code-review` | 重要性分级、实现风险独立评估与全量审查编排 |
 | | `receiving-code-review` | 审查反馈技术评估 |
 | | `harness-engineering-review` | Agent 工作流七维度审查 |
 | **基础设施层** | `using-git-worktrees` | 隔离工作区检测、创建与基线准备 |
 | | `writing-skills` | Skill 创建、修改、契约审查与压力场景验证 |
-| | `finishing-a-development-branch` | 分支处置决策器（merge/PR/保留/丢弃） |
+| | `finishing-a-development-branch` | dirty 工作区或无 HEAD 仓库的待提交提示，以及验证通过后的分支处置决策（merge/PR/保留/丢弃） |
 | | `setup-power-agent` | 项目知识体系初始化 |
 | | `dev-docs-maintain` | 按需检查既有 `docs/` OKF Bundle 健康状态，修复结构或知识漂移，并登记已完成验证到 verification ledger |
 
@@ -105,6 +108,7 @@ plan-impl（实现编排）
     ├── scratch review artifacts（task brief / report / review package）
     ├── 单内部 reviewer（规格符合性 + 代码质量双 verdict）
     ├── requesting-code-review（最终验证前全量审查）
+    ├── working-tree gate（dirty / 无 HEAD 先提示提交；clean 且有 HEAD 进入最终验证）
     ├── verification-before-completion（Proof Block 审计与 verification_evidence）
     └── finishing-a-development-branch（分支收尾）
 
@@ -134,7 +138,7 @@ requesting-code-review 在最终验证前默认强制执行；合并/PR 前不�
 | `explore` | 代码探索，返回关键文件列表 | discuss, dev-docs |
 | `tech-plan-reviewer` | 需求结论审查；中/高风险计划审查 | discuss, writing-plans |
 | 实现子代理 | POD 增量实现 | plan-impl |
-| 审查子代理 | 代码审查（风险分级 1-2 个并行） | plan-impl, requesting-code-review |
+| 审查子代理 | 代码审查（按重要性使用 1-2 个并行 reviewer） | plan-impl, requesting-code-review |
 | 验证子代理 | 最终验证 | plan-impl |
 
 **并发限制：** 最大并行度 3，超过则分批。
@@ -147,7 +151,7 @@ requesting-code-review 在最终验证前默认强制执行；合并/PR 前不�
 | writing-plans 风险审查 | low=self-review；medium/high=独立 reviewer 通过 | 交给 `plan-impl` |
 | plan-impl READY | 准备首次执行或恢复执行 | 校验两份计划材料同名的 Gate Revision、风险状态和 revision-bound basis；medium/high pending、缺失、冲突或 basis 不匹配时停止在 READY |
 | plan-impl 执行中 | 3 轮修复失败，或计划前提假设失效 | Escalate 给用户 |
-| finishing-a-development-branch | 丢弃路径（高风险操作） | 要求明确确认 |
+| finishing-a-development-branch | 丢弃路径（破坏性操作） | 要求明确确认 |
 
 ## 设计原则
 

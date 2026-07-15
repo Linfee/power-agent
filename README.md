@@ -44,7 +44,7 @@
 | `receiving-code-review` | 技术性评估审查反馈（非表演性同意） |
 | `verification-before-completion` | 证据优先验证——没有新鲜证据不得声称完成 |
 | `harness-engineering-review` | 对照 Harness Engineering 最佳实践审查项目 Agent 工作流 |
-| `finishing-a-development-branch` | 实现完成后的分支收尾（merge/PR/保留/丢弃） |
+| `finishing-a-development-branch` | dirty / 无 HEAD 待提交提示；clean 验证后的分支收尾（merge/PR/保留/丢弃） |
 
 ### 完整工作流
 
@@ -54,10 +54,10 @@ discuss skill          ← 需求讨论 / PRD 细化 → 内联需求结论（�
 writing-plans skill    ← 创建 compact exec-plan，并按 low/medium/high 选择 self-review 或独立 reviewer
     ↓
 plan-impl skill ← BOOTSTRAP(using-git-worktrees) → 轻量启动通知 → 中小任务可走 plan-impl-lightweight
-                     └── 优先 team 模式；缺失 team 工具时回退 proof-oriented 实现子代理并行/单代理推进 → scratch artifacts + 单 reviewer 双 verdict → 全量审查 → 验证 → 分支收尾
+                     └── 优先 team 模式；缺失 team 工具时回退 proof-oriented 实现子代理并行/单代理推进 → scratch artifacts + 单 reviewer 双 verdict → 全量审查 → 工作区检查（dirty / 无 HEAD 先提交）→ 验证 → 分支收尾
 
 Bug / 测试失败 → systematic-debugging skill
-                     └── → proof-oriented-development + verification-before-completion
+                     └── → proof-oriented-development → 全量审查 → 工作区检查 → verification-before-completion
 ```
 
 `requesting-code-review` 在最终验证前默认强制执行；合并/PR 前不得跳过未通过的审查结果，除非用户明确要求跳过并记录原因。

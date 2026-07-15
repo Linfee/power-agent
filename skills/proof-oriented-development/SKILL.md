@@ -105,8 +105,8 @@ bugfix 按 Proof Plan 重跑 `original_repro`，存在 `minimal_repro` 时也重
 
 ### 7. Final Verification Handoff
 
-- 当当前增量已覆盖用户请求，且即将声明“已完成 / 已通过 / 可交付”，或用户要求“确保通过”、端到端验证、合并或 PR 时：默认先调用 `requesting-code-review`；只有用户明确要求跳过时才能跳过，并记录原因。审查通过后必须调用 `verification-before-completion`，再作完成声明。
-- 若由 `plan-impl` 编排，返回 Proof Block 和未覆盖项给编排器，不自行重复最终审查或验证；由其按 `REVIEWING -> VERIFYING` 状态机执行。
+- 当前增量覆盖用户请求并准备声明完成、做端到端验证、合并或 PR 时，默认先调用 `requesting-code-review`（用户明确跳过时记录原因），再按 `plan-impl` 的 `WORKTREE_GATE` 语义进入待提交提示或最终验证。
+- 若由 `plan-impl` 编排，返回 Proof Block 和未覆盖项给编排器，不自行重复最终审查或验证；由其按 `REVIEWING -> 工作区检查 -> VERIFYING` 状态机执行。
 
 ---
 

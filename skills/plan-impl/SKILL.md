@@ -21,7 +21,7 @@ description: |-
 - 对中等偏小、边界清楚、验证方式明确的任务，可调用 `plan-impl-lightweight`。
 - 在实现批次后执行 `conflict_check -> 单 reviewer 双 verdict -> fix loop`。
 - 通过 scratch artifacts 交接 task brief、实现报告和 review package，避免把大段内容复制进 dispatch prompt。
-- 先通过 `requesting-code-review` 完成最终全量审查，再通过 `verification-before-completion` 输出 `verification_evidence`。
+- 最终全量审查后通过 `WORKTREE_GATE` 路由待提交提示或 `verification-before-completion`。
 - 在收尾阶段串联 `finishing-a-development-branch`。
 
 ### 不做什么
@@ -44,7 +44,7 @@ description: |-
 ## State Machine
 
 主状态：
-`BOOTSTRAP -> READY -> EXECUTING -> REVIEWING -> VERIFYING -> FINALIZING -> DONE`
+`BOOTSTRAP -> READY -> EXECUTING -> REVIEWING -> WORKTREE_GATE -> VERIFYING -> FINALIZING -> DONE`
 
 异常状态：
 `ESCALATED | CANCELLED`
@@ -72,8 +72,11 @@ runner:
 - `BOOTSTRAP -> READY`：工作区/恢复点/基线检查可继续。
 - `READY -> EXECUTING`：任务、依赖、Proof、阻塞条件可判定，Plan Review Gate 已通过，且无致命 plan 缺陷。
 - `EXECUTING -> REVIEWING`：所有 batch 完成，且内部阻塞问题已清零。
-- `REVIEWING -> VERIFYING`：`requesting-code-review` 通过，或用户明确要求跳过并记录原因。
+- `REVIEWING -> WORKTREE_GATE`：审查通过，或用户明确要求跳过并记录原因。
+- `WORKTREE_GATE -> FINALIZING(mode=uncommitted)`：工作区 dirty 或 `has_head=false`；先提示提交，不运行完成前验证。
+- `WORKTREE_GATE -> VERIFYING`：工作区 clean 且 `has_head=true`。
 - `VERIFYING -> FINALIZING`：`verification-before-completion` 返回 `DONE` 且 `passed=true`。
+- `FINALIZING(mode=uncommitted, commit_then_continue) -> WORKTREE_GATE`：提交后重新检查；不满足 clean 且 `has_head=true` 时仍停留在待提交模式，不得归档。
 - `FINALIZING -> DONE`：`finishing-a-development-branch` 返回 `DONE`，且归档完成。
 - 任一阶段遇到 plan 致命缺陷、修复不收敛、验证不可恢复或前提失效导致超范围影响，进入 `ESCALATED`。
 - `FINALIZING` 若用户取消收尾或拒绝 destructive 确认，进入 `CANCELLED`。
@@ -213,17 +216,18 @@ runner:
 
 - 默认调用 `requesting-code-review`；仅当用户明确要求跳过时可跳过，并在 Session Log 记录原因。
 - 审查返回 `阻塞` 或 `需澄清` 时，按 `receiving-code-review` 评估反馈，采纳修复项后重新审查。
-- 修复审查反馈后不得沿用旧验证证据；审查通过后进入 `VERIFYING` 重新生成最终 `verification_evidence`。
+- 修复审查反馈后不得沿用旧验证证据；审查通过后进入 `WORKTREE_GATE`。
 
 ---
 
 ## VERIFYING
 
 - 调用 `verification-before-completion`。
+- 前置条件：工作区必须 clean 且仓库已有 HEAD；dirty 或尚无 HEAD 时不调用本 Skill，转 `FINALIZING(mode=uncommitted)`。
 - 消费实现子代理返回的 Proof Block 或等价证据块。
 - 审计 Proof Block，必要时补跑最小额外验证。
 - 输出 `verification_evidence`：`commit_sha`、`passed`、`verified_at`、`evidence[]`。
-- 只有 `DONE && passed=true` 才能进入 `FINALIZING`。
+- 只有 `DONE && passed=true` 才能进入标准分支处置。
 - `PARTIAL/BLOCKED` 时，根据 next_action 回流到追加修复、调试、回到 `writing-plans` 或重跑最小验证。
 
 ---
@@ -234,10 +238,12 @@ runner:
 
 - 调用 `finishing-a-development-branch`。
 - 消费其四态输出：
-  - `READY`：展示 `merge / PR / keep / discard` 选项，写入恢复点，等待用户选择。
+  - `READY`：透传 `mode` 与选项，写入恢复点；`mode=uncommitted` 时只展示待提交提示。
   - `BLOCKED`：先补齐状态；验证证据问题回到 `VERIFYING`，分支/worktree/base 问题补齐后重试一次，仍失败则 `ESCALATED`。
   - `CANCELLED`：停止收尾，保留现状，并写入恢复点。
   - `DONE`：继续归档。
+
+选择 `提交后继续` 时，在授权范围内提交后回到 `WORKTREE_GATE`；通过后验证新 HEAD，再次进入 `FINALIZING`。
 
 ### ARCHIVE
 

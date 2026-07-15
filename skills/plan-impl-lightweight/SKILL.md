@@ -125,8 +125,8 @@ execute -> targeted_verify -> review -> fix_once -> targeted_verify -> review
 ### 6) final_verification_handoff
 
 - 通过 targeted verification 和轻量 review 只证明局部增量，不等同于可对用户声明整个请求已完成。
-- 仅当最终轻量 review 为 `DONE` 或 `DONE_WITH_CONCERNS` 且无 blocking issue 时，独立轻量路径才可继续：默认调用 `requesting-code-review`；只有用户明确要求跳过时才能跳过，并记录原因。审查通过后必须调用 `verification-before-completion`。
-- 若本 Skill 由 `plan-impl` 调用，则返回局部证据，由完整编排器依次执行 `REVIEWING -> VERIFYING`。
+- 仅当最终轻量 review 为 `DONE` 或 `DONE_WITH_CONCERNS` 且无 blocking issue 时，独立轻量路径才可继续：默认调用 `requesting-code-review`（用户明确跳过时记录原因），再按 `plan-impl` 的 `WORKTREE_GATE` 语义进入待提交提示或最终验证。
+- 若本 Skill 由 `plan-impl` 调用，则返回局部证据，由完整编排器执行 `REVIEWING -> 工作区检查 -> VERIFYING`。
 
 ---
 

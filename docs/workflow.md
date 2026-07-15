@@ -25,11 +25,11 @@ scope:
 | `writing-plans` plan review | `SELF_REVIEWED / PENDING_INDEPENDENT_REVIEW / APPROVED / ISSUES_FOUND` + Gate Revision | low self-review 后可交棒；medium/high 需 reviewer APPROVED |
 | `plan-impl` 实现/修复子代理 | `DONE / DONE_WITH_CONCERNS / BLOCKED / UNKNOWN` | `DONE*` 可继续；`BLOCKED/UNKNOWN` 需要补上下文、拆分、重试或升级 |
 | `plan-impl` 单内部 reviewer | `DONE / DONE_WITH_CONCERNS / BLOCKED` + Spec/Quality 双 verdict | `BLOCKED` 进入 fix loop；`DONE_WITH_CONCERNS` 必须闭合 Cannot Verify From Diff；连续同类问题无收敛则升级 |
-| `requesting-code-review` 全量审查 | `通过 / 通过_含建议 / 阻塞 / 需澄清` | `通过*` 才进入最终验证；修复审查反馈后必须重新审查，再重新验证 |
+| `requesting-code-review` 全量审查 | `通过 / 通过_含建议 / 阻塞 / 需澄清` | `通过*` 才进入工作区检查；dirty / 无 HEAD 先提交，clean 且有 HEAD 后进入最终验证 |
 | `plan-impl-lightweight` | `DONE / DONE_WITH_CONCERNS / BLOCKED / UNKNOWN` + `path_decision` | `path_decision=lightweight` 且 `DONE*` 可继续；`ask_user/escalate_to_full` 暂停轻量执行并回到用户或完整 runner |
 | `receiving-code-review` 反馈评估 | `DONE / BLOCKED` | `DONE` 表示反馈已完成采纳/驳回判断；`BLOCKED` 等待澄清 |
 | `verification-before-completion` | `DONE / PARTIAL / BLOCKED` | 仅 `DONE` 且 `passed=true` 可交给分支收尾；输出 `commit_sha/passed/verified_at/evidence[]` |
-| `finishing-a-development-branch` | `READY / BLOCKED / DONE / CANCELLED` | `DONE` 表示分支处置完成；`CANCELLED` 表示用户取消收尾或 destructive 确认失败 |
+| `finishing-a-development-branch` | `READY / BLOCKED / DONE / CANCELLED` | dirty / 无 HEAD 时 `READY + mode=uncommitted` 提示提交；clean 且验证通过后进入标准分支处置 |
 
 ---
 
@@ -67,6 +67,7 @@ scope:
 │   ├── PATH：中小任务可走 plan-impl-lightweight              │
 │   ├── EXECUTING：依赖驱动批次并行 + conflict_check/review/fix │
 │   ├── REVIEWING：requesting-code-review 全量审查            │
+│   ├── WORKTREE GATE：dirty || !has_head → 待提交；clean && has_head → VERIFYING │
 │   ├── VERIFYING：verification-before-completion          │
 │   └── FINALIZING：finishing-a-development-branch        │
 └─────────────────────┬───────────────────────────────────┘
@@ -74,7 +75,7 @@ scope:
 调试路径（独立入口）：
    systematic-debugging skill
        └── [status=FIXABLE && execution_authorization=granted + matching basis] → proof-oriented-development skill
-               └── Proof Block → verification-before-completion skill
+               └── Proof Block → requesting-code-review → 工作区检查 → verification-before-completion skill
        └── [status=ESCALATE] → discuss 或 writing-plans
 ```
 
@@ -131,19 +132,20 @@ scope:
 
 **触发：** writing-plans 交棒，或用户手动恢复执行。
 
-**状态机：** BOOTSTRAP → READY → EXECUTING → REVIEWING → VERIFYING → FINALIZING → DONE（异常：ESCALATED / CANCELLED）
+**状态机：** BOOTSTRAP → READY → EXECUTING → REVIEWING → 工作区检查（dirty / 无 HEAD 先待提交；clean 且有 HEAD 进入 VERIFYING）→ VERIFYING → FINALIZING → DONE（异常：ESCALATED / CANCELLED）
 
 **核心流程：**
 1. BOOTSTRAP：读取弹性计划包（必读 `plan.md` frontmatter 中的 `runner` 恢复状态，读取 `review-contract.md` 人审边界，按存在情况读取 `context.md / tasks.md`），调用 `using-git-worktrees` 检测/建立隔离工作区；不读取 HTML runner 注释
 2. READY：确认 `plan.md` 中任务、依赖、Proof、阻塞条件完整，并比对两份材料同名的 Gate Revision、风险、状态与 revision-bound basis；medium/high 的 pending、缺失、冲突或 basis 不匹配一律停止在 READY。若存在 `tasks.md` 则消费拆分任务图；中等偏小、边界清楚、局部验证充分的任务可转交 `plan-impl-lightweight`
 3. EXECUTING：拓扑排序 tasks（来自 `plan.md` 或可选 `tasks.md`），优先检测并使用 team 模式承载 batch、review、fix、verify；缺少 team 工具且不适合轻量路径时回退为按批次并行派发实现子代理，无法并行时改为单个实现子代理推进；task brief、实现 report 和 review package 经 `.power-agent/review-runs/` scratch artifacts 交接，并在批次内执行 conflict_check / 单 reviewer 双 verdict / fix loop
 4. REVIEWING：调用 `requesting-code-review`（最终验证前默认强制，用户明确跳过除外）；修复审查反馈后必须重新审查
-5. VERIFYING：调用 `verification-before-completion` 审计 Proof Block / 等价证据块，必要时补跑最小额外验证，并输出 `verification_evidence`
-6. FINALIZING：调用 `finishing-a-development-branch`，按收尾状态归档或保留恢复点
+5. WORKTREE GATE：dirty 或仓库尚无 HEAD 时调用 `finishing-a-development-branch` 展示待提交提示；提交后重新执行 gate。只有 clean 且 `has_head=true` 时进入 VERIFYING
+6. VERIFYING：调用 `verification-before-completion` 审计 Proof Block / 等价证据块，必要时补跑最小额外验证，并输出 `verification_evidence`
+7. FINALIZING：调用 `finishing-a-development-branch`，按收尾状态归档或保留恢复点
 
 **产出：** 实现代码变更 + Session Log + 归档 exec-plan
 
-**调用链：** `plan-impl-lightweight`（可选轻量分支）→ proof-oriented 实现子代理（Proof Block 写入 report artifact）→ runner 单 reviewer 双 verdict → `requesting-code-review`（最终验证前）→ `verification-before-completion` → `finishing-a-development-branch`
+**调用链：** `plan-impl-lightweight`（可选轻量分支）→ proof-oriented 实现子代理（Proof Block 写入 report artifact）→ runner 单 reviewer 双 verdict → `requesting-code-review`（最终验证前）→ 工作区检查（dirty / 无 HEAD 先提交）→ `verification-before-completion` → `finishing-a-development-branch`
 
 `requesting-code-review` 是最终验证前默认强制的全量审查编排器；仅当用户明确要求跳过时可跳过，并在 Session Log 记录原因。`dev-docs-maintain` 是在 docs 健康检查、漂移修复或 verification ledger 登记需要时按需触发的普通 Skill，不是每次开发执行的固定阶段。
 
@@ -174,7 +176,7 @@ scope:
 
 **产出：** 实现代码 + Proof Block（目标约束、验收标准、最小验证命令、运行结果、实现摘要、附加证据、风险说明、未验证项）
 
-**交棒给：** `verification-before-completion`（全量回归与最终完成验证）
+**交棒给：** `requesting-code-review`；审查通过后进入工作区检查，dirty 或仓库尚无 HEAD 时先进入待提交提示，clean 且有 HEAD 后进入 `verification-before-completion`（全量回归与最终完成验证）
 
 ---
 
@@ -197,13 +199,13 @@ scope:
 **触发：** 实现完成后、最终验证前默认强制触发；合并/PR 前若尚未完成全量审查，也必须触发，除非用户明确要求跳过并记录原因。
 
 **核心流程：**
-1. 评估变更风险等级（低/中 = 单审，高 = 双审并行）
-2. 按风险分级派发审查子代理（使用 `references/code-reviewer.md` prompt）
+1. 评估变更重要性等级（低/中 = 常规单审，高 = 增强双审）
+2. 按重要性派发审查子代理，并独立评估实现风险（使用 `references/code-reviewer.md` prompt）
 3. 汇总结构化审查结论
 
-**输出：** `状态：通过 / 通过_含建议 / 阻塞 / 需澄清 + 阻塞问题 + 下一步`
+**输出：** `状态 + 重要性等级 + 实现风险 + 审查强度 + 阻塞问题 + 下一步`
 
-**交棒给：** `receiving-code-review` → 修复采纳项 → 重新审查（直到通过或 3 轮上限）→ `verification-before-completion`
+**交棒给：** `receiving-code-review` → 修复采纳项 → 重新审查（直到通过或 3 轮上限）→ 工作区检查 → `verification-before-completion`
 
 ---
 
@@ -235,15 +237,17 @@ scope:
 
 ### finishing-a-development-branch — 分支处置
 
-**触发：** 由 plan-impl（FINALIZING 阶段）或 verification 完成后调用。
+**触发：** 由 plan-impl 在 dirty 工作区或仓库尚无 HEAD 的待提交前置阶段，或 verification 完成后调用。
+
+**待提交前置路径：** 工作区 dirty 或仓库尚无 HEAD 时先展示友好的未提交提示，不运行完成前验证；提交后重新检查，只有 clean 且 `has_head=true` 时才进入 verification 绑定新 HEAD，随后进入标准分支处置。
 
 **四类选项：**
 - Merge：直接合并到目标分支
 - PR：创建 Pull Request
 - 保留：保留 worktree 供后续使用
-- 丢弃：删除 worktree 和分支（高风险，需明确确认）
+- 丢弃：删除 worktree 和分支（破坏性操作，需明确确认）
 
-**输出：** `状态 + 选择 + 验证证据 + 分支状态 + 环境状态 + 工作区状态 + 清理结果 + advisories`
+**输出：** `状态 + 模式 + 选择 + 验证证据 + 分支状态 + 环境状态 + 工作区状态（含 has_head）+ 清理结果 + advisories`
 
 ---
 
@@ -265,7 +269,7 @@ scope:
 
 **核心流程：** 定义目标行为与失败模式 → 修改最小必要 Skill/refs/docs → 检查上下游契约 → 准备压力场景。
 
-**交棒给：** `requesting-code-review`，再由最终验证阶段进入 `verification-before-completion`。
+**交棒给：** `requesting-code-review`，再经工作区检查进入最终验证阶段。
 
 ---
 

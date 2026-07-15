@@ -60,6 +60,11 @@ description: |-
 
 缺失信息按需读取，不预加载大段上下文。
 
+### 入口前置：工作区检查
+
+- Git-backed 任务先检查工作区：dirty（含 staged、unstaged、untracked）或 `has_head=false` 时不执行、不输出本 Skill，也不构造 `PARTIAL / passed=false / commit_sha=unknown`；转入 `finishing-a-development-branch` 的 `mode=uncommitted`。
+- 仅 clean 且 `has_head=true` 时继续核验；真实证据失败仍按原状态矩阵返回 `PARTIAL / BLOCKED`。
+
 ### 参考资料
 
 - 验证路径建议：`references/verification-playbook.md`

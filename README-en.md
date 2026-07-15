@@ -42,7 +42,7 @@ Three principles from Harness Engineering:
 | `receiving-code-review` | Technical evaluation of review feedback (not performative agreement) |
 | `verification-before-completion` | Evidence-first verification — no completion claims without fresh proof |
 | `harness-engineering-review` | Audit a project's agent workflow against Harness Engineering best practices |
-| `finishing-a-development-branch` | Wrap up a completed branch (merge/PR/keep/discard) |
+| `finishing-a-development-branch` | Prompt for a dirty worktree or missing HEAD first, then wrap up a clean verified branch (merge/PR/keep/discard) |
 
 ### Workflow
 
@@ -52,10 +52,10 @@ discuss skill          ← optional: requirement discussion / PRD refinement →
 writing-plans skill    ← create a compact proof-oriented exec-plan and choose self-review or independent review by plan risk
     ↓
 plan-impl skill ← BOOTSTRAP(using-git-worktrees) → lightweight start notice → optional plan-impl-lightweight for medium-small tasks
-                     └── prefer team mode; without team tools, fall back to proof-oriented implementation subagents in parallel or serial flow → scratch artifacts + one reviewer with two verdicts → full code review → verification → branch finishing
+                     └── prefer team mode; without team tools, fall back to proof-oriented implementation subagents in parallel or serial flow → scratch artifacts + one reviewer with two verdicts → full code review → worktree gate (commit dirty changes or create HEAD first) → verification → branch finishing
 
 Bug / test failure → systematic-debugging skill
-                         └── → proof-oriented-development + verification-before-completion
+                         └── → proof-oriented-development → full code review → worktree gate → verification-before-completion
 ```
 
 `requesting-code-review` is mandatory before final verification by default. Merge/PR handoff must not skip unresolved review findings unless the user explicitly asks to skip and the reason is recorded. `dev-docs-maintain` remains an on-demand doc maintenance skill, not a mandatory step for every development run.

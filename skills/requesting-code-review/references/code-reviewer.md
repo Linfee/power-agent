@@ -16,12 +16,30 @@ Task:
     {PLAN_OR_REQUIREMENTS}
 
     ## Git 范围
+    Review scope: {REVIEW_SCOPE}
     Base: {BASE_SHA}
     Head: {HEAD_SHA}
 
-    请读取并审查：
+    若 Review scope=commit_range，请读取并审查：
     - git diff --stat {BASE_SHA}..{HEAD_SHA}
     - git diff {BASE_SHA}..{HEAD_SHA}
+
+    若 Review scope=working_tree，请读取并审查：
+    - git status --short
+    - git diff --stat
+    - git diff
+    - git diff --cached
+    - `git status --short` 中与本任务相关的每个 untracked 文件内容
+
+    working_tree 审查不得因为 Base=Head 或 commit range 为空而判定无变更；必须同时覆盖 staged、unstaged 和任务相关 untracked 文件。
+    unborn 仓库允许 Base/Head 为 `not_applicable`，此时只按 working_tree 路径审查。
+
+    ## 审查校准
+    重要性等级：{IMPORTANCE_LEVEL}
+    审查强度：{REVIEW_INTENSITY}
+
+    重要性表示变更出错后的影响面，审查强度表示审查投入；二者都不等于当前实现风险。
+    实现风险只描述当前实现出错的可能性，必须依据本次 diff、验证证据、复杂度和未解决不确定性独立判断；不得因公共 API、敏感数据或权限路径自动写成 `实现风险=高`。
 
     ## 审查维度
 
@@ -61,7 +79,9 @@ Task:
     ## 代码审查结果
 
     状态：通过 / 通过_含建议 / 阻塞 / 需澄清
-    风险等级：低风险 / 中风险 / 高风险
+    重要性等级：低 / 中 / 高
+    实现风险：低 / 中 / 高 / 未评估
+    审查强度：常规 / 增强
 
     ### 证据
     - <diff|test|log|review>（<file:line|command>）：<证据摘要>
@@ -82,6 +102,7 @@ Task:
     - `状态=通过|通过_含建议` 时，`阻塞问题` 必须为空。
     - `状态=通过|通过_含建议` 时，`证据` 必须非空。
     - 所有 blocking issue 必须引用 file:line、diff hunk 或命令证据。
+    - 不得单独输出“高风险”；必须区分 `重要性等级`、`实现风险` 与 `审查强度`。
     - 如果需求或基线缺失导致无法审查，返回 `状态=需澄清`。
 ```
 
@@ -89,5 +110,8 @@ Task:
 
 - `{DESCRIPTION}`：本次实现的简短摘要。
 - `{PLAN_OR_REQUIREMENTS}`：需求、spec、exec-plan task 或验收标准。
-- `{BASE_SHA}`：审查基线 commit。
-- `{HEAD_SHA}`：当前 head commit。
+- `{REVIEW_SCOPE}`：`commit_range` 或 `working_tree`。
+- `{BASE_SHA}`：审查基线 commit；unborn working tree 可写 `not_applicable`。
+- `{HEAD_SHA}`：当前 head commit；unborn working tree 可写 `not_applicable`。
+- `{IMPORTANCE_LEVEL}`：编排器判定的 `低 / 中 / 高` 重要性等级。
+- `{REVIEW_INTENSITY}`：编排器选择的 `常规 / 增强` 审查强度。

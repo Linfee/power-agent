@@ -105,5 +105,5 @@ description: |-
 
 - `FIXABLE + execution_authorization=granted + matching basis`：交给 `proof-oriented-development`，由其建立 Proof Plan、实施修复并输出 Proof Block。
 - `FIXABLE + execution_authorization=missing|unknown|basis mismatch`：保留 canonical handoff，请求覆盖 exact fix boundary 和动作类型的最小授权。
-- 修复完成声明前：交给 `verification-before-completion` 审计新鲜证据。
+- 修复完成声明前：先执行全量审查，再按 `plan-impl` 的 `WORKTREE_GATE` 语义进入待提交提示或最终验证。
 - 调用方应机制化校验状态枚举、`FIXABLE` 条件必填字段、授权 basis 与当前动作的匹配、执行路由和安全工具权限；因果是否充分仍由模型基于证据判断。
