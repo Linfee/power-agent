@@ -40,7 +40,7 @@ description: |-
 ## Review Assets
 
 - manifest 为 `not_applicable` 时禁止扫描 `.power-agent`、`review-runs/` 或 `assets/`。
-- 提供 manifest 时，先验证 `REVIEW_RUN_ROOT` 及父组件非 symlink、解析后仍是仓库内当前 run，且 manifest 的路径与解析结果都严格等于 `<REVIEW_RUN_ROOT>/review-assets.md`。
+- 提供 manifest 时，`REVIEW_RUN_ROOT` 未解析路径必须严格为仓库 `.power-agent/review-runs/<run-id>` 的当前 run；root 是非 symlink 目录、父组件均非 symlink，解析后仍严格为同一目录。manifest 未解析路径和解析结果都必须严格等于该 root 的 `review-assets.md`。
 - 只读 manifest 显式列出的普通文件：path 必须位于同一 root 的 `assets/` 下，拒绝绝对路径、空段、`.`、`..`、symlink 和解析越界；scope 同时匹配当前 target 与 `paths=`/`finding=`；freshness 匹配 `REVIEW_BASIS`；source 可追溯；sensitivity 默认 `normal` 且已获当前派发授权。
 - 任一校验缺失、未知、不可比较或失败时，不读、不采信、不扩扫，只报告 evidence gap；关键验收仅能依赖无效资产时返回 `需澄清`。无法给 working tree 提供可比较 snapshot 时不传 manifest。
 - 证据优先级：当前代码/diff > 当前需求/exec-plan > 匹配当前 basis 的新验证 > repair context/findings > implementer report > 其它 review assets。

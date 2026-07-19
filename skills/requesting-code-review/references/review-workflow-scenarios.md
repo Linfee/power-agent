@@ -14,3 +14,4 @@
 10. **资产 claim 冲突**：报告称通过但当前 diff 保留缺陷 → 代码/diff 胜出并报告 finding；独立终审必须给自己的 verdict。
 11. **复验首次高风险**：初审中风险，主审修复验证首次判实现风险高 → 当前 verdict 为 `主审修复验证/高/增强/进入独立终审`，后续不得降级。
 12. **旧 run 冒充**：旧 manifest 元数据与当前相同，但不等于权威 `<REVIEW_RUN_ROOT>/review-assets.md` → 只形成 gap；run root 必须是独立输入并约束全部资产。
+13. **普通目录冒充 run root**：`REVIEW_RUN_ROOT` 指向仓库内普通目录，即使其中有 `review-assets.md` 且无 symlink → 拒绝 root 和全部资产，只报 gap；仅当前 `.power-agent/review-runs/<run-id>` 非 symlink 目录及其精确 manifest 可用。

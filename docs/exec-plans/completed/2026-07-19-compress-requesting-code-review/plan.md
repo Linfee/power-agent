@@ -8,7 +8,7 @@ runner:
   batch: 1/1
   phase: complete
   fix_round: 1/3
-  next_action: commit_then_clean_head_verification
+  next_action: working_tree_gate_pending_commit
 ---
 
 # requesting-code-review 保真压缩实现计划
@@ -205,11 +205,14 @@ runner:
 
 ## Fixed A/B Oracle
 
-- 身份：baseline commit `d2ca53cd8b6fc28ead879c668ffdccc628d50154`；r15 package 字节算法、固定 `@file` prompt transport、Pi 版本/provider/model/responseModel/thinking、system、schema、完整 prompts、assertions、分类整对重试与跨变体 evaluator 以 `context.md#machine-readable-fixtures` 和 `context.md#精确调用形状` 为准。
-- Package SHA-256：baseline `6972f6e7baf814b70729bf8bcf9ad1403d27fc8c5976ef22a024f6de6689ebb3`；candidate `36ca944fab1559f12c5285ccb8d1f73182883623e6e1f1087a88cd3fbe6cb12a`。
-- Runner SHA-256：对 `context.md` 使用精确 `re.search(r"````python\\n(.*?)````", text, re.S).group(1).encode("utf-8")`，不增删换行或规范化；digest=`e48c6a979ee23e1ab973dd8343cc9021874eaa48d886fc76c3b64458edd8e60b`，与 `runner_contract.runner_identity` 一致。
+历史 r1-r15 的 Gate 与 Session Log 保留其发生时的事实；以下是 post-review repair 的当前 oracle，不能用历史 hash、字符数或 verdict 代表当前工作树。
+
+- 身份：baseline commit `d2ca53cd8b6fc28ead879c668ffdccc628d50154`；当前 package 字节算法、固定 `@file` prompt transport、Pi 版本/provider/model/responseModel/thinking、system、schema、完整 prompts、assertions、分类整对重试与跨变体 evaluator 以 `context.md#machine-readable-fixtures` 和 `context.md#精确调用形状` 为准。
+- Package SHA-256：baseline `6972f6e7baf814b70729bf8bcf9ad1403d27fc8c5976ef22a024f6de6689ebb3`；candidate `689802615c0abc6a4bb713b8a7613814c994af3d3dbee628f24c4322aa632843`。
+- Runner SHA-256：对 `context.md` 使用精确 `re.search(r"````python\\n(.*?)````", text, re.S).group(1).encode("utf-8")`，不增删换行或规范化；digest=`fd169a9f39d5c33e8659be28cc66108d3ddff607a41d77c57258e8f84fa99d95`，与 `runner_contract.runner_identity` 一致。
+- 当前核心运行时表面：candidate 10,727 字符，相对 baseline 13,459 字符减少 20.2987%；仅以四文件和同一 Python `len(text)` 口径计算。
 - 运行：baseline/candidate 使用完全相同的 Pi Agent `0.80.10`、provider=`cpa`、model=`gpt-5.4-mini`、responseModel=`gpt-5.4-mini-2026-03-17`、thinking=`low`、system、prompt、schema 与 assertions；assistant JSONL stream identity 为严格单例且 final message_end 存在；每个 case 只允许一次 semantic 整对 retry 和一次独立 infrastructure 整对 retry，同类第二次失败中止，禁止单边重试或挑选多个有效 passing samples。
-- C1-C8 覆盖同目标/同 session owner、跨边界替代 reviewer、顺序增强、修复验证首次高风险、范围扩大、无 manifest、资产 containment/代码优先和显式并行；C7 直接断言合法读取、非法拒绝与代码 blocker，不绑定重叠顶层 route。
+- C1-C8 覆盖同目标/同 session owner、跨边界替代 reviewer、顺序增强、修复验证首次高风险、范围扩大、无 manifest、资产 containment/代码优先和显式并行；C7 直接断言合法读取、非法拒绝、代码 blocker，以及仓库普通目录伪装 `REVIEW_RUN_ROOT` 时 `read_assets=[]` 且唯一 `assets/current.log` 出现在 `rejected_assets`，不绑定重叠顶层 route。
 - C9-C10 各含完整 synthetic defect/control 输入：defect 必须召回匹配固定 locator 的 Important/Critical blocker，candidate 同 defect 严重度不得低于 baseline，control 不得新增 blocker。
 
 ## Tasks
@@ -259,8 +262,8 @@ runner:
 
 ## 当前状态
 
-- 当前进度：实现、r15 A/B、结构验证、主审修复验证与全新增强独立终审全部通过；计划任务完成并归档。
-- 下一步：创建本地提交，在 clean HEAD 运行 `verification-before-completion`。
+- 当前进度：计划本体已归档；post-review repair 的 preflight、尺寸验收、当前 C1-C10 A/B、原主审修复验证与全新 reviewer 独立终审均通过。
+- 下一步：进入 working-tree Gate；当前 5 个 post-review repair 文件未提交，提交后才能运行绑定新 HEAD 的完成前验证。
 
 ## Session Log
 
@@ -336,3 +339,15 @@ runner:
 - 终审反馈评估：核心担忧成立，`决策=采纳`。已在 `context.md` prose 与 `runner_contract.runner_identity` 固定 exact regex group、UTF-8 和不增删换行规则；复算 digest 仍为 r15 运行前记录的 `e48c6a97...8e60b`，runner body 未改变，故无需重跑模型 Proof。
 - 独立终审修复验证：`CompressionIndependentR15` 按固定算法复算 runner SHA=`e48c6a97...8e60b`，确认 runner body 未变、metadata 不参与执行，无需重跑 r15 模型 Proof；既有 package SHA 与全部关键不变量无新增问题。最终 verdict=`通过`，implementation_risk=`低`，blockers=`无`，next_action=`继续流程`。
 - 最终工作树验证：`git diff --check HEAD` 无输出；Bundle tests 37/37 OK；Bundle scan structural findings=0；runner/package hashes 与 r15 固定值一致；核心压缩率 21.45%，全包压缩率 30.08%；已知 `/tmp` 临时证明文件全部 absent。
+
+### Post-review repair（当前工作树；非 r1-r15 历史 Gate）
+
+- 实现：恢复 `REVIEW_RUN_ROOT` 未解析/解析路径严格绑定仓库当前 `.power-agent/review-runs/<run-id>` 非 symlink 目录；保留父组件、精确 manifest 与 assets containment；直接 reviewer prompt 同步。场景增加普通仓库目录伪装 root 的拒绝规则，C7/B hard assertions 要求 `read_assets=[]` 并将唯一资产 `assets/current.log` 记入 `rejected_assets`；其余 manifest、scope、freshness、source 与 sensitivity 均匹配，使拒绝只能归因于普通目录伪装 root。
+- Recipe：从仓库根执行的 runner 改读本归档 `completed/.../context.md`；当前 candidate 四文件、package SHA 与随路径修复更新的当前 runner SHA 已在 Fixed A/B Oracle 固定。C1 五类 handoff assertion 不变。
+- 结构证明：本轮静态 preflight 复算 baseline/candidate 四文件、package 和 runner hash；C1 fixture 结构与 completed context 路径通过。`git diff --check` 无输出；核心候选为 10,727/13,459 字符（-20.2987%）。此前 `test_bundle_status.py`、`test-review-package.sh` 与 bundle scan 结果属历史证据，本轮未重跑。
+- A/B：主会话的真实运行于 C1 两次 semantic failure 后 exit=1：attempt 1 candidate handoff 只写“本次需执行的新验证要求”，attempt 2 只写“受影响路径与验证范围”；两者均非与当前代码匹配的新验证证据，fixture 继续正确拒绝。随后 C10 又连续两次 semantic failure 后 exit=1：baseline 对 synthetic 删除 `REVIEW_RUN_ROOT`、解析精确相等、symlink、越界校验均判`严重`，candidate 均判`重要`，触发 candidate severity < baseline；fixture 与 pair assertion 保持不变。本次仅将 Review Assets/asset trust-boundary bypass 直接校准为`严重`，并从同文件等价重复说明回收字符；保留替代 reviewer 完整 handoff、常规/增强路由和 root 安全。未运行 Pi A/B，未记录 PASS 或 reviewer verdict。
+- 后续 A/B：C1 的一次 semantic retry 后继续执行；C7 首次为 infrastructure failure，按独立整对预算重试，随后两次均为 semantic failure：baseline/candidate 都输出 `read_assets=[]`、`rejected_assets=["assets/current.log"]`，安全行为正确，但旧断言把 root 路径错误地期待在资产数组中。现改为检查唯一资产被拒绝，未放宽 root-only 场景；普通目录伪装 root 仍须不读取资产，且 prompt 已固定其他 trust 条件全匹配，故拒绝仍只能归因于 root 边界。
+- 临时产物处置：`/tmp/power-agent-requesting-code-review-ab-input.txt`（A/B prompt，正常敏感性）由已结束 recipe 自动 removed，后以 `test ! -e` 验证不存在；`/tmp/dev-docs-status.json`（bundle scan 报告，正常敏感性）已 removed，后以 `test ! -e` 验证不存在。
+- 当前 A/B 证明：主会话以可捕获终端 session `29186` 从 C1 完整重跑版本化 recipe，Pi `0.80.10`、provider=`cpa`、model=`gpt-5.4-mini`、responseModel=`gpt-5.4-mini-2026-03-17`、thinking=`low`。C2 attempt 1 为 infrastructure failure、attempt 2 为 semantic failure，按分类预算 attempt 3 整对通过；其余 C1、C3-C10 首对通过。最终 C1-C10 全部 local/pair assertions PASS，exit=0，`temporary_prompt=removed`，status=`PASS`；未单边重试或采信 partial verdict。
+- 主审修复验证：原 finding owner 对两项 Important finding、5 文件修复增量和新验证证据返回 `状态=通过_含建议`、`审查阶段=主审修复验证`、`实现风险=低`、`审查强度=增强`、无 blocker、`下一步=进入独立终审`；唯一措辞建议已将“未变 runner SHA”修正为“随路径修复更新的当前 runner SHA”。
+- 独立终审：全新 reviewer 对最终 5 文件 working-tree 范围独立复算四文件/package/runner hash 与 20.2987% 压缩率，重新核对 root trust boundary、C7/B、completed recipe 和当前 A/B 记录，返回 `状态=通过`、`审查阶段=独立终审`、`实现风险=低`、无 blocker/建议、`下一步=继续流程`。

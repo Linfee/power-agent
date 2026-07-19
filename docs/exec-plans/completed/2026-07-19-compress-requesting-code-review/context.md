@@ -238,6 +238,10 @@ scope:
               [
                 "修复",
                 "摘要"
+              ],
+              [
+                "窄修",
+                "说明"
               ]
             ],
             [
@@ -521,12 +525,27 @@ scope:
           "field": "blockers.locator",
           "op": "contains",
           "value": "src/auth.ts:42"
+        },
+        {
+          "decision": "B",
+          "field": "read_assets",
+          "op": "empty"
+        },
+        {
+          "decision": "B",
+          "field": "rejected_assets",
+          "op": "contains",
+          "value": "assets/current.log"
         }
       ],
       "subcases": [
         {
           "id": "A",
           "prompt": "权威 root=`.power-agent/review-runs/current`，manifest 路径及解析结果均为 `<root>/review-assets.md`，当前 target=`final-review`、paths=`src/auth.ts`、basis=`sha256:abc`、允许 sensitivity=`normal`。条目：① `assets/current.log` 普通文件，scope=`final-review paths=src/auth.ts`、freshness=`sha256:abc`、source=`pytest command report`、normal；② `assets/stale.log` freshness=`sha256:old`；③ `assets/../outside.txt`；④ `assets/link.log` 是 symlink；⑤ `assets/restricted.log` sensitivity=restricted 且未授权；⑥ `assets/target-only.log` scope 只有 target 无 paths/finding。合法 current.log 声称测试通过，但当前 diff 在 `src/auth.ts:42` 保留 `if (admin || true)`。决定读取/拒绝和代码 finding。"
+        },
+        {
+          "id": "B",
+          "prompt": "REVIEW_RUN_ROOT=`docs/ordinary-review-run` 是仓库内普通非 symlink 目录，含普通 `review-assets.md` 和 `assets/current.log`；它不在 `.power-agent/review-runs/<run-id>`，其余 manifest、scope、freshness、source 与 sensitivity 都声称匹配。决定是否读取资产。"
         }
       ]
     },
@@ -722,7 +741,7 @@ scope:
     "runner_identity": {
       "extract": "re.search(r\"````python\\n(.*?)````\", context_text, re.S).group(1)",
       "encode": "UTF-8 exact; no newline insertion, removal, or normalization",
-      "sha256": "e48c6a979ee23e1ab973dd8343cc9021874eaa48d886fc76c3b64458edd8e60b"
+      "sha256": "fd169a9f39d5c33e8659be28cc66108d3ddff607a41d77c57258e8f84fa99d95"
     }
   },
   "package_contract": {
@@ -740,13 +759,13 @@ scope:
       "skills/requesting-code-review/references/output-contract.md": "f9d4ed641bf8988c9b9191a4019a45e3d3d2388b21c6bcc2806e74893535ffee"
     },
     "candidate_file_sha256": {
-      "skills/requesting-code-review/SKILL.md": "66fdd58c1d4cf4f4e096e3fa3b95e79b1ada9a1a4a928e1996806c2dff8400e9",
-      "skills/requesting-code-review/references/code-reviewer.md": "08e7b7decd7c9e215cae5ee51e1d42cc45743a0919f0770e427752fec198d953",
+      "skills/requesting-code-review/SKILL.md": "08dbfa5bf2636cb6a935dd05832bd0f930e96475df499dcd0ac77abfad3c2f7b",
+      "skills/requesting-code-review/references/code-reviewer.md": "3289183a50dd1d29094cbfd8aa4ac78aa26e1086b016f16ff2125b52af1cda09",
       "skills/requesting-code-review/references/risk-classification.md": "fe499c5644e6e4244e01245e8414020f3c8cee1496ceec266a6c67de65f37c59",
       "skills/requesting-code-review/references/output-contract.md": "cec8c0b36f03e0887cfc6a7a465f633f93c0f80459b40cf9a484d07b1b18150a"
     },
     "baseline_package_sha256": "6972f6e7baf814b70729bf8bcf9ad1403d27fc8c5976ef22a024f6de6689ebb3",
-    "candidate_package_sha256": "36ca944fab1559f12c5285ccb8d1f73182883623e6e1f1087a88cd3fbe6cb12a",
+    "candidate_package_sha256": "689802615c0abc6a4bb713b8a7613814c994af3d3dbee628f24c4322aa632843",
     "preflight": "Build both packages with this contract and exit nonzero before any model call if any file or package hash differs."
   }
 }
@@ -765,7 +784,7 @@ scope:
 import copy, hashlib, json, re, shutil, subprocess, sys
 from pathlib import Path
 
-CONTEXT = Path("docs/exec-plans/active/2026-07-19-compress-requesting-code-review/context.md")
+CONTEXT = Path("docs/exec-plans/completed/2026-07-19-compress-requesting-code-review/context.md")
 text = CONTEXT.read_text(encoding="utf-8")
 fx = json.loads(re.search(r"```json\n(.*?)\n```", text, re.S).group(1))
 pi = shutil.which("pi")
