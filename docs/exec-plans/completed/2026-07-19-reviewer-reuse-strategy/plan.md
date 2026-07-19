@@ -2,13 +2,7 @@
 type: Execution Plan
 scope:
   - code-review-workflow
-status: active
-runner:
-  state: FINALIZING
-  batch: 3/3
-  phase: finalizing
-  fix_round: 2/3
-  next_action: commit_then_continue
+status: completed
 ---
 
 # Reviewer 复用与风险分层审查策略实现计划
@@ -147,8 +141,8 @@ runner:
 
 ## 当前状态
 
-- 当前进度：资产协议主审与独立终审均已收敛；工作树保持 dirty/uncommitted。
-- 下一步：提交当前变更后重新通过 WORKTREE_GATE，绑定新 HEAD 运行 `verification-before-completion`，通过后归档 exec-plan。
+- 当前进度：已在提交 `d2ca53cd8b6fc28ead879c668ffdccc628d50154` 完成验证并归档。
+- 下一步：none；本计划无后续执行步骤。
 
 ## Session Log
 
@@ -165,3 +159,4 @@ runner:
 - 主审：发现两个直接 reviewer prompt 未在读取 manifest 前拒绝 manifest/父路径 symlink；同步主 Skill 与场景后，原主审通过结构断言和实际 manifest symlink 烟测确认修复，`状态=通过`、`审查阶段=主审修复验证`、`下一步=进入独立终审`，依据 `history://ReviewAssetsPrimary`。
 - 独立终审：全新 reviewer 发现高实现风险在主审修复验证首次出现时可能漏掉终审、scope 未强制 target+paths/finding 双匹配、manifest 未绑定权威当前 run root；修复后又发现修复验证风险升级仍只覆盖初始主审。全部同步到主 Skill、prompts、risk/output contracts、plan-impl、docs 与场景十一/十二后，原终审 reviewer 以 `审查阶段=终审修复验证` 返回 `状态=通过`、`下一步=继续流程`，依据 `history://ReviewAssetsFinal`。
 - 最终状态：新增 Review Assets Manifest 契约已通过无 manifest、有效/无效资产、manifest symlink、跨 run/metadata/风险升级结构场景与两阶段全量审查；clean-HEAD 完成前验证仍需提交后执行。
+- 完成前验证：提交 `d2ca53cd8b6fc28ead879c668ffdccc628d50154` 后工作区 clean；审查工作流断言 PASS，`git diff --check HEAD^..HEAD` 无输出，Bundle tests 37/37 OK，Bundle scan structural findings=0，平台耦合检查无命中；verification_evidence 绑定该 SHA，计划归档。
