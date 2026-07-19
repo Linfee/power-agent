@@ -25,7 +25,7 @@ scope:
 | `writing-plans` plan review | `SELF_REVIEWED / PENDING_INDEPENDENT_REVIEW / APPROVED / ISSUES_FOUND` + Gate Revision | low self-review 后可交棒；medium/high 需 reviewer APPROVED |
 | `plan-impl` 实现/修复子代理 | `DONE / DONE_WITH_CONCERNS / BLOCKED / UNKNOWN` | `DONE*` 可继续；`BLOCKED/UNKNOWN` 需要补上下文、拆分、重试或升级 |
 | `plan-impl` 单内部 reviewer | `DONE / DONE_WITH_CONCERNS / BLOCKED` + Spec/Quality 双 verdict | `BLOCKED` 进入 fix loop；`DONE_WITH_CONCERNS` 必须闭合 Cannot Verify From Diff；连续同类问题无收敛则升级 |
-| `requesting-code-review` 全量审查 | `通过 / 通过_含建议 / 阻塞 / 需澄清` | `通过*` 才进入工作区检查；dirty / 无 HEAD 先提交，clean 且有 HEAD 后进入最终验证 |
+| `requesting-code-review` 全量审查 | `通过 / 通过_含建议 / 阻塞 / 需澄清` + 主审、主审修复验证、独立终审、终审修复验证、并行审查阶段 | 常规主审收敛后进入工作区检查；增强主审收敛后进入全新 reviewer 独立终审；dirty / 无 HEAD 先提交，clean 且有 HEAD 后进入最终验证 |
 | `plan-impl-lightweight` | `DONE / DONE_WITH_CONCERNS / BLOCKED / UNKNOWN` + `path_decision` | `path_decision=lightweight` 且 `DONE*` 可继续；`ask_user/escalate_to_full` 暂停轻量执行并回到用户或完整 runner |
 | `receiving-code-review` 反馈评估 | `DONE / BLOCKED` | `DONE` 表示反馈已完成采纳/驳回判断；`BLOCKED` 等待澄清 |
 | `verification-before-completion` | `DONE / PARTIAL / BLOCKED` | 仅 `DONE` 且 `passed=true` 可交给分支收尾；输出 `commit_sha/passed/verified_at/evidence[]` |
@@ -137,8 +137,8 @@ scope:
 **核心流程：**
 1. BOOTSTRAP：读取弹性计划包（必读 `plan.md` frontmatter 中的 `runner` 恢复状态，读取 `review-contract.md` 人审边界，按存在情况读取 `context.md / tasks.md`），调用 `using-git-worktrees` 检测/建立隔离工作区；不读取 HTML runner 注释
 2. READY：确认 `plan.md` 中任务、依赖、Proof、阻塞条件完整，并比对两份材料同名的 Gate Revision、风险、状态与 revision-bound basis；medium/high 的 pending、缺失、冲突或 basis 不匹配一律停止在 READY。若存在 `tasks.md` 则消费拆分任务图；中等偏小、边界清楚、局部验证充分的任务可转交 `plan-impl-lightweight`
-3. EXECUTING：拓扑排序 tasks（来自 `plan.md` 或可选 `tasks.md`），优先检测并使用 team 模式承载 batch、review、fix、verify；缺少 team 工具且不适合轻量路径时回退为按批次并行派发实现子代理，无法并行时改为单个实现子代理推进；task brief、实现 report 和 review package 经 `.power-agent/review-runs/` scratch artifacts 交接，并在批次内执行 conflict_check / 单 reviewer 双 verdict / fix loop
-4. REVIEWING：调用 `requesting-code-review`（最终验证前默认强制，用户明确跳过除外）；修复审查反馈后必须重新审查
+3. EXECUTING：拓扑排序 tasks（来自 `plan.md` 或可选 `tasks.md`），优先检测并使用 team 模式承载 batch、review、fix、verify；缺少 team 工具且不适合轻量路径时回退为按批次并行派发实现子代理，无法并行时改为单个实现子代理推进；task brief、实现 report 和 review package 经 `.power-agent/review-runs/` scratch artifacts 交接，并在批次内执行 conflict_check / 单 reviewer 双 verdict / fix loop；修复后优先由原 reviewer 验证，不能继续时使用替代 reviewer
+4. REVIEWING：调用 `requesting-code-review`（最终验证前默认强制，用户明确跳过除外）；常规审查由单主审收敛，增强审查在主审收敛后增加全新 reviewer 独立终审
 5. WORKTREE GATE：dirty 或仓库尚无 HEAD 时调用 `finishing-a-development-branch` 展示待提交提示；提交后重新执行 gate。只有 clean 且 `has_head=true` 时进入 VERIFYING
 6. VERIFYING：调用 `verification-before-completion` 审计 Proof Block / 等价证据块，必要时补跑最小额外验证，并输出 `verification_evidence`
 7. FINALIZING：调用 `finishing-a-development-branch`，按收尾状态归档或保留恢复点
@@ -199,13 +199,18 @@ scope:
 **触发：** 实现完成后、最终验证前默认强制触发；合并/PR 前若尚未完成全量审查，也必须触发，除非用户明确要求跳过并记录原因。
 
 **核心流程：**
-1. 评估变更重要性等级（低/中 = 常规单审，高 = 增强双审）
-2. 按重要性派发审查子代理，并独立评估实现风险（使用 `references/code-reviewer.md` prompt）
-3. 汇总结构化审查结论
+1. 评估变更重要性等级（低/中默认常规，高默认增强）
+2. 收集标准审查输入；只有当前 review session 提供显式 `review-assets.md` 时才传辅助资产，同时传权威 review run root、可比较的 review basis 和允许的 sensitivity。无 manifest 不扫描 `.power-agent`
+3. 派一名主审 reviewer 对完整目标做多维审查，并独立评估实现风险；低/中重要性的初始主审或主审修复验证若 `实现风险=高`，当前 verdict 立即升级为增强审查
+4. 阻塞 finding 修复后优先由提出问题的 reviewer 验证；运行时不能继续时，使用携带原 finding、原证据、修复说明、修复增量和新验证证据的替代 reviewer
+5. 有效强度仍为常规时在主审收敛后通过；增强审查在主审阶段收敛后派全新 reviewer 对最终范围做独立终审
+6. 只有用户或上游契约明确要求时启用并行双审；修复后不机械重新启动两个完整 reviewer
 
-**输出：** `状态 + 重要性等级 + 实现风险 + 审查强度 + 阻塞问题 + 下一步`
+Review assets 只读权威当前 run root 内 manifest 命名且通过 containment、target+paths/finding scope、freshness、source 与 sensitivity 校验的普通文件；无效条目只形成 evidence gap，不触发目录扩展。代码/Git diff、当前需求和匹配当前 basis 的新验证证据优先于 report 与其它 assets。
 
-**交棒给：** `receiving-code-review` → 修复采纳项 → 重新审查（直到通过或 3 轮上限）→ 工作区检查 → `verification-before-completion`
+**输出：** `状态 + 审查阶段 + 重要性等级 + 实现风险 + 审查强度 + 阻塞问题 + 下一步`
+
+**交棒给：** `receiving-code-review` → 修复采纳项 → 原 reviewer 优先验证 / 替代 reviewer 降级 → 增强审查独立终审 → 工作区检查 → `verification-before-completion`
 
 ---
 

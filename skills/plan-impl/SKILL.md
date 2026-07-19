@@ -148,6 +148,7 @@ runner:
 - 所有实现子代理必须使用 `references/implementer-prompt.md`，并通过 `proof-oriented-development` 完成实现。
 - 主代理必须在派发前分配清晰边界；单任务不得含糊到需要子代理自行拆范围。
 - 按 `references/review-artifact-protocol.md` 创建 task brief 和 report path；任务全文只写入 brief，完整 Proof Block 只写入 report。
+- 需要交接截图、日志、trace、benchmark 等辅助证据时，按同一协议写入当前 run 的 `assets/` 并生成 `review-assets.md`；未生成 manifest 不触发目录扫描。
 - 子代理只在当前工作目录处理分配边界，不创建 commit、branch 或 worktree。
 - 子代理统一返回：`DONE | DONE_WITH_CONCERNS | BLOCKED | UNKNOWN`。
 - `BLOCKED/UNKNOWN` 时，先检查工作树残留，再决定补上下文重试、拆分任务、回退轻量路径或升级。
@@ -163,7 +164,8 @@ runner:
 ### review
 
 - 使用 `scripts/review-package` 为当前 task/batch 生成一次性 review package；dirty worktree 含目标外改动时必须传入显式 path scope。
-- 启动一个只读内部 reviewer，使用 `references/task-reviewer-prompt.md` 一次读取 task brief、实现 report 和 review package，分别输出 `Spec Compliance` 与 `Code Quality` verdict。
+- 启动一个只读内部 reviewer，使用 `references/task-reviewer-prompt.md` 一次读取 task brief、实现 report 和 review package，由同一 reviewer 分别输出 `Spec Compliance` 与 `Code Quality` verdict；多维审查不拆成多个 reviewer。
+- 若提供 Review Assets Manifest，同时传入当前 `review_run_root`、当前 review package `review_basis` 和允许的 sensitivity；reviewer 必须确认权威 run 根非 symlink，manifest 严格位于该根，再只读取 manifest 明确列出且通过同 run containment、目标及 paths/finding scope、freshness、source 与 sensitivity 校验的资产。未提供 manifest 时 run root 与 manifest 均写 `not_applicable`，不得扫描 `.power-agent`。
 - `Spec=FAIL` 或 `Quality=NEEDS_FIXES` 时返回 `BLOCKED`；两个 verdict 通过但含 `Cannot Verify From Diff` 时返回 `DONE_WITH_CONCERNS`，由主代理逐项核实后才能完成当前 task/batch。
 - reviewer 不重复 implementer 已运行的测试，不接受 implementer rationale 或 orchestrator 预判，不修改工作树/HEAD；只有明确 named risk 才扩大到 diff 外 focused check。
 - plan-mandated defect 必须报告并交给用户决定，不能因计划已写明而忽略，也不能自行修成与计划相反。
@@ -171,10 +173,11 @@ runner:
 
 ### fix loop
 
-- 有阻塞问题时启动新的修复子代理；不复用旧子代理。
-- 每轮修复后回到 `review`。
+- 有阻塞问题时启动新的修复子代理；实现与修复子代理保持一次性，不复用旧子代理。
+- 修复后生成新的 report、review package 和 repair context；repair context 包含原 findings 及证据、修复说明、修复增量和新验证证据。优先继续提出该 finding 的内部 reviewer 做修复验证。
+- 新 review package 会形成新的 `review_basis`；旧 manifest 条目只有 freshness 重新绑定并通过当前校验时才可继续使用，不得把旧资产自动视为新鲜。运行时不支持继续或原 reviewer 不可用时，派新的替代 reviewer，并提供 task brief、report、新 package、完整 repair context 和同一资产输入。修复验证必须产生新的双 verdict，不沿用旧结论；修复导致任务范围、验收或关键风险边界实质变化时，停止窄范围验证并重新发起完整内部审查。
 - 若同类 `blocking_issues` 连续出现 >= 2 轮且无新证据，判定不收敛，进入 `ESCALATED`。
-- 若问题数量或严重度持续下降，可继续修复回路；但总轮次最多 3 轮。
+- 若问题数量或严重度持续下降，可继续修复回路；当前 task/batch 总轮次最多 3 轮。
 
 ### 结果契约
 
@@ -215,8 +218,10 @@ runner:
 ## REVIEWING
 
 - 默认调用 `requesting-code-review`；仅当用户明确要求跳过时可跳过，并在 Session Log 记录原因。
-- 审查返回 `阻塞` 或 `需澄清` 时，按 `receiving-code-review` 评估反馈，采纳修复项后重新审查。
-- 修复审查反馈后不得沿用旧验证证据；审查通过后进入 `WORKTREE_GATE`。
+- 若向最终 reviewer 提供 Review Assets Manifest，必须同时提供当前 `review_run_root`、commit range 或 working-tree snapshot `review_basis` 及允许的 sensitivity；只传当前 final review 目标和受影响 paths/finding 可用的条目。未提供 manifest 时 run root 与 manifest 均写 `not_applicable`，不得扫描历史 run 或整个 `.power-agent`。
+- 审查返回 `阻塞` 时，按 `receiving-code-review` 评估反馈，采纳修复项后进入当前阶段的修复验证：优先继续提出 finding 的 reviewer，不能继续时使用携带完整修复上下文的替代 reviewer。
+- 审查返回 `需澄清` 时，补齐缺失的需求、基线或审查上下文后，重新发起当前阶段的完整审查；不得把需澄清结果路由到修复验证。
+- 有效审查强度仍为常规时，主审修复验证通过后进入 `WORKTREE_GATE`；初始主审或任一主审修复验证首次判定高实现风险时，立即升级有效强度为增强并进入全新 reviewer 独立终审。增强审查终审通过后进入 `WORKTREE_GATE`。修复后不得沿用旧验证证据。
 
 ---
 

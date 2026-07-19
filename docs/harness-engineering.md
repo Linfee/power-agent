@@ -160,7 +160,7 @@ status: active # 按生命周期需要添加
 | 决策                             | ADR                                                         |
 | -------------------------------- | ------------------------------------------------------------ |
 | Skill 作为执行单元，人类是决策者 | [ADR-0001](adr/0001-skill-as-execution-unit.md)             |
-| 子代理一次性，避免上下文污染     | [ADR-0002](adr/0002-disposable-subagents.md)                |
+| 实现/修复一次性，Reviewer 同会话连续 | [ADR-0007](adr/0007-reviewer-session-continuity.md)         |
 | 产出物作为协调介质               | [ADR-0003](adr/0003-artifacts-as-coordination.md)           |
 | AGENTS.md 精简（≤200 行）        | [ADR-0004](adr/0004-lean-agents-md.md)                      |
 | Gate 机制重构：规划 Gate + 实现自主 | [ADR-0006](adr/0006-gate-restructuring.md)                  |

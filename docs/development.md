@@ -91,7 +91,7 @@ disable-model-invocation: [true|false]  # 可选，默认 false
 - 检查上游产物是否满足下游输入契约。
 - 对规划类 Skill，区分人类按需阅读入口与 Agent 执行材料；例如 `writing-plans` 默认使用 `review-contract.md` 提供压缩审阅面，但它不构成执行 Gate。
 - 计划审查按风险分层：低风险只做 self-review，中/高风险增加独立 reviewer。
-- 高体积、可重建的 task brief、实现报告和 review diff 使用 `.power-agent/review-runs/` scratch artifacts 交接；它们不进入 commit，也不替代 exec-plan Session Log。
+- 高体积、可重建的 task brief、实现报告和 review diff 使用 `.power-agent/review-runs/` scratch artifacts 交接；截图、日志、trace、benchmark 等 reviewer 资产按 run 放入 `assets/`，只通过 `review-assets.md` 显式命名，并由当前 review session 的权威 run root 约束，同时绑定 target+paths/finding scope、freshness、source 与 sensitivity。它们不进入 commit，也不替代 exec-plan Session Log；无 manifest 时不得扫描目录。
 - 至少运行路径和引用检查；有条件时运行子代理 eval。
 
 ## 文档规范
@@ -129,7 +129,7 @@ status: active # 仅在生命周期有实际语义时添加
 | 规则 | 说明 |
 |------|------|
 | 依赖方向 | 只能从上层指向下层，禁止反向 |
-| 子代理一次性 | 不重用子代理，每次启动新代理 |
+| 子代理生命周期 | 实现/修复子代理与跨目标调用保持一次性；同一 review session 内优先由原 reviewer 验证其 findings，不能继续时使用携带完整修复上下文的新 reviewer |
 | 并发限制 | 最大并行度 3 |
 | 证据优先 | 没有运行验证不得声称完成 |
 | 根因优先 | 没有根本原因分析没有修复 |

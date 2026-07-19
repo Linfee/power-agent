@@ -76,7 +76,7 @@ graph TB
 | | `proof-oriented-development` | 证明导向开发闭环：小步实现、最小相关验证、输出 Proof Block |
 | | `systematic-debugging` | 探索式根因调查：可区分 feedback loop、因果证据、original/minimal repro、安全边界，以及与执行授权解耦的修复交接 |
 | | `verification-before-completion` | 审计 Proof Block / 等价证据块、原始复现、临时产物和风险相称的性能/稳定性证据，输出 verification_evidence |
-| **审查层** | `requesting-code-review` | 重要性分级、实现风险独立评估与全量审查编排 |
+| **审查层** | `requesting-code-review` | 单主审多维审查、修复验证、重要性/实现风险分层与增强独立终审编排 |
 | | `receiving-code-review` | 审查反馈技术评估 |
 | | `harness-engineering-review` | Agent 工作流七维度审查 |
 | **基础设施层** | `using-git-worktrees` | 隔离工作区检测、创建与基线准备 |
@@ -105,9 +105,9 @@ plan-impl（实现编排）
     ├── using-git-worktrees（隔离工作区）
     ├── plan-impl-lightweight（中小任务轻量执行路径）
     ├── proof-oriented-development（证明导向实现子代理）
-    ├── scratch review artifacts（task brief / report / review package）
-    ├── 单内部 reviewer（规格符合性 + 代码质量双 verdict）
-    ├── requesting-code-review（最终验证前全量审查）
+    ├── scratch review artifacts（task brief / report / review package / optional review-assets manifest）
+    ├── 单内部 reviewer（规格符合性 + 代码质量双 verdict；只读当前 manifest 命名资产）
+    ├── requesting-code-review（主审 → 修复验证 → 按强度进入独立终审；无 manifest 不扫描 `.power-agent`）
     ├── working-tree gate（dirty / 无 HEAD 先提示提交；clean 且有 HEAD 进入最终验证）
     ├── verification-before-completion（Proof Block 审计与 verification_evidence）
     └── finishing-a-development-branch（分支收尾）
@@ -123,7 +123,7 @@ requesting-code-review 在最终验证前默认强制执行；合并/PR 前不�
 |--------|--------|--------|------|
 | 需求结论 / Spec 文档 | `discuss` | `writing-plans` | 默认内联传递；按需 `docs/specs/YYYY-MM-DD-*.md` |
 | Compact exec-plan（`plan.md + review-contract.md`，按需 `context.md/tasks.md`） | `writing-plans` | 人类默认审 `review-contract.md`；`plan-impl` 必读两份材料并在 READY 校验 Gate，按需读取拆分材料 | `docs/exec-plans/active/` |
-| Scratch review artifacts | `plan-impl` / 实现子代理 | 单内部 reviewer | `.power-agent/review-runs/<run-id>/`（自忽略、可重建） |
+| Scratch review artifacts | `plan-impl` / 实现子代理 | 单内部 reviewer / 显式接收 manifest 的最终 reviewer | `.power-agent/review-runs/<run-id>/`（自忽略、per-run、可重建；资产只通过 `review-assets.md` 命名） |
 | 代码变更 | `plan-impl` 子代理 | 单内部 reviewer / `requesting-code-review`（最终验证前） | Git working-tree diff |
 | Session Log | `plan-impl` | 归档 | `docs/exec-plans/completed/` |
 | 分支处置结论 | `finishing-a-development-branch` | plan-impl / 用户 | 结构化输出 |
@@ -131,14 +131,14 @@ requesting-code-review 在最终验证前默认强制执行；合并/PR 前不�
 
 ## 子代理模式
 
-**核心原则：** 子代理是一次性的，主代理不与同一子代理进行多轮对话。
+**核心原则：** 实现/修复子代理与跨目标调用保持一次性；reviewer 仅可在同一实现目标和同一 review session 内优先验证自己的 findings。运行时不能继续原 reviewer 时，使用携带完整修复上下文的新 reviewer。详见 [ADR-0007](adr/0007-reviewer-session-continuity.md)。
 
 | 子代理类型 | 用途 | 调用者 |
 |----------|------|--------|
 | `explore` | 代码探索，返回关键文件列表 | discuss, dev-docs |
 | `tech-plan-reviewer` | 需求结论审查；中/高风险计划审查 | discuss, writing-plans |
-| 实现子代理 | POD 增量实现 | plan-impl |
-| 审查子代理 | 代码审查（按重要性使用 1-2 个并行 reviewer） | plan-impl, requesting-code-review |
+| 实现/修复子代理 | POD 增量实现与修复；每轮使用新子代理 | plan-impl |
+| 审查子代理 | 单 reviewer 多维主审；同 session 修复验证；增强审查使用全新 reviewer 独立终审 | plan-impl, requesting-code-review |
 | 验证子代理 | 最终验证 | plan-impl |
 
 **并发限制：** 最大并行度 3，超过则分批。
@@ -163,4 +163,5 @@ requesting-code-review 在最终验证前默认强制执行；合并/PR 前不�
 4. **AGENTS.md 是目录，不是百科全书**（ADR-0004）
 5. **机械化约束优于 Prompt 啰嗦** — 证据/测试 > 文字规则
 6. **证据优先** — 没有新鲜验证不得声称完成
-7. **上下文按需交接** — 大段任务、报告和 diff 通过 scratch artifacts 传递；对话只携带路径、状态和短摘要
+7. **上下文按需交接** — 大段任务、报告和 diff 通过 scratch artifacts 传递；review assets 按 run 隔离，只通过显式 manifest 交接，无 manifest 不扫描
+8. **实现/修复一次性，Reviewer 同会话连续** — reviewer 只在同一目标内验证自己的 findings，不能继续时回退新 reviewer（ADR-0007）

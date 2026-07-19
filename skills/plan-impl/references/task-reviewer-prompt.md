@@ -14,10 +14,26 @@ Task:
     - Implementer report: {REPORT_PATH}
     - Review package: {REVIEW_PACKAGE_PATH}
     - Global constraints: {GLOBAL_CONSTRAINTS}
+    - Review mode: {REVIEW_MODE}
+    - Repair context: {REPAIR_CONTEXT_PATH_OR_NOT_APPLICABLE}
+    - Review assets manifest: {REVIEW_ASSETS_MANIFEST_PATH_OR_NOT_APPLICABLE}
+    - Review run root: {REVIEW_RUN_ROOT_OR_NOT_APPLICABLE}
+    - Review basis: {REVIEW_BASIS}
+    - Allowed asset sensitivity: {ALLOWED_ASSET_SENSITIVITY}
 
     先读取 task brief，它是当前任务要求的唯一来源；再读取 implementer report 和 review package。不要要求 orchestrator 把这些文件重新粘贴进 prompt。
 
     review package 包含工作树状态、tracked diff 和 untracked diff。一次读取 package；只有某个必须判断的 hunk 在函数中间截断时，才额外读取该 changed file，并在报告中说明。
+
+    `Review mode=initial` 时，Repair context 必须为 `not_applicable`，对当前 package 做完整规格与质量审查。`Review mode=fix_verification` 时，先读取 repair context；它必须包含原 findings 及证据、修复说明、修复增量和新验证证据。验证原 findings 是否关闭，检查修复增量和受影响路径，并基于新 package 产生新的双 verdict；不得沿用旧结论。repair context 缺失或字段不完整时返回 `BLOCKED`，不得猜测。
+
+    ## Review Assets
+
+    Review assets manifest 为 `not_applicable` 时，Review run root 也必须为 `not_applicable`，且不得扫描 `.power-agent`、`review-runs/` 或 `assets/`。提供 manifest 时，先以不跟随链接的元数据检查和解析路径验证 Review run root 及其父组件均非 symlink、解析后仍是仓库内当前 run，并确认 manifest 的路径与解析结果都严格等于 `<Review run root>/review-assets.md`；不满足时不得读取，只报告 evidence gap。随后只读取其中显式列出且通过以下校验的资产：path 是 `<Review run root>/assets/` 下的普通文件相对路径，不是绝对路径，不含空段、`.`、`..` 或 symlink，解析后仍位于同一 `assets/`；scope 同时匹配当前 task/batch 和当前受影响的 `paths=` 或 `finding=`；freshness 匹配当前 Review basis；source 可追溯；sensitivity 省略时为 `normal`，且必须包含在 Allowed asset sensitivity 中。
+
+字段缺失、未知、不可比较、不匹配，或文件缺失/越界时，不读取或不采信该资产，只记录 evidence gap；不得遍历目录寻找替代证据。验收相关缺口写入 `Cannot Verify From Diff`，其它资产校验结果写入 `Checks Run`。
+
+证据冲突时按以下顺序判断：当前代码与 review package > task brief 与 global constraints > 与当前 basis 匹配的新验证证据 > repair context / findings > implementer report > 其它 review assets。资产不能替代独立代码判断。
 
     ## Review Boundary
 
@@ -125,4 +141,7 @@ Task:
 - `BLOCKED`：把 Critical/Important finding 交给新的 fix subagent；`plan_mandated` 只允许交给人类决定，不能自行修成与计划相反。
 - `DONE_WITH_CONCERNS`：orchestrator 必须逐项解决 `Cannot Verify From Diff`。确认真实缺口时按失败处理并修复、复审；确认要求已满足时记录证据后才能完成 task/batch。
 - `DONE`：可记录当前 task/batch review clean。
-- 修复后生成新的 review package，使用同一 prompt 做完整复审，不沿用旧 verdict。
+- 修复后生成新的 review package 和 repair context。repair context 必须包含原 findings 及证据、修复说明、修复增量和新验证证据。
+- 优先继续提出 finding 的 reviewer，以 `Review mode=fix_verification` 消费 repair context，验证原问题、修复增量和受影响路径，并产生新的双 verdict。
+- 运行时不支持继续同一 reviewer 或原 reviewer 不可用时，派新的替代 reviewer，并提供 task brief、实现 report、新 review package 和完整 repair context。
+- 修复导致任务范围、验收或关键风险边界实质变化时，使用 `Review mode=initial` 重新做完整内部审查，而不是继续窄范围修复验证。

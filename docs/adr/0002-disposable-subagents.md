@@ -1,9 +1,13 @@
 ---
 type: Decision
-status: accepted
+status: superseded
+superseded_by: 0007-reviewer-session-continuity.md
+superseded_at: 2026-07-19
 ---
 
 # ADR-0002: 子代理一次性原则
+
+> **状态：** superseded by [ADR-0007](0007-reviewer-session-continuity.md)（2026-07-19）
 
 ## 背景
 

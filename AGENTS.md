@@ -32,12 +32,12 @@ discuss skill [需求]      → 内联需求结论（按需 docs/specs/*.md）
     ↓
 writing-plans             → compact exec-plan（plan.md + review-contract.md，按需 context/tasks）→ low self-review / medium/high 独立 reviewer
     ↓
-plan-impl          → BOOTSTRAP(using-git-worktrees) → 中小任务可走 plan-impl-lightweight → 优先 team 模式，缺失 team 工具时回退并行/单代理委派 → scratch artifacts + 单 reviewer 双 verdict → 全量审查 → 工作区检查（dirty / 无 HEAD 先提交）→ 验证 → 分支收尾
+plan-impl          → BOOTSTRAP(using-git-worktrees) → 中小任务可走 plan-impl-lightweight → 优先 team 模式，缺失 team 工具时回退并行/单代理委派 → scratch artifacts + 单 reviewer 双 verdict → 分层全量审查（常规主审 / 增强独立终审）→ 工作区检查（dirty / 无 HEAD 先提交）→ 验证 → 分支收尾
 ```
 
 **调试路径**: `systematic-debugging` → `proof-oriented-development` → 全量审查 → 工作区检查 → `verification-before-completion`
 
-**最终验证前审查**: `requesting-code-review`（全量审查）在 `verification-before-completion` 前默认强制执行；合并/PR 前不得跳过未通过的审查结果，除非用户明确要求跳过并记录原因。`dev-docs-maintain`（文档维护）是按需触发的普通 Skill，不是每次开发执行的固定阶段。
+**最终验证前审查**: `requesting-code-review`（全量审查）在 `verification-before-completion` 前默认强制执行；常规审查由单主审收敛，增强审查在主审收敛后增加全新 reviewer 独立终审；合并/PR 前不得跳过未通过的审查结果，除非用户明确要求跳过并记录原因。`dev-docs-maintain`（文档维护）是按需触发的普通 Skill，不是每次开发执行的固定阶段。
 
 ## Skill 速查
 
@@ -65,7 +65,7 @@ plan-impl          → BOOTSTRAP(using-git-worktrees) → 中小任务可走 pla
 | 规则 | 说明 |
 |------|------|
 | 依赖方向 | 只能从上层指向下层，禁止反向 |
-| 子代理一次性 | 不重用子代理，每次启动新代理 |
+| 子代理生命周期 | 实现/修复子代理与跨目标调用保持一次性；同一 review session 内优先由原 reviewer 验证其 findings，不能继续时使用携带完整修复上下文的新 reviewer |
 | 规划审查与证据 Gate | discuss / writing-plans 通过独立审查交棒；实现阶段使用轻量启动通知，完成声明依赖 Proof Block 与验证证据（ADR-0006） |
 | 证据优先 | 没有运行验证不得声称完成 |
 | 根因优先 | 没有根本原因分析没有修复 |
