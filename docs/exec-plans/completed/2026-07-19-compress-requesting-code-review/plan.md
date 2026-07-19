@@ -336,4 +336,3 @@ runner:
 - 终审反馈评估：核心担忧成立，`决策=采纳`。已在 `context.md` prose 与 `runner_contract.runner_identity` 固定 exact regex group、UTF-8 和不增删换行规则；复算 digest 仍为 r15 运行前记录的 `e48c6a97...8e60b`，runner body 未改变，故无需重跑模型 Proof。
 - 独立终审修复验证：`CompressionIndependentR15` 按固定算法复算 runner SHA=`e48c6a97...8e60b`，确认 runner body 未变、metadata 不参与执行，无需重跑 r15 模型 Proof；既有 package SHA 与全部关键不变量无新增问题。最终 verdict=`通过`，implementation_risk=`低`，blockers=`无`，next_action=`继续流程`。
 - 最终工作树验证：`git diff --check HEAD` 无输出；Bundle tests 37/37 OK；Bundle scan structural findings=0；runner/package hashes 与 r15 固定值一致；核心压缩率 21.45%，全包压缩率 30.08%；已知 `/tmp` 临时证明文件全部 absent。
-
