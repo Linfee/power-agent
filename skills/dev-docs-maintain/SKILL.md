@@ -7,7 +7,7 @@ description: |-
 
 # 维护既有 Docs Bundle
 
-本 Skill 只维护目标仓库中已经存在的 `docs/` OKF Knowledge Bundle，通过“确定性扫描 → 局部语义验证 → 修复 → 单写者登记 → 再扫描”保持它与仓库一致。新建长期知识应使用 `dev-docs`，实施计划应使用 `writing-plans`。
+本 Skill 只维护目标仓库中已经存在的 `docs/` OKF Knowledge Bundle，通过“确定性扫描 → 局部语义验证 → 修复 → 单写者登记 → 再扫描”保持它与仓库一致。新建长期知识应使用 `dev-docs`；软件资产变更的开发计划应使用 `writing-plans`。
 
 ## 路由判定
 
@@ -20,7 +20,7 @@ description: |-
 | 修复 scanner 已发现且证据明确的漂移 | 本 Skill `fix-safe` |
 | 移动、拆分、合并 Concept 或重构目录 | 本 Skill `full-maintain`；会实际写入长期 Bundle、链接和索引。结构性写入仍是长期文档写入，不能因未新增语义事实就判断为“没有写文档” |
 | 登记已完成的语义或可执行验证 | 本 Skill；仍须先 scan、核对证据、单写者 record、再 scan |
-| 实施计划、迁移计划、任务拆解 | `writing-plans` |
+| 软件资产变更的实施、重构或迁移计划 | `writing-plans` |
 | RFC、Proposal、普通设计文档共创 | `doc-coauthoring` |
 | README、CHANGELOG、发布公告 | 不属于本 Skill |
 

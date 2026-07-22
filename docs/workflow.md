@@ -12,9 +12,25 @@ scope:
 
 ## 核心设计原则
 
-**Skill 是执行单元，人类可按需参与决策。** 每个 Skill 只做一件事，通过明确的输入/输出协议与其他 Skill 协作。规划阶段以独立审查闭合可执行性；实现阶段使用轻量启动通知，Agent 自主闭环，worktree 沙盒兜底（ADR-0006）。
+**Skill 是执行单元，人类可按需参与决策。** 每个 Skill 只做一件事，通过明确的输入/输出协议与其他 Skill 协作。开发规划阶段以独立审查闭合可执行性；开发实施阶段使用轻量启动通知，Agent 自主闭环，worktree 沙盒兜底（ADR-0006）。
 
-**产出物是协调介质。** 默认链路中，discuss 经独立审查通过的需求结论由 writing-plans 折叠进 exec-plan；只有用户或流程明确需要时才额外落盘 spec 文档。Skill 之间的长期状态主要通过 exec-plan 文件、代码、docs 文档传递，避免把上游讨论记录复制成第二套真源。
+**产出物是协调介质。** 开发默认链路中，discuss 经独立审查通过的需求结论由 writing-plans 折叠进 exec-plan；只有用户或流程明确需要时才额外落盘 spec 文档。Skill 之间的长期状态主要通过开发 exec-plan 文件、代码、docs 文档传递，避免把上游讨论记录复制成第二套真源。
+
+## 开发计划边界与非开发路由
+
+`writing-plans`、`plan-impl` 与 `plan-impl-lightweight` 只处理会修改代码、测试、构建/运行配置、自动化、Skill/prompt 或开发工作流等软件资产的开发工作；“计划”“待办”或“任务拆解”本身不是触发条件。
+
+按当前主要交付物选择单一入口，并在状态改变时交棒：
+
+| 当前主要交付物 | 主入口 | 交棒 / 排除 |
+|---|---|---|
+| 根因未知的错误、测试失败、性能退化或异常行为 | `systematic-debugging` | 不直接进入 exec-plan；确认修复边界后按范围进入开发实施。 |
+| 软件资产变更 | `writing-plans → plan-impl`（复杂）或开发轻量路径（明确局部） | 附带的长期知识更新在实现验证后按需交给 `dev-docs`。 |
+| 项目 `docs/` 的长期系统知识、ADR、Playbook 或 reference | `dev-docs` / `dev-docs-maintain` | 不创建 exec-plan；读者文档但不属于知识 Bundle 时转 `doc-coauthoring`。 |
+| 面向读者的 RFC、proposal、spec 或其他实质文档 | `doc-coauthoring` | 范围、流程或验收未定时先转 `discuss`。 |
+| 研究、运营、个人事务、信息整理或普通工作 | 宿主原生任务清单或直接推进 | 不调用开发实施状态机。 |
+
+开发工作流图只描述软件资产变更路径；上游 `discuss` 仅在结论将导向软件实施时交给 `writing-plans`。
 
 ## 状态协议速查
 
@@ -37,34 +53,34 @@ scope:
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│                    需求阶段                               │
+│                    开发需求阶段                           │
 │                                                         │
-│   discuss skill                                         │
-│   输入：模糊需求                                           │
+│   discuss skill（仅范围、流程或验收未收敛时）               │
+│   输入：将导向软件实施的模糊需求                              │
 │   产出：内联 Discussion Conclusion / 需求结论                │
 │        （仅按需落盘 docs/specs/YYYY-MM-DD-<topic>.md）       │
 │   审查：独立 reviewer 子代理审查                              │
 └─────────────────────┬───────────────────────────────────┘
-                      │ 经审查通过的需求结论（或用户直接描述功能）
+                      │ 经审查通过的开发需求结论（或用户直接描述软件变更）
                       ▼
 ┌─────────────────────────────────────────────────────────┐
-│                 规划阶段                                  │
+│                 开发规划阶段                               │
 │                                                         │
 │   writing-plans skill                                   │
-│   输入：需求结论 / spec 文档 / 用户描述                       │
+│   输入：开发需求结论 / spec 文档 / 用户描述 + 软件资产上下文    │
 │   产出：docs/exec-plans/active/YYYY-MM-DD-title/         │
 │           plan.md + review-contract.md                  │
 │           （按需拆出 context.md / tasks.md）               │
 │   gate：low=self-review；medium/high=独立 reviewer             │
 └─────────────────────┬───────────────────────────────────┘
-                      │ compact exec-plan（人类默认只审 review-contract.md）
+                      │ compact 开发 exec-plan（人类默认只审 review-contract.md）
                       ▼
 ┌─────────────────────────────────────────────────────────┐
-│                 实现阶段                                  │
+│                 开发实施阶段                               │
 │                                                         │
 │   plan-impl skill（状态机自主闭环）                  │
 │   ├── BOOTSTRAP：using-git-worktrees 检测/建立隔离工作区      │
-│   ├── PATH：中小任务可走 plan-impl-lightweight              │
+│   ├── PATH：中小开发任务可走 plan-impl-lightweight            │
 │   ├── EXECUTING：依赖驱动批次并行 + conflict_check/review/fix │
 │   ├── REVIEWING：requesting-code-review 全量审查            │
 │   ├── WORKTREE GATE：dirty || !has_head → 待提交；clean && has_head → VERIFYING │
@@ -76,7 +92,7 @@ scope:
    systematic-debugging skill
        └── [status=FIXABLE && execution_authorization=granted + matching basis] → proof-oriented-development skill
                └── Proof Block → requesting-code-review → 工作区检查 → verification-before-completion skill
-       └── [status=ESCALATE] → discuss 或 writing-plans
+       └── [status=ESCALATE] → `discuss`，或仅在后续为软件实施时转 `writing-plans`
 ```
 
 ---
@@ -97,21 +113,23 @@ scope:
 5. 仅在真实分歧存在时呈现 2-3 个产品方案或上层技术方向对比，先给推荐，再说明取舍。
 6. 默认产出内联 `Discussion Conclusion` / `需求结论`，先自查占位符、歧义、范围膨胀，以及是否滑入可直接编码的实现细节。
 7. 启动独立 reviewer 子代理审查；blocking issue 修正后重新审查。
-8. reviewer 通过后交给 `writing-plans`；只有用户明确要求、合规/流程要求或需要长期产品资产时，才按需落盘 spec/doc。
+8. reviewer 通过后，只有结论将导向软件实施时才交给 `writing-plans`；只有用户明确要求、合规/流程要求或需要长期产品资产时，才按需落盘 spec/doc。
 
 **产出：** 内联 `Discussion Conclusion` / `需求结论`；按需 `docs/specs/YYYY-MM-DD-<topic>.md`
 
-**交棒给：** `writing-plans`（需求结论经独立审查通过后）
+**交棒给：** `writing-plans`（仅经独立审查通过且将导向软件实施的需求结论）
 
 **不做：** 不写任何代码，不创建 exec-plan，不做接口签名、数据表/字段、库选型、类/函数拆分、文件路径等实现细节；允许讨论影响范围/验收/planning 的上层技术方向。结论存在 planning 阻塞缺口时，先修复并重新审查。
 
 ---
 
-### writing-plans — 实现计划创建
+### writing-plans — 开发实现计划创建
 
-**触发：** 用户要求创建 exec-plan，discuss 需求结论经独立审查通过后，或 `dev-docs` skill 路由。
+**触发：** 用户要求创建软件资产变更的开发 exec-plan，或经独立审查通过且将导向软件实施的 discuss 需求结论。
 
-**输入：** 经独立审查通过的需求结论 / spec 文档 / 用户描述 + 相关代码库上下文
+**输入：** 经独立审查通过的开发需求结论 / spec 文档 / 用户描述 + 相关代码库上下文
+
+**非开发转向：** 长期项目知识用 `dev-docs` / `dev-docs-maintain`，读者文档用 `doc-coauthoring`，普通工作用宿主原生清单；这些请求不创建 exec-plan。
 
 **核心流程：**
 1. 读取需求结论、spec 或用户描述，以及直接相关代码/文档。
@@ -122,15 +140,18 @@ scope:
 6. `low` 直接交棒；`medium/high` 增加一个独立 `tech-plan-reviewer`，通过后直接交棒。
 7. 提供执行选项（推荐 `plan-impl`）。
 
-**产出：** `docs/exec-plans/active/YYYY-MM-DD-title/plan.md + review-contract.md`，按需 `context.md / tasks.md`
+**产出：** `docs/exec-plans/active/YYYY-MM-DD-title/plan.md + review-contract.md`，按需 `context.md / tasks.md`；只用于开发工作。
 
-**交棒给：** `plan-impl`
+**交棒给：** `plan-impl`（开发 exec-plan）
+
 
 ---
 
-### plan-impl — 执行编排
+### plan-impl — 开发实施编排
 
-**触发：** writing-plans 交棒，或用户手动恢复执行。
+**触发：** writing-plans 的开发 exec-plan 交棒，或用户手动恢复开发实施。
+
+**非开发转向：** 非开发计划、普通清单和内容/运营工作不进入状态机，按本节上方的路由表处理。
 
 **状态机：** BOOTSTRAP → READY → EXECUTING → REVIEWING → 工作区检查（dirty / 无 HEAD 先待提交；clean 且有 HEAD 进入 VERIFYING）→ VERIFYING → FINALIZING → DONE（异常：ESCALATED / CANCELLED）
 
@@ -143,25 +164,26 @@ scope:
 6. VERIFYING：调用 `verification-before-completion` 审计 Proof Block / 等价证据块，必要时补跑最小额外验证，并输出 `verification_evidence`
 7. FINALIZING：调用 `finishing-a-development-branch`，按收尾状态归档或保留恢复点
 
-**产出：** 实现代码变更 + Session Log + 归档 exec-plan
+**产出：** 软件资产变更 + Session Log + 归档开发 exec-plan
 
-**调用链：** `plan-impl-lightweight`（可选轻量分支）→ proof-oriented 实现子代理（Proof Block 写入 report artifact）→ runner 单 reviewer 双 verdict → `requesting-code-review`（最终验证前）→ 工作区检查（dirty / 无 HEAD 先提交）→ `verification-before-completion` → `finishing-a-development-branch`
+**调用链：** `plan-impl-lightweight`（可选轻量开发分支）→ proof-oriented 实现子代理（Proof Block 写入 report artifact）→ runner 单 reviewer 双 verdict → `requesting-code-review`（最终验证前）→ 工作区检查（dirty / 无 HEAD 先提交）→ `verification-before-completion` → `finishing-a-development-branch`
+
 
 `requesting-code-review` 是最终验证前默认强制的全量审查编排器；仅当用户明确要求跳过时可跳过，并在 Session Log 记录原因。`dev-docs-maintain` 是在 docs 健康检查、漂移修复或 verification ledger 登记需要时按需触发的普通 Skill，不是每次开发执行的固定阶段。
 
 ---
 
-### plan-impl-lightweight — 轻量执行路径
+### plan-impl-lightweight — 轻量开发实施路径
 
-**触发：** 中等偏小任务，边界清楚、风险较低、局部验证足以证明完成。
+**触发：** 中等偏小的软件资产改动，边界清楚、风险较低、局部验证足以证明完成。
 
 **核心流程：** `scope_check -> execute -> targeted_verify -> review -> fix_once(最多一次)`。
 
 **输出：** `状态：DONE / DONE_WITH_CONCERNS / BLOCKED / UNKNOWN` + `path_decision: lightweight / escalate_to_full / ask_user`。
 
-**交棒规则：** `path_decision=lightweight` 且 `DONE*` 可继续；`ask_user` 暂停等待澄清；`escalate_to_full` 回到 `plan-impl` 完整路径或先创建 exec-plan。
+**交棒规则：** `path_decision=lightweight` 且 `DONE*` 可继续；`ask_user` 暂停等待澄清；`escalate_to_full` 回到 `plan-impl` 完整开发路径或先创建开发 exec-plan。
 
-**不做：** 不做 team/多代理编排，不处理恢复点或多 batch 复杂依赖，不承担分支收尾。
+**不做：** 不做 team/多代理编排，不处理恢复点或多 batch 复杂依赖，不承担分支收尾，也不处理非开发工作。
 
 
 ---
@@ -190,7 +212,7 @@ scope:
 
 性能验收或存在合理性能/稳定性影响面时，POD 与 VBC 必须消费风险相称、同口径的 baseline/candidate 或重复观测证据；无影响面可记录 `not_applicable`，不机械要求 benchmark。
 
-**路由：** `FIXABLE + granted + matching basis` → `proof-oriented-development`；`FIXABLE + missing|unknown|basis mismatch` → 保留 handoff 并请求最小授权；`ESCALATE` → `discuss` 或 `writing-plans`；其它状态继续调查或解除阻塞。只有继续调查本身需要越权动作时才因授权进入 `BLOCKED`。
+**路由：** `FIXABLE + granted + matching basis` → `proof-oriented-development`；`FIXABLE + missing|unknown|basis mismatch` → 保留 handoff 并请求最小授权；`ESCALATE` → `discuss`，只有决策将导向软件资产变更时再交给 `writing-plans`；其它状态继续调查或解除阻塞。只有继续调查本身需要越权动作时才因授权进入 `BLOCKED`。
 
 ---
 
@@ -282,7 +304,7 @@ Review assets 只读权威当前 run root 内 manifest 命名且通过 containme
 
 **触发：** 需要把实现后稳定系统事实回写到 `docs/`，或维护架构、领域、开发流程、集成参考与有依据的 ADR 时。
 
-**路由逻辑：** exec-plan 直接交给 `writing-plans`；普通 `docs/` Concept 使用具有非空 `type` 的 YAML frontmatter；ADR 使用 `type: Decision` 与 YAML `status`。验证运行状态仅由 `docs/.okf/verification.json` ledger 表示。
+**路由逻辑：** 软件资产变更的开发 exec-plan 才交给 `writing-plans`；长期项目知识使用 `dev-docs`，Bundle 健康、漂移和验证登记使用 `dev-docs-maintain`；普通 `docs/` Concept 使用具有非空 `type` 的 YAML frontmatter；ADR 使用 `type: Decision` 与 YAML `status`。验证运行状态仅由 `docs/.okf/verification.json` ledger 表示。
 
 ---
 

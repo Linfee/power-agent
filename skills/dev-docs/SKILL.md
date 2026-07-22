@@ -1,7 +1,7 @@
 ---
 name: dev-docs
 description: |-
-  当需要把已有代码或权威来源中的稳定系统事实、边界、决策依据或集成参考写入或修订 `docs/` 长期知识时使用。不要用于裸“写文档”、README/公告、会话记录或执行计划；计划交给 writing-plans。
+  当需要把已有代码或权威来源中的稳定系统事实、边界、决策依据或集成参考写入或修订 `docs/` 长期知识时使用。不要用于裸“写文档”、README/公告、会话记录或执行计划；软件资产变更的开发计划交给 writing-plans。
   Triggers: 文档知识沉淀, 系统事实回写, 架构事实更新, 领域知识维护, ADR 依据记录, 集成参考沉淀, dev-docs.
 ---
 
@@ -28,7 +28,7 @@ description: |-
 
 ### 委派或跳过
 
-- 实施计划、重构计划、迁移计划、任务拆解：委派给 `writing-plans`，不得在本 Skill 中再建计划。
+- 会修改代码、测试、配置、自动化、Skill/prompt 或开发工作流的实施、重构、迁移计划：委派给 `writing-plans`，不得在本 Skill 中再建计划；纯文档维护、知识重组或普通任务不进入 exec-plan。
 - 临时讨论、一次性排障过程、会话级执行细节：默认不进入长期知识库。
 - 局部且显然的实现细节：让代码和测试表达；只有它形成稳定边界、不变量、跨文件关系或后续工作约束时才文档化。
 - README 营销内容、发布公告、纯代码注释和没有长期消费场景的普通文稿不属于本 Skill。
@@ -44,7 +44,7 @@ description: |-
 | 新建或修订稳定系统事实、领域边界、Playbook、Reference、ADR | `dev-docs` |
 | 检查既有 Bundle 健康、验证 freshness、修复扫描发现的漂移、登记验证 | `dev-docs-maintain` |
 | 移动、拆分、合并 Concept 或重构目录 | `dev-docs-maintain` 的 `full-maintain`；若同时改变知识语义，再由 `dev-docs` 修订内容 |
-| 实施计划、迁移计划、任务拆解 | `writing-plans` |
+| 软件资产变更的实施、重构或迁移计划 | `writing-plans` |
 | 共同起草 RFC、Proposal、普通设计文档并做读者验证 | `doc-coauthoring` |
 | README、CHANGELOG、发布公告、营销文稿 | 不属于本 Skill |
 | 私有实现调整且职责、边界、公开契约和不变量未变 | 无需长期文档变更 |
@@ -121,7 +121,7 @@ Payment Domain 定义支付状态流转和重试约束。
 
 ## 执行流程
 
-1. **定位长期知识**：读取 `AGENTS.md`、相关入口和 `docs/index.md`（如存在），判断是更新当前事实、记录 ADR、补来源还是交给 `writing-plans`。
+1. **定位长期知识**：读取 `AGENTS.md`、相关入口和 `docs/index.md`（如存在），判断是更新当前事实、记录 ADR、补来源，还是将软件资产变更的开发计划交给 `writing-plans`。
 2. **建立最小证据集**：读取目标 Concept、直接链接、相关 ADR 与直接相关的代码、测试、配置和 Schema；先应用敏感资料边界。
 3. **修订权威 Concept**：当前事实直接描述现在是什么；已有稳定 Concept 优先更新；仅在知识确实独立且长期复用时新建。
 4. **维护决策、链接与来源**：ADR 只记录真实且耐久的权衡；accepted ADR 不重写历史，改变决定时新建 ADR 并建立 supersede 关系。补充有语义的链接、Citations、必要的 index/log。

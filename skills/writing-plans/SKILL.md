@@ -1,13 +1,13 @@
 ---
 name: writing-plans
 description: |-
-  执行计划编写 Skill。把需求、讨论结论或规格文档转成可执行 exec-plan；用户要求创建实现计划或任务拆解时触发。
-  Triggers: 创建 exec-plan, 创建实现计划, writing-plans, 任务拆解, 实现计划.
+  开发执行计划编写 Skill。把将修改软件资产的需求、讨论结论或规格文档转成可执行 exec-plan；用户要求创建开发实施计划、开发 exec-plan 或工程任务拆解时触发。
+  Triggers: 创建开发 exec-plan, 创建开发实施计划, 开发任务拆解, writing-plans.
 ---
 
 # Writing Plans
 
-把需求、讨论结论或规格文档转成可执行 exec-plan。计划应给强执行 Agent 清楚的目标、边界、关键决策与证明方式，避免把实现写成机械脚本。
+把会修改软件资产的需求、讨论结论或规格文档转成可执行 exec-plan。计划应给强执行 Agent 清楚的目标、边界、关键决策与证明方式，避免把实现写成机械脚本。
 
 ---
 
@@ -19,30 +19,43 @@ description: |-
 - 只在证据昂贵、任务图复杂、多 Agent 协作、上下文过大或可读性明显受损时，拆出可选 `context.md` / `tasks.md`。
 - 所有计划先做 inline self-review，再按风险决定是否增加独立 `tech-plan-reviewer`。
 
-## 何时使用 / 何时跳过
+## 适用范围与路由
 
-使用：
+### 使用
 
-- 用户要求创建实现计划、exec-plan、任务拆解或实施计划。
-- 已有 `discuss` / spec，需要转为可执行但不过度脚本化的实现计划。
-- 需求跨模块、存在技术决策、验收或证明策略需要提前锁定。
+仅在后续工作会修改代码、测试、构建或运行配置、自动化、Skill/prompt 或开发工作流等软件资产时使用：
 
-跳过并说明去向：
+- 用户要求创建开发实施计划或开发 exec-plan。
+- 已有 `discuss` / spec，需要为软件实现、重构、bugfix 或工程迁移形成可执行计划。
+- 开发需求跨模块，或技术决策、验收、证明策略需要在实施前锁定。
+
+“计划”“待办”或“任务拆解”本身不是触发条件；先按当前主要交付物选择入口：
+
+| 当前主要交付物 | 去向 |
+|---|---|
+| 根因未知的错误、测试失败、性能退化或异常行为 | `systematic-debugging`；确认可执行修复边界后再进入开发实施。 |
+| 项目 `docs/` 的长期系统知识、ADR、Playbook 或 reference | `dev-docs`；Bundle 健康、漂移或验证登记用 `dev-docs-maintain`。 |
+| 面向读者的 RFC、proposal、spec 或其他实质文档成稿 | `doc-coauthoring`；范围、流程或验收未定时先用 `discuss`。 |
+| 研究、运营、个人事务、信息整理或其他普通工作 | 宿主原生任务清单或直接推进，不创建 `docs/exec-plans`。 |
+
+若开发变更附带文档更新，开发变更仍是主入口；实现验证后再按需交给 `dev-docs`。`discuss` 只有在结论将导向软件实施时才交给本 Skill。
+
+### 开发路径中的跳过条件
 
 - 单文件小改、拼写/文案/格式调整。
 - 明确且局部的 bugfix，且无跨模块设计决策。
-- 已有完整、可直接执行的任务清单且无新技术决策。
+- 已有完整、可直接执行的开发任务清单且无新技术决策。
 
-命中跳过条件时，建议直接实现；若需求仍不清晰，回到 `discuss`。
+命中跳过条件时，直接实施；若开发需求仍不清晰，回到 `discuss`。
 
 ## 边界
 
 - `discuss` 的上层技术方向是范围、验收与 planning 约束，不是完整实现设计。
-- `writing-plans` 负责用仓库证据补齐实现级架构/API/模型/任务边界；不要把可由代码证据闭合的技术细节退回 `discuss`。
-- 执行交给 `plan-impl`；本 skill 不直接修改业务代码。
+- `writing-plans` 负责用仓库证据补齐开发实现级架构/API/模型/任务边界；不要把可由代码证据闭合的技术细节退回 `discuss`。
+- 执行交给 `plan-impl`；本 Skill 不直接修改业务代码。
 - 不默认 strict TDD；只有用户明确要求 TDD / 先写失败测试 / Red-Green-Refactor 时，才把 strict TDD 写入 Proof Strategy。
 - 不写逐行改动、机械步骤、私有 helper 设计、局部命名决策或每步几分钟的执行脚本。
-- 不为简单任务强行 planning，不新增默认计划文档，不删除 `review-contract.md` 人审入口。
+- 不为简单开发任务强行 planning，不新增默认计划文档，不删除 `review-contract.md` 人审入口。
 
 ## 输入
 

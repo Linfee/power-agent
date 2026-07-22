@@ -67,7 +67,7 @@ status: reviewed
 
 ### 待确认问题（Open Questions）
 #### Blocking
-- [会阻塞 writing-plans 的问题；无则写“无”]
+- [会阻塞结论交棒或其后续实施的问题；无则写“无”]
 
 #### Non-blocking
 - [可后续确认的问题；无则写“无”]

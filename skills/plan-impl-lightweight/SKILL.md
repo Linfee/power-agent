@@ -1,13 +1,13 @@
 ---
 name: plan-impl-lightweight
 description: |-
-  轻量执行 Skill。处理边界清楚、可局部验证的中小任务；用户要求轻量执行、局部验证或中小任务执行时触发。
-  Triggers: 轻量执行, 中小任务执行, 局部验证, proof-oriented 实现, 轻量审查, 升级 plan-impl.
+  轻量开发实施 Skill。处理边界清楚、可局部验证的软件资产改动；用户要求轻量开发实施、局部开发验证或中小开发任务执行时触发。
+  Triggers: 轻量开发实施, 中小开发任务执行, 局部开发验证, proof-oriented 实现, 轻量开发审查, 升级 plan-impl.
 ---
 
 # Lightweight Exec Path
 
-面向中等偏小任务的轻量执行路径。目标是在不启动 team、多任务编排或恢复机制的情况下，仍保留边界检查、`proof-oriented-development`、局部验证和有限 review/fix 闭环。
+面向中等偏小软件资产改动的轻量执行路径。目标是在不启动 team、多任务编排或恢复机制的情况下，仍保留边界检查、`proof-oriented-development`、局部验证和有限 review/fix 闭环。
 
 ---
 
@@ -30,6 +30,12 @@ description: |-
 - 不在证据不足时输出完成声明。
 - 不允许无限 review/fix 循环。
 
+### 不适用与转向
+
+- 本 Skill 不处理研究、运营、内容制作、一般清单或项目文档维护；它们不因“轻量执行”或“中小任务”进入开发实施流程。
+- 根因未知的异常先用 `systematic-debugging`；长期项目知识用 `dev-docs` / `dev-docs-maintain`；读者文档用 `doc-coauthoring`；范围或验收未定的需求用 `discuss`；其余普通工作使用宿主原生清单或直接推进。
+- 只有当前主要交付物是代码、测试、配置、自动化、Skill/prompt 或开发工作流等软件资产时，才继续 `scope_check`。
+
 ---
 
 ## Eligibility
@@ -45,6 +51,7 @@ description: |-
 - 无明显 team/并行收益，或收益低于协调成本。
 - 不涉及安全、权限、密钥、支付、数据一致性或外部发布风险。
 - 当前工作树变更可以安全区分本次任务边界。
+- 当前增量必须修改软件资产，而非仅产出研究、文稿、运营结果或普通任务清单。
 
 ### 禁止条件
 

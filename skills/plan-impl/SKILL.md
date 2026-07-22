@@ -1,13 +1,13 @@
 ---
 name: plan-impl
 description: |-
-  Exec-plan 执行 Skill。执行或恢复 compact exec-plan，并完成实现、审查、验证和收尾；用户要求执行计划或恢复执行时触发。
-  Triggers: 执行 exec-plan, 恢复执行, run plan, plan-impl.
+  开发 exec-plan 实施编排 Skill。执行或恢复修改软件资产的 compact exec-plan，并完成开发实施、审查、验证和收尾；用户要求执行开发 exec-plan 或恢复开发实施时触发。
+  Triggers: 执行开发 exec-plan, 恢复开发实施, run development plan, plan-impl.
 ---
 
 # Plan Implementation
 
-作为 exec-plan 执行编排器，负责加载与恢复、依赖分析、批次调度、审查收敛、验证、收尾与归档。
+作为开发 exec-plan 执行编排器，负责加载与恢复、依赖分析、批次调度、审查收敛、验证、收尾与归档。
 
 ---
 
@@ -24,6 +24,13 @@ description: |-
 - 最终全量审查后通过 `WORKTREE_GATE` 路由待提交提示或 `verification-before-completion`。
 - 在收尾阶段串联 `finishing-a-development-branch`。
 
+### 不适用与转向
+
+- 本 Skill 只处理会修改软件资产的开发计划；“执行计划”“继续计划”或普通任务清单本身不能进入状态机。
+- 根因未知的异常先交给 `systematic-debugging`；只有取得可执行修复边界后，才按范围直接实施或回到 `writing-plans`。
+- 项目长期知识、Bundle 维护、读者文档和需求收敛分别交给 `dev-docs` / `dev-docs-maintain`、`doc-coauthoring`、`discuss`；研究、运营和其他普通工作使用宿主原生清单或直接推进。
+- 非开发工作不得创建 scratch review artifacts、进入 `WORKTREE_GATE` 或写入 `docs/exec-plans`。
+
 ### 不做什么
 
 - 不把 `review-contract.md` 当第二套计划。
@@ -38,6 +45,7 @@ description: |-
 - `context.md` 可选：补充证据缓存，不覆盖 `plan.md`。
 - `tasks.md` 可选：仅用于复杂任务图、多 Agent 分发或长交接。
 - 任一拆分文档与 `plan.md` 冲突时，以 `plan.md` 为准；若冲突影响执行，回到 `writing-plans` 修订。
+- `plan.md` 必须明确其目标是软件资产变更；若计划只描述研究、内容、运营、项目文档维护或普通任务，拒绝启动并按上述去向路由。
 
 ---
 

@@ -30,6 +30,6 @@ timestamp: 2026-07-10T00:00:00Z
 
 - 新建或修订稳定系统事实、领域边界、Playbook、Reference 或 ADR，使用 [`dev-docs`](../skills/dev-docs/SKILL.md)。
 - 检查既有 Bundle 健康、验证 freshness、修复已发现漂移或登记验证，使用 [`dev-docs-maintain`](../skills/dev-docs-maintain/SKILL.md)；Concept 重组使用其 `full-maintain`。
-- 实施计划和任务拆解交给 [`writing-plans`](../skills/writing-plans/SKILL.md)；普通 RFC、Proposal 和设计文档共创使用 `doc-coauthoring`。
+- 只要后续会修改代码、测试、配置、自动化、Skill/prompt 或开发工作流，实施、重构和迁移计划交给 [`writing-plans`](../skills/writing-plans/SKILL.md)；普通 RFC、Proposal 和设计文档共创使用 `doc-coauthoring`。研究、运营和其他非开发清单不创建 exec-plan。
 - README、CHANGELOG、发布公告以及未改变稳定契约的私有实现调整不进入长期知识维护。裸“更新文档”且缺少变化事实、来源或消费场景时先补证据，不猜测写入。
 - 验证运行状态由 `docs/.okf/verification.json` 维护；Git diff 或文档年龄不能单独证明 `fresh`，也不使用 HTML `verified` / `scope` 注释。

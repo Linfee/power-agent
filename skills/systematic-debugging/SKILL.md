@@ -62,7 +62,7 @@ description: |-
 | `HYPOTHESIS_VERIFIED` | 关键因果解释已被支持，但修复边界或交接尚未闭合 | 因果解释、证据引用、剩余不确定性 | 闭合 handoff |
 | `FIXABLE` | 因果链闭合，主要替代解释已排除且 handoff 完整 | canonical handoff、执行授权状态 | 按授权路由 |
 | `BLOCKED` | 外部依赖、安全、授权或环境边界阻止继续调查 | 已排查证据、阻塞项、最小解除条件 | 解除调查阻塞 |
-| `ESCALATE` | 证据表明局部修复边界不成立，需要架构或设计决策 | 最小 architectural_finding、证据、待决策项 | `discuss` / `writing-plans` |
+| `ESCALATE` | 证据表明局部修复边界不成立，需要架构或设计决策 | 最小 architectural_finding、证据、待决策项 | `discuss`；只有决策将导向软件资产变更时再交给 `writing-plans` |
 
 `ESCALATE` 由证据触发，不使用固定失败次数；`architectural_finding` 仅说明为何局部不变量、所有权或边界不足以解决症状。高影响故障可提出可回滚的临时缓解，但必须明确根因状态；缓解不能标记为 `FIXABLE` 或根因修复。
 

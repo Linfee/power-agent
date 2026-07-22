@@ -27,15 +27,19 @@ AI 编码 Agent 工作流插件系统，融合 superpowers + Harness Engineering
 
 ## 核心工作流
 
+**适用范围：** 以下链路只处理修改代码、测试、配置、自动化、Skill/prompt 或开发工作流等软件资产的开发工作；“计划”“待办”或“任务拆解”本身不触发 exec-plan。
+
 ```
-discuss skill [需求]      → 内联需求结论（按需 docs/specs/*.md）
+discuss skill [开发需求]      → 内联需求结论（按需 docs/specs/*.md）
     ↓
-writing-plans             → compact exec-plan（plan.md + review-contract.md，按需 context/tasks）→ low self-review / medium/high 独立 reviewer
+writing-plans                 → 开发 compact exec-plan（plan.md + review-contract.md，按需 context/tasks）→ low self-review / medium/high 独立 reviewer
     ↓
-plan-impl          → BOOTSTRAP(using-git-worktrees) → 中小任务可走 plan-impl-lightweight → 优先 team 模式，缺失 team 工具时回退并行/单代理委派 → scratch artifacts + 单 reviewer 双 verdict → 分层全量审查（常规主审 / 增强独立终审）→ 工作区检查（dirty / 无 HEAD 先提交）→ 验证 → 分支收尾
+plan-impl                      → BOOTSTRAP(using-git-worktrees) → 中小开发任务可走 plan-impl-lightweight → 优先 team 模式，缺失 team 工具时回退并行/单代理委派 → scratch artifacts + 单 reviewer 双 verdict → 分层全量审查（常规主审 / 增强独立终审）→ 工作区检查（dirty / 无 HEAD 先提交）→ 验证 → 分支收尾
 ```
 
 **调试路径**: `systematic-debugging` → `proof-oriented-development` → 全量审查 → 工作区检查 → `verification-before-completion`
+
+**非开发路由：** 根因未知的异常先用 `systematic-debugging`，确认修复边界后才进入开发实施；项目长期知识用 `dev-docs` / `dev-docs-maintain`；面向读者的实质文档用 `doc-coauthoring`，其范围/验收未定时先用 `discuss`；研究、运营和其他普通工作使用宿主原生任务清单或直接推进。重叠请求按当前主要交付物选择单一入口：诊断优先于实施，软件资产变更优先于附带文档，长期项目知识优先于通用文档共创。
 
 **最终验证前审查**: `requesting-code-review`（全量审查）在 `verification-before-completion` 前默认强制执行；常规审查由单主审收敛，增强审查在主审收敛后增加全新 reviewer 独立终审；合并/PR 前不得跳过未通过的审查结果，除非用户明确要求跳过并记录原因。`dev-docs-maintain`（文档维护）是按需触发的普通 Skill，不是每次开发执行的固定阶段。
 
@@ -44,9 +48,9 @@ plan-impl          → BOOTSTRAP(using-git-worktrees) → 中小任务可走 pla
 | Skill | 用途 | 触发词 |
 |-------|------|--------|
 | `discuss` | 需求讨论与 PRD 细化，必要时用 HTML 可视化辅助，默认产出内联需求结论，按需落盘 spec | '需求讨论', 'PRD 细化', '可视化讨论' |
-| `writing-plans` | 创建包含验收与验证路径的 compact exec-plan | '创建实现计划', 'exec-plan' |
-| `plan-impl` | 执行 exec-plan | 恢复执行 |
-| `plan-impl-lightweight` | 中小任务轻量执行路径：scope_check、proof-oriented 实现、局部验证、有限 review/fix 循环、必要时升级完整 runner | '轻量执行', 'lightweight path', 'targeted verify' |
+| `writing-plans` | 创建包含验收与验证路径的开发 compact exec-plan | '创建开发实施计划', '开发 exec-plan' |
+| `plan-impl` | 执行或恢复开发 exec-plan | '执行开发 exec-plan', '恢复开发实施' |
+| `plan-impl-lightweight` | 中小软件资产改动的轻量执行路径：scope_check、proof-oriented 实现、局部验证、有限 review/fix 循环、必要时升级完整 runner | '轻量开发实施', '中小开发任务', '局部开发验证' |
 | `systematic-debugging` | 探索式根因调查：以因果证据、安全边界和风险相称的性能/稳定性证据约束修复交接 | 'bug', '测试失败', '性能退化', 'flaky', 'debug' |
 | `proof-oriented-development` | 证明导向开发闭环：小步实现、最小相关验证、交付 Proof Block | '实现功能', 'Proof Block', '最小有效验证', '目标验证' |
 | `requesting-code-review` | 代码审查编排 | '代码审查', 'code review' |
@@ -93,9 +97,9 @@ status: active # 按生命周期需要添加
 
 ## 工作流约定
 
-- 开始复杂任务（预估 >3 步）前，先在 `docs/exec-plans/active/` 创建执行计划
-- 任务完成后，将 exec-plan 从 `active/` 移动到 `completed/`
-- 上下文接近极限时，更新 exec-plan 进度并提醒用户
+- 开始复杂开发任务（预估 >3 步）前，先在 `docs/exec-plans/active/` 创建开发执行计划；非开发工作按上方路由使用专长 Skill 或宿主原生清单。
+- 开发任务完成后，将 exec-plan 从 `active/` 移动到 `completed/`。
+- 开发执行上下文接近极限时，更新 exec-plan 进度并提醒用户。
 - 重大变更后，检查 docs/ 相关文档是否需要同步更新
 - 需要文档维护时，由 `dev-docs-maintain` 按需触发；它不是每次开发的固定阶段
 - ADR 保留历史决策与 YAML lifecycle status；决策过期时用新 ADR supersede

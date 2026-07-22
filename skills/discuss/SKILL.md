@@ -7,18 +7,18 @@ description: |-
 
 # 产品需求讨论与 PRD 细化
 
-把模糊需求或不完整 PRD 收敛成可评审、可交给 `writing-plans` 的 `Discussion Conclusion` / `需求结论`。
+把模糊需求或不完整 PRD 收敛成可评审的 `Discussion Conclusion` / `需求结论`；只有结论将导向软件资产变更时才交给 `writing-plans`。
 
 ## 准入
 
 - 仅在需求不清、PRD 不完整、范围/流程/验收缺失，或存在真实产品取舍时启用。
-- 若目标、范围和验收已清楚，建议跳过 discuss，直接实现或进入 `writing-plans`。
+- 若目标、范围和验收已清楚，建议直接推进；只有后续会修改软件资产时才进入 `writing-plans`，其他工作按其专长入口处理。
 
 ## 边界
 
 讨论产品与体验层，以及会影响产品范围、验收或计划方向的上层技术方案：目标用户、问题、成功结果、功能范围、最小闭环、用户流程、关键状态、异常路径、验收标准、产品方案取舍、系统级约束、集成/迁移/兼容性方向。
 
-不做实现细节：具体接口签名、库选型、数据表/字段、类/函数拆分、文件路径、测试实现、视觉风格精修。若讨论开始要求可直接编码的技术设计，收住并转交 `writing-plans`；若只是决定“走哪类上层方案”以锁定范围和验收，可在 discuss 内完成。
+不做实现细节：具体接口签名、库选型、数据表/字段、类/函数拆分、文件路径、测试实现、视觉风格精修。若讨论开始要求可直接编码的技术设计，且后续会修改软件资产，收住并转交 `writing-plans`；若只是决定“走哪类上层方案”以锁定范围和验收，可在 discuss 内完成。
 
 ## 流程
 
@@ -50,7 +50,7 @@ description: |-
 6. **审查与交棒**
    - 先自查：无占位符；目标、范围、流程、验收一致；上层技术方向只服务范围/验收/planning，未滑入可直接编码的实现细节；仍聚焦单个可计划闭环。
    - 使用 `references/spec-reviewer-prompt.md` 派发独立 reviewer 审查内联结论；blocking issue 修正后重审。
-   - reviewer `Status=APPROVED` 且 Evidence 非空、Missing Evidence 无 planning 阻塞缺口后，交给 `writing-plans`；默认由其折叠进 `plan.md`，不再单独持久化 spec。
+   - reviewer `Status=APPROVED` 且 Evidence 非空、Missing Evidence 无 planning 阻塞缺口后，按当前主要交付物交棒：软件资产变更交给 `writing-plans` 并折叠进 `plan.md`；项目长期知识交给 `dev-docs` / `dev-docs-maintain`；面向读者的实质文档交给 `doc-coauthoring`；其他非开发结论不创建 exec-plan。
 
 ## 输出契约
 

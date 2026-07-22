@@ -30,10 +30,10 @@
 | Skill | 用途 |
 |-------|------|
 | `discuss` | 需求讨论与 PRD 细化——模糊需求澄清、必要的 HTML 可视化辅助和需求结论审查循环 |
-| `writing-plans` | 将需求结论 / spec / 用户描述转化为 compact exec-plan，并按风险选择 self-review 或独立 reviewer |
-| `plan-impl` | 自主执行或恢复 exec-plan；优先 team 模式，通过 scratch artifacts 交接并使用单 reviewer 双 verdict 内审，再完成全量审查、验证与收尾 |
-| `plan-impl-lightweight` | 中等偏小任务的轻量执行路径：scope_check、proof-oriented 实现、局部验证、有限 review/fix 循环、必要时升级完整 runner |
-| `dev-docs` | 长期开发知识回写——把稳定系统事实、边界、决策依据或集成参考写入/修订 `docs/`；exec-plan 委派给 `writing-plans` |
+| `writing-plans` | 将会修改软件资产的需求结论 / spec / 用户描述转化为开发 compact exec-plan，并按风险选择 self-review 或独立 reviewer |
+| `plan-impl` | 自主执行或恢复开发 exec-plan；优先 team 模式，通过 scratch artifacts 交接并使用单 reviewer 双 verdict 内审，再完成全量审查、验证与收尾 |
+| `plan-impl-lightweight` | 中等偏小软件资产改动的轻量执行路径：scope_check、proof-oriented 实现、局部验证、有限 review/fix 循环、必要时升级完整 runner |
+| `dev-docs` | 长期开发知识回写——把稳定系统事实、边界、决策依据或集成参考写入/修订 `docs/`；软件资产变更的开发计划委派给 `writing-plans` |
 | `dev-docs-maintain` | Docs Bundle 维护——按需检查健康状态、修复结构或知识漂移，并登记已完成验证 |
 | `setup-power-agent` | 从零为项目建立 Harness Engineering 知识体系 |
 | `using-git-worktrees` | 执行大任务前检测/创建隔离 worktree，优先使用宿主原生能力 |
@@ -49,16 +49,21 @@
 ### 完整工作流
 
 ```
-discuss skill          ← 需求讨论 / PRD 细化 → 内联需求结论（按需落盘 spec）
+开发工作流（仅处理修改代码、测试、配置、自动化、Skill/prompt 或开发工作流的软件资产变更）：
+
+discuss skill          ← 开发需求讨论 / PRD 细化 → 内联需求结论（按需落盘 spec）
     ↓（独立审查通过后）
-writing-plans skill    ← 创建 compact exec-plan，并按 low/medium/high 选择 self-review 或独立 reviewer
+writing-plans skill    ← 创建开发 compact exec-plan，并按 low/medium/high 选择 self-review 或独立 reviewer
     ↓
-plan-impl skill ← BOOTSTRAP(using-git-worktrees) → 轻量启动通知 → 中小任务可走 plan-impl-lightweight
+plan-impl skill ← BOOTSTRAP(using-git-worktrees) → 轻量启动通知 → 中小开发任务可走 plan-impl-lightweight
                      └── 优先 team 模式；缺失 team 工具时回退 proof-oriented 实现子代理并行/单代理推进 → scratch artifacts + 单 reviewer 双 verdict → 全量审查 → 工作区检查（dirty / 无 HEAD 先提交）→ 验证 → 分支收尾
 
 Bug / 测试失败 → systematic-debugging skill
                      └── → proof-oriented-development → 全量审查 → 工作区检查 → verification-before-completion
+
 ```
+
+非开发的路由不进入 exec-plan：根因未知的异常先用 `systematic-debugging`；长期项目知识用 `dev-docs` / `dev-docs-maintain`；面向读者的实质文档用 `doc-coauthoring`（范围或验收未定时先 `discuss`）；研究、运营和普通清单使用宿主原生任务清单或直接推进。重叠时以当前主要交付物为准：诊断优先于实施，软件资产变更优先于附带文档，长期项目知识优先于通用文档共创。
 
 `requesting-code-review` 在最终验证前默认强制执行；合并/PR 前不得跳过未通过的审查结果，除非用户明确要求跳过并记录原因。
 `dev-docs-maintain` 是在 docs 健康检查、漂移修复或 verification ledger 登记需要时按需触发的普通 Skill，不是每次开发执行的固定主流程。
