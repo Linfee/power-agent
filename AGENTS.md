@@ -5,7 +5,7 @@ AI 编码 Agent 工作流插件系统，融合 superpowers + Harness Engineering
 ## 快速参考
 
 - **类型**: AI Agent Skill/Prompt 工程
-- **Skills**: 16 个可复用 Skill
+- **Skills**: 13 个可复用 Skill
 - **支持平台**: Claude Code, Cursor, Factory, Droid, Gemini
 
 ## 架构概览
@@ -23,42 +23,41 @@ AI 编码 Agent 工作流插件系统，融合 superpowers + Harness Engineering
 | Skill 设计 | [docs/skill-and-harness-design.md](docs/skill-and-harness-design.md) | Skill 结构规范、Harness 设计原则 |
 | ADR | [docs/adr/](docs/adr/) | 历史架构决策记录 |
 | 执行计划 | [docs/exec-plans/](docs/exec-plans/) | active/ 进行中，completed/ 已归档 |
-| 需求结论 / Spec 文档 | discuss / 用户 | 默认内联需求结论；按需落盘 `docs/specs/` |
+| 讨论结论 / Spec 文档 | discuss / 用户 | 默认内联讨论结论；按需落盘 `docs/specs/` |
+
+项目记忆消费纪律：产出物命名领域概念时使用 `CONTEXT.md` 原词，不漂移同义词（缺口记录后交 `dev-docs`）；产出与既有 ADR 矛盾时显式声明，不静默覆盖；`CONTEXT.md` / `docs/adr/` 缺失时静默继续，不建议预先创建。
 
 ## 核心工作流
 
 **适用范围：** 以下链路只处理修改代码、测试、配置、自动化、Skill/prompt 或开发工作流等软件资产的开发工作；“计划”“待办”或“任务拆解”本身不触发 exec-plan。
 
 ```
-discuss skill [开发需求]      → 内联需求结论（按需 docs/specs/*.md）
+discuss skill [通用讨论]      → 内联讨论结论（按需 docs/specs/*.md）；边界清楚的工作可携结论直接交 implement，复杂/高风险工作再经 writing-plans 成型
     ↓
 writing-plans                 → 开发 compact exec-plan（plan.md + review-contract.md，按需 context/tasks）→ low self-review / medium/high 独立 reviewer
     ↓
-plan-impl                      → BOOTSTRAP(using-git-worktrees) → 中小开发任务可走 plan-impl-lightweight → 优先 team 模式，缺失 team 工具时回退并行/单代理委派 → scratch artifacts + 单 reviewer 双 verdict → 分层全量审查（常规主审 / 增强独立终审）→ 工作区检查（dirty / 无 HEAD 先提交）→ 验证 → 分支收尾
+implement                      → 准备（git worktree 按需隔离 + exec-plan Gate）→ 优先 team 模式，缺失 team 工具时回退并行/单代理委派 → scratch artifacts + 单 reviewer 双 verdict → 分层全量审查（常规主审 / 增强独立终审）→ 工作区检查（dirty / 无 HEAD 先提交）→ 验证 → 分支收尾
 ```
 
 **调试路径**: `systematic-debugging` → `proof-oriented-development` → 全量审查 → 工作区检查 → `verification-before-completion`
 
-**非开发路由：** 根因未知的异常先用 `systematic-debugging`，确认修复边界后才进入开发实施；项目长期知识用 `dev-docs` / `dev-docs-maintain`；面向读者的实质文档用 `doc-coauthoring`，其范围/验收未定时先用 `discuss`；研究、运营和其他普通工作使用宿主原生任务清单或直接推进。重叠请求按当前主要交付物选择单一入口：诊断优先于实施，软件资产变更优先于附带文档，长期项目知识优先于通用文档共创。
+**非开发路由：** 根因未知的异常先用 `systematic-debugging`，确认修复边界后才进入开发实施；项目长期知识用 `dev-docs` / `dev-docs-maintain`；研究、运营和其他普通工作使用宿主原生任务清单或直接推进。重叠请求按当前主要交付物选择单一入口：诊断优先于实施，软件资产变更优先于附带文档，长期项目知识优先于通用文档。
 
-**最终验证前审查**: `requesting-code-review`（全量审查）在 `verification-before-completion` 前默认强制执行；常规审查由单主审收敛，增强审查在主审收敛后增加全新 reviewer 独立终审；合并/PR 前不得跳过未通过的审查结果，除非用户明确要求跳过并记录原因。`dev-docs-maintain`（文档维护）是按需触发的普通 Skill，不是每次开发执行的固定阶段。
+**最终验证前审查**: `code-review`（全量审查）在 `verification-before-completion` 前默认强制执行；常规审查由单主审收敛，增强审查在主审收敛后增加全新 reviewer 独立终审；合并/PR 前不得跳过未通过的审查结果，除非用户明确要求跳过并记录原因。`dev-docs-maintain`（文档维护）是按需触发的普通 Skill，不是每次开发执行的固定阶段。
 
 ## Skill 速查
 
 | Skill | 用途 | 触发词 |
 |-------|------|--------|
-| `discuss` | 需求讨论与 PRD 细化，必要时用 HTML 可视化辅助，默认产出内联需求结论，按需落盘 spec | '需求讨论', 'PRD 细化', '可视化讨论' |
-| `writing-plans` | 创建包含验收与验证路径的开发 compact exec-plan | '创建开发实施计划', '开发 exec-plan' |
-| `plan-impl` | 执行或恢复开发 exec-plan | '执行开发 exec-plan', '恢复开发实施' |
-| `plan-impl-lightweight` | 中小软件资产改动的轻量执行路径：scope_check、proof-oriented 实现、局部验证、有限 review/fix 循环、必要时升级完整 runner | '轻量开发实施', '中小开发任务', '局部开发验证' |
+| `discuss` | 通用讨论：任何需要想清楚再行动的问题（产品、架构、方案、营销等），行动前讨论、澄清与对齐 | '讨论', '方案讨论', 'brainstorming' |
+| `writing-plans` | 创建包含验收与验证路径的开发 compact exec-plan | '创建开发 exec-plan', '开发任务拆解' |
+| `implement` | 执行或恢复任何开发计划（exec-plan、手写计划、任务清单或 spec） | '执行开发计划', '恢复开发实施' |
 | `systematic-debugging` | 探索式根因调查：以因果证据、安全边界和风险相称的性能/稳定性证据约束修复交接 | 'bug', '测试失败', '性能退化', 'flaky', 'debug' |
-| `proof-oriented-development` | 证明导向开发闭环：小步实现、最小相关验证、交付 Proof Block | '实现功能', 'Proof Block', '最小有效验证', '目标验证' |
-| `requesting-code-review` | 代码审查编排 | '代码审查', 'code review' |
-| `receiving-code-review` | 审查反馈技术评估 | '收到审查', '审查反馈' |
-| `verification-before-completion` | 完成前审计 Proof Block 并输出 verification_evidence | '验证完成', 'verification', 'Proof Block 审计' |
-| `dev-docs` | 长期开发知识回写 | '文档知识沉淀', '系统事实回写', '架构事实更新', '领域知识维护', 'ADR 依据记录', '集成参考沉淀', 'dev-docs' |
-| `dev-docs-maintain` | Docs Bundle 健康检查、漂移修复与验证登记 | 'docs 健康检查', '知识库体检', 'OKF Bundle 检查', '验证登记', 'verification ledger', '文档漂移修复', 'dev-docs-maintain' |
-| `using-git-worktrees` | 隔离 worktree 准备 | 'worktree', '隔离执行' |
+| `proof-oriented-development` | 证明导向开发闭环：小步实现、最小相关验证、交付 Proof Block | '实现功能', 'Proof Block', '最小有效验证' |
+| `code-review` | 全量代码审查编排与审查反馈评估 | '代码审查', 'code review', '审查反馈' |
+| `verification-before-completion` | 完成前审计 Proof Block 并输出 verification_evidence | '完成前验证', 'verification', 'Proof Block 审计' |
+| `dev-docs` | 长期开发知识回写 | '文档知识沉淀', '系统事实回写', 'ADR 记录', '集成参考', 'dev-docs' |
+| `dev-docs-maintain` | Docs Bundle 健康检查、漂移修复与验证登记 | 'docs 健康检查', 'OKF Bundle 检查', '验证登记', '文档漂移修复', 'dev-docs-maintain' |
 | `setup-power-agent` | 项目初始化 | 手动调用 |
 | `harness-engineering-review` | 实践审查 | 'agent最佳实践' |
 | `writing-skills` | 创建/修改/验证 Skill | '写skill', '修改skill' |

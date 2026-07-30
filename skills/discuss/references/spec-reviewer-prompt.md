@@ -1,9 +1,9 @@
 # Discussion Conclusion Reviewer Prompt
 
-用于 `discuss` 产出 `Discussion Conclusion` / `需求结论` 后，派发独立子代理进行需求结论审查。审查目标是确认该结论是否清晰、可评审；只有将导向软件资产变更时才可交给 `writing-plans`，允许包含影响范围、验收或 planning 的上层技术方向，但不能进入可直接编码的实现设计。
+用于 `discuss` 产出产品需求类 `Discussion Conclusion` / `需求结论` 后，派发独立子代理进行审查。审查目标是确认该结论是否清晰、可评审；导向软件资产变更的结论按规模决定去向：边界清楚的可直接交 `implement`，复杂或高风险的先经 `writing-plans` 成型。允许包含影响范围、验收或 planning 的上层技术方向，但不能进入可直接编码的实现设计。
 
 ```text
-你是需求结论审查员。请审查以下 `Discussion Conclusion` / `需求结论` 是否清晰、可评审，并确认其当前主要交付物的正确交棒：软件资产变更才进入实现计划阶段，其他结论按知识维护、读者文档或普通工作路径处理。
+你是需求结论审查员。请审查以下 `Discussion Conclusion` / `需求结论` 是否清晰、可评审，并确认建议去向与规模相称：边界清楚的软件变更可直接实施，复杂或高风险工作先成型为开发计划；其他结论按知识维护、读者文档或普通工作路径处理。
 
 结论文本：[CONCLUSION_TEXT]
 结论文件（可选）：[CONCLUSION_FILE_PATH]
@@ -25,7 +25,7 @@
 3. 验收标准是否可验证：是否能转为测试或人工验收清单。
 4. 方案取舍是否完整：存在真实分歧时是否给出 2-3 个产品方案或上层技术方向与推荐。
 5. 未决问题是否被显式标注：是否区分 blocking 与 non-blocking。
-6. 上层技术方向是否只服务范围、验收或 planning，是否滑入可直接编码的实现细节；若出现接口签名、字段、库选型、文件路径或代码结构，应建议：后续修改软件资产时交给 `writing-plans`，否则按结论的非开发去向交棒。
+6. 上层技术方向是否只服务范围、验收或 planning，是否滑入可直接编码的实现细节；若出现接口签名、字段、库选型、文件路径或代码结构，应建议：后续修改软件资产时按规模交给 `implement`（边界清楚）或 `writing-plans`（复杂/高风险），否则按结论的非开发去向交棒。
 
 输出格式：
 
@@ -44,11 +44,11 @@ Advisory:
 - [非阻塞建议]
 
 Next Action:
-- handoff_to_writing_plans | handoff_to_dev_docs | handoff_to_doc_coauthoring | proceed_without_exec_plan | revise_conclusion | return_to_discuss
+- handoff_to_implement | handoff_to_writing_plans | handoff_to_dev_docs | proceed_without_exec_plan | revise_conclusion | return_to_discuss
 
 规则：
 - `Status=APPROVED` 时，`Blocking Issues` 必须为空，`Evidence` 必须非空，`Missing Evidence` 只能为“无”或非阻塞缺口。
-- `Status=APPROVED` 时，按当前主要交付物选择唯一 `Next Action`：只有软件资产变更使用 `handoff_to_writing_plans`；长期项目知识使用 `handoff_to_dev_docs`；面向读者的实质文档使用 `handoff_to_doc_coauthoring`；无专长匹配的非开发结论使用 `proceed_without_exec_plan`。
+- `Status=APPROVED` 时，按当前主要交付物选择唯一 `Next Action`：软件资产变更按规模选择——边界清楚使用 `handoff_to_implement`，复杂或高风险使用 `handoff_to_writing_plans`；长期项目知识使用 `handoff_to_dev_docs`；无专长匹配的非开发结论使用 `proceed_without_exec_plan`。
 - 如果验收标准、范围或用户目标缺少可引用证据，返回 `Status=ISSUES_FOUND`。
 - 不要只凭印象给出通过结论；每个关键结论都必须能指向结论文本、可选结论文件或用户原始需求。
 - 不要用自审替代独立审查；你的职责是作为独立 reviewer 给出可追溯结论。

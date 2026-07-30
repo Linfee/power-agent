@@ -6,8 +6,8 @@ This action will permanently delete:
 - Worktree: `<worktree-path>`
 
 Worktree cleanup policy:
-- `worktree_source=power-agent` and `cleanup_allowed=true`: may be removed after confirmation.
-- `worktree_source=external|unknown` or missing provenance: do not remove automatically; report manual cleanup requirement.
+- `created_by_agent=true`: may be removed after user confirmation.
+- External or unknown-origin worktrees: never remove; report manual cleanup requirement.
 
 If you want to continue, reply exactly:
 `discard`

@@ -1,8 +1,6 @@
 ---
 name: setup-power-agent
-description: |-
-  项目初始化 Skill。补齐 AGENTS.md、docs/ 和 CONTEXT/ADR 项目记忆；初始化或更新项目 Harness 知识体系时触发。
-  Triggers: 初始化 harness, setup-power-agent, AGENTS.md 初始化, docs 知识库初始化.
+description: 项目初始化。补齐 AGENTS.md、docs/ 和 CONTEXT/ADR 项目记忆；初始化或更新项目 Harness 知识体系时使用。
 disable-model-invocation: true
 ---
 
@@ -41,16 +39,17 @@ disable-model-invocation: true
 
 ## 执行流程
 
-1. **最小扫描**：识别项目类型、构建/测试命令、现有 docs 缺口，以及仓库是单 context 还是多 context。
-2. **初始化/补齐**：先补必须项，再按需补建议项。
-3. **初始化项目记忆**：
+1. **最小扫描**：识别项目类型、构建/测试命令、现有 docs 缺口，以及仓库是单 context 还是多 context。已有 `CLAUDE.md` 就只编辑它，已有 `AGENTS.md` 就只编辑它；两者都不存在时询问用户创建哪一个，不同时创建两个。
+2. **呈现并确认**：汇总现状与缺口，逐项给出推荐答案并逐项确认——探索已确定的项直接跳过不问；用户可修改后再写入。
+3. **初始化/补齐**：先补必须项，再按需补建议项；已有 block 就地更新，不重复追加、不覆盖用户已有编辑。
+4. **初始化项目记忆**：
    - 单 context：创建根目录 `CONTEXT.md`
    - 多 context：创建根目录 `CONTEXT-MAP.md`，并为每个已确认的 context 创建对应 `CONTEXT.md`
    - 创建 `docs/adr/` 目录
    - 在 AGENTS/CLAUDE 入口中写明 `CONTEXT.md` / `CONTEXT-MAP.md` / `docs/adr/` 的用途与读取规则
    - 只为 `docs/` Concept 创建 YAML frontmatter；Bundle 外的 `AGENTS.md`、`CONTEXT.md` 与 `CONTEXT-MAP.md` 不机械添加 frontmatter
-4. **导航校验**：确认 `AGENTS.md` 指针有效。
-5. **最小验证**：检查元信息、关键命令可执行性（如环境允许）。
+5. **导航校验**：确认 `AGENTS.md` 指针有效。
+6. **最小验证**：检查元信息、关键命令可执行性（如环境允许）。
 
 ## 项目记忆约定
 
@@ -76,6 +75,10 @@ disable-model-invocation: true
   - 到哪里读领域术语（`CONTEXT.md` / `CONTEXT-MAP.md`）
   - 到哪里读历史架构决策（`docs/adr/`）
   - 这是单 context 还是多 context 布局
+  - 消费纪律：
+    - 产出物（提案、标题、测试名、诊断假设）命名领域概念时使用 `CONTEXT.md` 的原词，不漂移同义词；所需概念不在词汇表时视为信号——重新考虑表述，或记录缺口交 `dev-docs`
+    - 产出与既有 ADR 矛盾时显式声明（如“与 ADR-0007 冲突，但值得重开，因为…”），不静默覆盖
+    - `CONTEXT.md` / `docs/adr/` 缺失时静默继续，不建议预先创建，由真实术语与决策出现时惰性补齐
 
 参考模板：
 - [references/context-template.md](./references/context-template.md)
@@ -92,6 +95,8 @@ disable-model-invocation: true
 4. 补充缺失的项目记忆文件或入口说明，不重写已有术语与 ADR 内容。
 
 不做持续园艺、归档搬运与大范围内容改写。
+
+**重跑语义：** 日常调整（改术语、补 ADR、修订 Concept）直接编辑对应文件，不需要重跑本 Skill；仅在切换单/多 context 布局或推倒重来时才重跑。
 
 ## 输出格式
 

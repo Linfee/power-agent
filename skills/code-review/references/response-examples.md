@@ -1,4 +1,4 @@
-# receiving-code-review 响应示例
+# 反馈评估响应示例
 
 ## 1) accept 示例
 

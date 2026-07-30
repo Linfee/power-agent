@@ -74,4 +74,4 @@ scope:
 
 - 本文档供人类按需判断 Intent、范围边界、Acceptance、Agent 自主边界、Proof、阻塞条件和风险是否足够。
 - 若其中任一项不可判定，应先修订 review surface，而不是要求人类通读全部执行材料。
-- 人类阅读不构成执行 Gate；中/高风险计划在独立 reviewer 通过后即可交给 `plan-impl`。
+- 人类阅读不构成执行 Gate；中/高风险计划在独立 reviewer 通过后即可交给 `implement`。

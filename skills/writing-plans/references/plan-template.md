@@ -75,7 +75,7 @@ runner:
 
 ## Proof Strategy
 
-- 主证明：[behavior_or_characterization / targeted_command / structure_or_diff / strict_tdd（仅用户明确要求）]
+- 主证明：[behavior_or_characterization / targeted_command / structure_or_diff / strict_tdd（仅用户明确要求）]；涉及测试时先点名接缝（在哪一层观察行为）
 - 次证明：[补充证据；若无写 none]
 - 非证明：[不能单独作为完成证明的检查；若无写 none]
 - 已知未验证面：[允许不覆盖的范围及原因；若无写 none]

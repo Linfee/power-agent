@@ -48,10 +48,10 @@
 - `状态：DONE | DONE_WITH_CONCERNS | BLOCKED`
 - 实现摘要（或阻塞时已尝试的动作）
 - 修改的文件列表
-- `## Proof Block`
+- `## Proof Block`：格式以 `proof-oriented-development` 的「Proof Block 契约」为唯一来源，命中条件性小节（bugfix 复现、临时产物、性能/稳定性）时必须包含
 - `### 阻塞项`
 - `### 非阻塞建议`
-- `### 下一步`
+- `### 下一步`：动作 retry / split / proceed / escalate，负责人 orchestrator / implementer
 
 最终返回给 orchestrator 的消息只包含：
 
@@ -59,46 +59,6 @@
 - `report_path`
 - 一行验证摘要
 - concerns 或 blocker；无则写“无”
-
-```markdown
-## Proof Block
-
-### 目标约束
-- <本次只实现什么>
-- <明确不做什么 / 禁止范围>
-
-### 验收标准
-- <可观察验收点>
-
-### 最小验证命令
-- `<command>`：<为什么该命令与本任务强相关且成本最低>
-
-### 运行结果
-- 状态：PASS / FAIL / PARTIAL / NOT_RUN
-- 关键输出：<测试名、退出码、日志片段、截图路径、CI 链接等>
-
-### 实现摘要
-- <改了什么文件 / 行为>
-
-### 附加证据
-- <截图 / 日志 / CI / diff / reviewer 可复查路径；无则写“无”>
-
-### 风险说明
-- <仍可能出问题的边界；无则写“无已知风险”>
-
-### 未验证项
-- <未覆盖的范围及原因；无则写“无”>
-
-### 阻塞项
-- <无 / BI-xxx：阻塞原因>
-
-### 非阻塞建议
-- <无 / 建议内容>
-
-### 下一步
-- 动作：retry / split / proceed / escalate
-- 负责人：orchestrator / implementer
-```
 
 状态使用规则：
 

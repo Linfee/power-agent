@@ -122,7 +122,7 @@ reviewer 一次读取 review package；有 manifest 时只读取通过上述校�
 使用：
 
 ```bash
-skills/plan-impl/scripts/review-package --base <BASE_SHA> [--output <file>] [-- <path>...]
+skills/implement/scripts/review-package --base <BASE_SHA> [--output <file>] [-- <path>...]
 ```
 
 package 包含：

@@ -32,7 +32,7 @@ power-agent/
 │   │   ├── active/           # 进行中
 │   │   └── completed/        # 已归档
 │   └── specs/                # Spec 文档（YYYY-MM-DD-topic.md）
-├── skills/                   # Skill 定义（16 个）
+├── skills/                   # Skill 定义（13 个）
 │   └── <skill-name>/
 │       ├── SKILL.md          # 核心 skill 定义（必须）
 │       └── references/       # 支撑文档、模板、prompt
@@ -93,6 +93,10 @@ disable-model-invocation: [true|false]  # 可选，默认 false
 - 计划审查按风险分层：低风险只做 self-review，中/高风险增加独立 reviewer。
 - 高体积、可重建的 task brief、实现报告和 review diff 使用 `.power-agent/review-runs/` scratch artifacts 交接；截图、日志、trace、benchmark 等 reviewer 资产按 run 放入 `assets/`，只通过 `review-assets.md` 显式命名，并由当前 review session 的权威 run root 约束，同时绑定 target+paths/finding scope、freshness、source 与 sensitivity。它们不进入 commit，也不替代 exec-plan Session Log；无 manifest 时不得扫描目录。
 - 至少运行路径和引用检查；有条件时运行子代理 eval。
+
+### 共享 reference 文件
+
+同一 reference 被多个 skill 使用时（当前：`okf-v0.1.md` 同时存在于 `dev-docs` 与 `dev-docs-maintain`），每个 skill 各存一份以保持独立可安装，不做跨 skill 相对引用。修改任一副本后必须同步其余副本；`scripts/check-shared-references.sh` 校验一致性，漂移时非零退出。
 
 ## 文档规范
 

@@ -49,7 +49,7 @@ Evidence priority: code/diff > requirements/exec-plan > fresh verification > rep
 - Requirements: acceptance items, omissions, unintended behavior or unjustified abstraction.
 - Correctness: edge/state/error semantics; applicable concurrency, idempotency, transaction and cache invariants.
 - Security/data: injection, authorization, secrets, privacy, SSRF, unsafe defaults, changed persistence/payment semantics.
-- Maintainability: conventions, ownership, avoidable duplication or overdesign.
+- Maintainability: conventions, ownership, avoidable duplication or overdesign. Fowler smell 基线（Refactoring ch.3）：Mysterious Name、Duplicated Code、Feature Envy、Data Clumps、Primitive Obsession、Repeated Switches、Shotgun Surgery、Divergent Change、Speculative Generality、Message Chains、Middle Man、Refused Bequest。两条约束：仓库已文档化的标准优先于基线；smell 永远是判断题而非硬违规，且跳过工具已强制检查的项。
 - Tests/evidence: observable behavior, critical boundaries/failures, change-bound evidence.
 
 Severity: `严重` for security/data loss/crash/core outage, unsafe merge or Review Assets/asset trust-boundary bypass; `重要` for missing requirements, wrong semantics, clear regression or critical test gaps; `轻微` only for non-blocking advice. Do not promote style preferences or claims without evidence.

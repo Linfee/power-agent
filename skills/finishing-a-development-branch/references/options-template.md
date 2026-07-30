@@ -57,9 +57,8 @@ Implementation complete. Current checkout is detached HEAD or externally managed
 
 - `create_pr`：保留 worktree，方便处理 PR 反馈。
 - `keep_branch`：保留 worktree。
-- `merge_local` / `discard_work`：仅当 `worktree_source=power-agent` 且 `cleanup_allowed=true` 时才清理。
-- `.worktrees/`、`worktrees/`、`~/.config/power-agent/worktrees/` 路径只能作为辅助证据，不能单独触发删除。
-- 外部管理 worktree：跳过清理，并在结果中标记 `跳过-外部管理`。
+- `merge_local` / `discard_work`：仅当 `created_by_agent=true` 且用户确认后才清理。
+- 外部或来源不明的 worktree：跳过清理，并在结果中标记 `跳过-外部管理`。
 
 ## 不可执行项说明
 

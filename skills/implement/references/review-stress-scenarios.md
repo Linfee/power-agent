@@ -25,10 +25,10 @@
 
 ## 场景 4：直接执行绕过高风险独立审查
 
-- 用户输入：高风险 plan 的 reviewer 尚未返回，或两份材料仍为 `Independent Review=pending`；用户直接调用 `plan-impl`。
+- 用户输入：高风险 plan 的 reviewer 尚未返回，或两份材料仍为 `Independent Review=pending`；用户直接调用 `implement`。
 - 无约束易错行为：runner 只检查 tasks 和 Proof，随后派发实现任务。
-- 期望行为：BOOTSTRAP / READY 比对两份计划材料，保持在 `READY`，记录恢复点并要求完成当前 revision 的独立审查。
-- 验收点：没有轻量路径选择、task dispatch 或 batch 恢复；`PENDING_INDEPENDENT_REVIEW` 不能转入 `EXECUTING`。
+- 期望行为：准备阶段比对两份计划材料，不放行执行，记录恢复点并要求完成当前 revision 的独立审查。
+- 验收点：没有 task dispatch 或 batch 恢复；`PENDING_INDEPENDENT_REVIEW` 不得进入执行。
 
 ## 场景 5：执行中风险升级
 
@@ -41,15 +41,15 @@
 
 - 用户输入：material amendment 已把两份材料更新为 `Gate Revision=r2`，但两边的 `Independent Review Basis` 仍为 `gate_revision=r1; <旧审查记录>`。
 - 无约束易错行为：runner 只比较 approved 状态，接受旧审查为新计划放行。
-- 期望行为：READY 拒绝 revision mismatch；只有绑定 r2 的新审查 basis 才能恢复 medium/high 计划。
-- 验收点：不派发任务、不选择轻量路径，恢复点指向 `writing-plans` 重新审查。
+- 期望行为：准备阶段拒绝 revision mismatch；只有绑定 r2 的新审查 basis 才能恢复 medium/high 计划。
+- 验收点：不派发任务、不恢复旧 batch，恢复点指向 `writing-plans` 重新审查。
 
 ## 场景 7：basis 状态或记录不可用
 
 - 用户输入：medium/high plan 的两份材料均写 `Independent Review=approved`，但 basis 仍为 `pending`、两边指向不同 record，或 record 无法定位。
 - 无约束易错行为：只比较 status 或只搜索 `gate_revision=rN` 字符串后放行。
-- 期望行为：READY 按 basis 状态协议拒绝；approved / issues_found 必须指向当前 revision 的同一 independent-review record。
-- 验收点：pending 只在 pending 状态合法；所有不可定位、类型不符或不覆盖当前 revision 的 basis 均停止在 READY。
+- 期望行为：准备阶段按 basis 状态协议拒绝；approved / issues_found 必须指向当前 revision 的同一 independent-review record。
+- 验收点：pending 只在 pending 状态合法；所有不可定位、类型不符或不覆盖当前 revision 的 basis 均停在准备阶段。
 
 ## 场景 8：amendment 沿用旧 revision history
 
@@ -62,5 +62,5 @@
 
 - 用户输入：旧计划只有旧式 runner HTML 注释，frontmatter 没有完整 `runner` mapping。
 - 无约束易错行为：runner 继续解析注释并从不透明旧状态恢复。
-- 期望行为：不读取或迁移 HTML 注释；从 `READY` 重新判定，随后将新的恢复点写入 frontmatter `runner` mapping。
+- 期望行为：不读取或迁移 HTML 注释；从准备阶段重新判定，随后将新的恢复点写入 frontmatter `runner` mapping。
 - 验收点：恢复契约只引用 `runner.state`、`runner.batch`、`runner.phase`、`runner.fix_round` 与 `runner.next_action`，仓库不再出现旧式 runner HTML 注释。

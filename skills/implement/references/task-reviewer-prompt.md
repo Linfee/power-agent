@@ -1,6 +1,6 @@
 # 内部任务审查 Prompt
 
-用一个只读 reviewer 一次读取任务变更，分别输出规格符合性和代码质量 verdict。它是 task/batch scoped gate，不替代最终全分支 `requesting-code-review`。
+用一个只读 reviewer 一次读取任务变更，分别输出规格符合性和代码质量 verdict。它是 task/batch scoped gate，不替代最终全分支 `code-review`。
 
 ```text
 Task:
@@ -131,7 +131,7 @@ Task:
     - `BLOCKED` 且阻塞问题为空是不可解析结果；不要进入 fix loop，应重新派发审查。
     - `DONE|DONE_WITH_CONCERNS` 时阻塞问题必须为空，且两个 verdict 的 evidence 都不能为空。
     - 重要性表示影响面；实现风险依据 diff、验证、复杂度与未解决不确定性独立判断，不得从公共 API、敏感数据或权限路径自动推导。不得单独输出“高风险”。
-    - 本内部 reviewer 不决定审查强度；最终由 `requesting-code-review` 派发。
+    - 本内部 reviewer 不决定审查强度；最终由 `code-review` 派发。
 
     最终消息直接从 `## 内部任务审查结果` 开始，不写过程旁白。
 ```

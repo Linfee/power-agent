@@ -27,19 +27,16 @@ Three principles from Harness Engineering:
 
 | Skill | Purpose |
 |-------|---------|
-| `discuss` | Requirement discussion and PRD refinement — clarify vague requirements, use HTML visual aids when useful, then run a conclusion review loop |
+| `discuss` | General discussion — any question worth thinking through before acting: clarify, align, and review at a depth matching the decision's weight |
 | `writing-plans` | Convert discussion conclusions, specs, or direct requirements into compact proof-oriented exec-plans, selecting self-review or independent review by risk |
-| `plan-impl` | Execute or resume exec-plans; prefer team mode, hand review inputs off as scratch artifacts, use one internal reviewer for separate spec and quality verdicts, then run full review, verification, and finishing |
-| `plan-impl-lightweight` | Lightweight path for medium-small tasks: scope_check, proof-oriented implementation, local verification, limited review/fix loop, and escalation to the full runner |
+| `implement` | Execute or resume any development plan (exec-plan, handwritten plan, ticket list, or spec); prefer team mode, hand review inputs off as scratch artifacts, use one internal reviewer for separate spec and quality verdicts, then run full review, verification, and finishing |
 | `dev-docs` | Maintain durable engineering knowledge in `docs/` — stable system facts, boundaries, decision rationale, and integration references; hand execution, refactoring, migration, and task-breakdown plans to `writing-plans` |
 | `dev-docs-maintain` | On demand, assess an existing `docs/` OKF Bundle’s health, repair structural or knowledge drift, and record completed verification in its verification ledger |
 | `setup-power-agent` | Bootstrap a project's Harness Engineering knowledge base from scratch |
-| `using-git-worktrees` | Detect or prepare isolated worktrees before large execution tasks |
 | `writing-skills` | Create, modify, review, and pressure-test skills |
 | `systematic-debugging` | Exploratory root-cause investigation with evidence, safety, and risk-proportionate performance/stability proof governing fix handoff |
 | `proof-oriented-development` | Proof-oriented implementation loop with minimal relevant verification and Proof Block output |
-| `requesting-code-review` | Orchestrate code review via subagent with structured findings |
-| `receiving-code-review` | Technical evaluation of review feedback (not performative agreement) |
+| `code-review` | Orchestrate code review via subagent and evaluate review feedback, with structured findings |
 | `verification-before-completion` | Evidence-first verification — no completion claims without fresh proof |
 | `harness-engineering-review` | Audit a project's agent workflow against Harness Engineering best practices |
 | `finishing-a-development-branch` | Prompt for a dirty worktree or missing HEAD first, then wrap up a clean verified branch (merge/PR/keep/discard) |
@@ -47,18 +44,18 @@ Three principles from Harness Engineering:
 ### Workflow
 
 ```
-discuss skill          ← optional: requirement discussion / PRD refinement → inline discussion conclusion (spec doc only when needed)
-    ↓ (independent review passed)
-writing-plans skill    ← create a compact proof-oriented exec-plan and choose self-review or independent review by plan risk
+discuss skill          ← general discussion: any question worth thinking through before acting → inline discussion conclusion (spec doc only when needed)
+    ↓ (independent review passed; well-bounded work may skip writing-plans and go straight to implement)
+writing-plans skill    ← create a compact exec-plan for cross-module / multi-batch / high-risk work, and choose self-review or independent review by plan risk
     ↓
-plan-impl skill ← BOOTSTRAP(using-git-worktrees) → lightweight start notice → optional plan-impl-lightweight for medium-small tasks
+implement skill ← prepare (git worktree isolation when needed + exec-plan Gate) → lightweight start notice
                      └── prefer team mode; without team tools, fall back to proof-oriented implementation subagents in parallel or serial flow → scratch artifacts + one reviewer with two verdicts → full code review → worktree gate (commit dirty changes or create HEAD first) → verification → branch finishing
 
 Bug / test failure → systematic-debugging skill
                          └── → proof-oriented-development → full code review → worktree gate → verification-before-completion
 ```
 
-`requesting-code-review` is mandatory before final verification by default. Merge/PR handoff must not skip unresolved review findings unless the user explicitly asks to skip and the reason is recorded. `dev-docs-maintain` remains an on-demand doc maintenance skill, not a mandatory step for every development run.
+`code-review` is mandatory before final verification by default. Merge/PR handoff must not skip unresolved review findings unless the user explicitly asks to skip and the reason is recorded. `dev-docs-maintain` remains an on-demand doc maintenance skill, not a mandatory step for every development run.
 
 ---
 
@@ -113,7 +110,7 @@ The repository currently provides the skill workflow, docs structure, ADRs, and 
 
 This project is inspired by and builds on:
 
-- **superpowers** by [obra](https://github.com/obra/superpowers) — MIT License. The following skills are derived from or inspired by superpowers: `discuss` (from `brainstorming`), `writing-plans`, `plan-impl` (merged with `subagent-driven-development`), `proof-oriented-development` (evolved from the original test-first implementation loop into proof-oriented implementation), `requesting-code-review`, `receiving-code-review`, `verification-before-completion`, `systematic-debugging`, `using-git-worktrees`, `writing-skills`.
+- **superpowers** by [obra](https://github.com/obra/superpowers) — MIT License. The following skills are derived from or inspired by superpowers: `discuss` (from `brainstorming`), `writing-plans`, `implement` (merged with `subagent-driven-development`), `proof-oriented-development` (evolved from the original test-first implementation loop into proof-oriented implementation), `code-review`, `verification-before-completion`, `systematic-debugging`, `writing-skills`.
 
 - **Harness Engineering** — [Ryan Lopopolo, OpenAI, Feb 11, 2026](https://openai.com/index/harness-engineering/). The `harness-engineering-review`, `setup-power-agent`, `dev-docs`, `dev-docs-maintain` skills and the overall repo-as-SSOT philosophy are derived from this methodology.
 

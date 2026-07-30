@@ -11,7 +11,7 @@
 
 - 用户输入：两个模块间接口保持兼容的重构，可通过回滚恢复，不涉及数据迁移或安全边界。
 - 无约束易错行为：因“可回滚”降为 low，或因“跨模块”机械升为 high 并打断用户。
-- 期望行为：`plan_risk=medium`，self-review 后派发一个独立 reviewer；只有 `APPROVED` 才交给 `plan-impl`。
+- 期望行为：`plan_risk=medium`，self-review 后派发一个独立 reviewer；只有 `APPROVED` 才交给 `implement`。
 - 验收点：plan 与 review contract 的 Gate Revision、风险、review path、plan review status、Independent Review 与其 basis 一致。
 
 ## 场景 5：状态通过但 basis 指向旧版本
@@ -25,7 +25,7 @@
 
 - 用户输入：数据库迁移、生产发布、权限语义或难回滚公共 API 变化。
 - 无约束易错行为：把独立审查降级为可选步骤，或因风险高而要求额外人类 Gate。
-- 期望行为：`plan_risk=high`；reviewer 通过后状态为 `APPROVED`，直接交给 `plan-impl`。
+- 期望行为：`plan_risk=high`；reviewer 通过后状态为 `APPROVED`，直接交给 `implement`。
 - 验收点：执行许可来自当前 revision 的独立审查依据，不存在人类批准字段或状态。
 
 ## 场景 4：风险信息不足
