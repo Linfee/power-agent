@@ -59,9 +59,9 @@ implement                      → 准备（git worktree 按需隔离 + exec-pla
 | `dev-docs` | 长期开发知识回写 | '文档知识沉淀', '系统事实回写', 'ADR 记录', '集成参考', 'dev-docs' |
 | `dev-docs-maintain` | Docs Bundle 健康检查、漂移修复与验证登记 | 'docs 健康检查', 'OKF Bundle 检查', '验证登记', '文档漂移修复', 'dev-docs-maintain' |
 | `setup-power-agent` | 项目初始化 | 手动调用 |
-| `harness-engineering-review` | 实践审查 | 'agent最佳实践' |
+| `harness-engineering-review` | 实践审查 | 手动调用 |
 | `writing-skills` | 创建/修改/验证 Skill | '写skill', '修改skill' |
-| `finishing-a-development-branch` | dirty / 无 HEAD 待提交提示；clean 验证后 merge/PR/保留/丢弃 | 手动调用 |
+| `finishing-a-development-branch` | dirty / 无 HEAD 待提交提示；clean 验证后 merge/PR/保留/丢弃 | '分支收尾', 'finishing', '合并到目标分支', '创建 PR' |
 
 ## 约束（硬规则）
 

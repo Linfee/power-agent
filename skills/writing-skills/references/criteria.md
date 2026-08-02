@@ -11,7 +11,7 @@
 
 ## 2. 调用方式（invocation）
 
-机制见 `SKILL.md` §2。一个 Skill 该付 context load 的理由只有三个，满足其一即可：
+机制见 `SKILL.md` 改动步。一个 Skill 该付 context load 的理由只有三个，满足其一即可：
 
 1. 模型需要**自主触达**它（如 `systematic-debugging` 在根因未知时该被自动想到）；
 2. 别的 Skill 需要**按名调用**它；
@@ -23,7 +23,7 @@ user-invoked 的 cognitive load 由 `AGENTS.md` Skill 速查表承担——它�
 
 ## 3. description 判据
 
-`SKILL.md` §3 三条硬规则（触发词前置、一个分支一次、删身份描述）之外：
+`SKILL.md` 改动步的三条硬规则（触发词前置、一个分支一次、删身份描述）之外：
 
 - **Leading word 调用锚定**：description 的用词应该是"你想要这个 Skill 时自己实际会说的词"。同一个词活在用户 prompt、docs、代码和 description 里时，模型把共享语言链接到 Skill，触发更可靠。审查时检查：触发词是用户嘴里的词，还是作者嘴里的词。
 - **弱词即 no-op**："要严谨""全面"不改变默认行为，只付负载。修法是换强词，不是加句子。
@@ -71,9 +71,9 @@ user-invoked 的 cognitive load 由 `AGENTS.md` Skill 速查表承担——它�
 
 **合并的反向警告**：把两个串行 Skill 合并，等于把前者的 post-completion steps 暴露给当前步骤——可能买回一个 premature completion。合并前先检查两段各自的完成判据是否足够硬。
 
-## 7. 五种失败模式（诊断表）
+## 7. 五种失败模式（文本病灶诊断表）
 
-审查 Skill 时先诊断得了哪种病，再选配对解药；不要裸"精简"。
+这是 Skill **文字**的病灶，不是“没有 Skill 时 Agent 的行为缺口”——后者在 SKILL.md 诊断步定义，两者别混。审查既有 Skill 时先诊断得了哪种病，再选配对解药；不要裸“精简”。
 
 | 失败模式 | 症状 | 解药 |
 |---|---|---|
@@ -102,7 +102,7 @@ user-invoked 的 cognitive load 由 `AGENTS.md` Skill 速查表承担——它�
 
 两层评测，各管一段：
 
-- **路由评测集**（管触发）：`evals/writing-skills/` 的标注集——输入 × 应触发 / 不应触发 × 边界用例。description 改动必须过路由评测；本仓 13 个 Skill 的基线见该目录 baseline 报告。调用方式（invocation mode）改动不在路由评测覆盖内——它改变的是模型能否看到 description，靠 frontmatter 机械核对、`AGENTS.md` 速查表同步与依赖方向人工确认。
+- **路由评测集**（管触发）：`evals/writing-skills/` 的标注集——输入 × 应触发 / 不应触发 × 边界用例。description 改动必须过路由评测；本仓 13 个 Skill 的基线见该目录 baseline 报告。调用方式（invocation mode）改动不在路由评测覆盖内——它改变的是模型能否看到 description，靠 `scripts/check-invocation-consistency.sh`（frontmatter 标志 ⇔ `AGENTS.md` 速查表登记）与依赖方向人工确认。
 - **压力场景**（管行为）：`references/stress-scenarios.md` 的"输入 → 易错行为 → 期望行为 → 验收点"格式。核心工作流 Skill 修改至少 2-3 个场景。
 
 **no-op 运行裁决**："这句改不改变默认行为"的争议，本质是双方对模型默认行为的判断不同——把该句删掉跑一次压力场景或路由评测，行为没变就是 no-op。这是唯一裁决方式。

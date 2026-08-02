@@ -250,7 +250,7 @@ Review assets 只读权威当前 run root 内 manifest 命名且通过 containme
 
 **触发：** 新增、修改、审查或优化 Skill。
 
-**核心流程：** 定义目标行为与失败模式 → 修改最小必要 Skill/refs/docs → 检查上下游契约 → 两层评测：description 改动过 `evals/writing-skills/` 路由评测，行为改动准备压力场景。判据 SSOT 为 `skills/writing-skills/references/criteria.md`。
+**核心流程：** 诊断（行为缺口 + 五失败模式文本病灶）→ 改动 → 验证（description 过路由评测、行为过压力场景、调用方式过一致性脚本）→ 同步（契约、路由、frontmatter/docs）。判据 SSOT 为 `skills/writing-skills/references/criteria.md`。
 
 **交棒给：** `code-review`，再经工作区检查进入最终验证阶段。
 

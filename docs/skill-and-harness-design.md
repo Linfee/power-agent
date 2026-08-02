@@ -36,7 +36,7 @@ Skill 结构、description、渐进披露、完成判据、切分与剪枝的判
 
 两层评测，各管一段：
 
-- **路由评测集**（管触发）：description 改动必须过 `evals/writing-skills/` 的路由评测（标注集 + judge 流程）；没跑过的触发声明标"未验证"。调用方式（invocation mode）改动不在其覆盖内，靠 frontmatter 机械核对与速查表同步。
+- **路由评测集**（管触发）：description 改动必须过 `evals/writing-skills/` 的路由评测（标注集 + judge 流程）；没跑过的触发声明标"未验证"。调用方式（invocation mode）改动不在其覆盖内，走 `scripts/check-invocation-consistency.sh` 与速查表同步。
 - **压力场景**（管行为）：对核心工作流 Skill，不只检查 Markdown 格式，还要验证它是否改变 Agent 行为。
 
 最小压力场景包含：

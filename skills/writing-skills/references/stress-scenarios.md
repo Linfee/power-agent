@@ -2,12 +2,20 @@
 
 用于验证本 Skill 的行为边界。格式：输入 → 无 Skill 易错行为 → 期望行为 → 验收点。
 
+为其他 Skill 设计压力场景时，适合覆盖的场景类型：
+
+- Skill 触发边界容易误判。
+- 多个 Skill 可能冲突。
+- 子代理任务卡可能缺字段。
+- 完成声明可能缺证据。
+- destructive / branch cleanup / worktree 操作。
+
 ## 场景：新建一个只需要手动触发的工具型 Skill
 
 - 输入：用户要求新建一个"初始化项目配置"类 Skill，明确说"我手动跑就行"。
 - 易错行为：默认 model-invoked，写长 Triggers 列表，常驻上下文。
 - 期望行为：判定为 user-invoked（`disable-model-invocation: true`），description 改为面向人类的一句话摘要，并在 `AGENTS.md` 速查表登记。
-- 验收点：frontmatter 含 `disable-model-invocation: true`；description 无触发词列表；AGENTS.md 有新条目。
+- 验收点：frontmatter 含 `disable-model-invocation: true`；description 无触发词列表；AGENTS.md 有新条目；`scripts/check-invocation-consistency.sh` 通过。
 
 ## 场景：给现有 Skill 加规则
 
@@ -27,7 +35,7 @@
 
 - 输入：用户要求"优化一下这个 Skill 的 description，让它更容易被触发"。
 - 易错行为：改完文字就直接宣称"触发率提升"，无任何运行证据。
-- 期望行为：description 改动必须过 `evals/writing-skills/` 的路由评测；无法运行时，结论中把触发声明标为"未验证"，不写成事实。（调用方式改动不在路由评测覆盖内，走 frontmatter 核对与速查表同步。）
+- 期望行为：description 改动必须过 `evals/writing-skills/` 的路由评测；无法运行时，结论中把触发声明标为"未验证"，不写成事实。（调用方式改动不在路由评测覆盖内，走 `scripts/check-invocation-consistency.sh` 与速查表同步。）
 - 验收点：交付说明中有路由评测结果或明确的"未验证"标注；没有"应该会更准"式无证据断言。
 
 ## 场景：Skill 太长，用户要求精简
