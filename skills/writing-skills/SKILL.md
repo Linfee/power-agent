@@ -19,7 +19,7 @@ Skill 是可复用工作流，不是一次性经验记录。修改 Skill 时要�
 
 ### 做什么
 - 创建或修改 `skills/<name>/SKILL.md`。
-- 维护 Skill 与 references、docs、AGENTS.md 之间的触发和交接契约。
+- 维护 Skill 与 references、docs、项目路由文件（如 AGENTS.md / CLAUDE.md）之间的触发和交接契约。
 - 为关键 Skill 设计压力场景，验证没有 Skill 时的行为缺口和有 Skill 后的期望行为。
 - 优化 description 与调用方式，使触发准确且上下文成本合理。
 
@@ -33,23 +33,23 @@ Skill 是可复用工作流，不是一次性经验记录。修改 Skill 时要�
 
 ## 流程
 
-### 1. 诊断
+### 1. 定位
 
-先定位，再动手。读取当前 `SKILL.md`、相关 `references/`、调用方 Skill 和 docs，然后分清两类问题：
+先定位，再动手，分两种情况：
 
-- **行为缺口**：没有这个 Skill / 这条规则时 Agent 会犯什么错。写清触发场景（用户说什么、任务处于什么阶段）、目标行为（Agent 读完应做出什么不同决策）、输出契约（下游消费哪些字段）。
-- **文本病灶**：既有 Skill 文字自身的退化。按下方「判据速查：五失败模式」逐行诊断——不同病不同药，不裸精简。
+- **新建**：定义**行为缺口**——没有这个 Skill 时 Agent 会犯什么错。写清触发场景（用户说什么、任务处于什么阶段）、目标行为（Agent 读完应做出什么不同决策）、输出契约（下游消费哪些字段）。
+- **修改**：读取当前 `SKILL.md`、相关 `references/`、调用方 Skill 和 docs，诊断**文本病灶**——既有 Skill 文字自身的退化，按下方「判据速查：五失败模式」逐行诊断，不同病不同药，不裸精简；同时确认行为缺口仍然成立。
 
 行为缺口是没有 Skill 时 Agent 犯的错；五失败模式是 Skill 文字自身的病灶——两者别混。
 
-完成判据：能写出"修哪个缺口或哪种病灶、不修什么"，避免顺手重写整套风格。
+完成判据：能写清要建/要修什么，以及明确不做什么——新建不堆预测性规则，修改不顺手重写整套风格。
 
 ### 2. 改动
 
 每条一句话判据；拿不准判据含义时读 criteria.md 对应节。
 
 - **description 只服务触发**：触发词前置；一个触发分支只写一次（“需求讨论 / 需求分析 / PRD 细化”是同义重复，保留真正不同的分支）；删掉正文已有的身份复述。用词是“你想要这个 Skill 时自己实际会说的词”；“要严谨”“全面”这类弱词是 no-op，换强词。
-- **调用方式二选一**：model-invoked（默认）付 context load——只有三个理由值这笔钱：模型需要自主触达、别的 Skill 需要按名调用、它是自治工作流链路的一环。user-invoked（`disable-model-invocation: true`）零 context load 但付 cognitive load——人得记得它存在，description 改写成面向人类的一句话摘要，并登记 `AGENTS.md` 速查表。依赖方向：user-invoked 可以调用 model-invoked，反之禁止。
+- **调用方式二选一**：model-invoked（默认）付 context load——只有三个理由值这笔钱：模型需要自主触达、别的 Skill 需要按名调用、它是自治工作流链路的一环。user-invoked（`disable-model-invocation: true`）零 context load 但付 cognitive load——人得记得它存在，description 改写成面向人类的一句话摘要，并登记到项目的人维护 Skill 索引（power-agent 仓：`AGENTS.md` 速查表）。依赖方向：user-invoked 可以调用 model-invoked，反之禁止。
 - **渐进披露**：所有使用路径都需要的内容内联，只有部分路径用到的下沉 `references/`。有步骤的 Skill 别让长篇引用埋没步骤；无步骤的扁平 Skill 全是引用是合法安排，不要硬造步骤；指针后的材料模型够不到时，先锐化指针措辞，失败了才回拉内联。
 - **步骤带完成判据**：可检查、重要处穷尽（“每个改动过的文件都已核对”，而不是“产出变更清单”）。防提前交卷：先锐化判据；判据不可再锐化、且实际观察到 rush，才按 sequence 切分——只有子代理派发或 user-invoked 交接才藏得住后续步骤，inline 的 model-invoked 调用什么都清不掉。
 - **切分与合并**：合法时机只有 by invocation（出现应自主触发的独立触发词，或另一个 Skill 必须按名够到它）和 by sequence（藏后续步骤）；每次切分都花一种负载。合并两个串行 Skill 会把前者的后续步骤暴露给当前步骤——合并前先检查两段各自的完成判据是否够硬。
@@ -58,9 +58,9 @@ Skill 是可复用工作流，不是一次性经验记录。修改 Skill 时要�
 
 ### 3. 验证
 
-- **description 改动** → 必须过 `evals/writing-skills/` 的路由评测（标注集 + judge 流程）；没跑过的触发声明标“未验证”，不写成事实。
+- **description 改动** → 过路由评测：标注集（输入 × 应触发/不应触发 × 边界用例）+ judge 流程，格式见 `references/routing-eval.md`。项目还没有评测集时按该格式自建，在此之前触发声明标“未验证”，不写成事实。
 - **行为改动** → 至少 2-3 个压力场景，格式为“用户输入 → 无 Skill 易错行为 → 期望行为 → 验收点”（本 Skill 自身的场景见 `references/stress-scenarios.md`，含适合覆盖的场景类型清单）；无法运行子代理 eval 时，把场景写入相关文档或 PR 描述供后续验证。
-- **调用方式改动** → 运行 `scripts/check-invocation-consistency.sh`，并同步 `AGENTS.md` 速查表。
+- **调用方式改动** → 核对 frontmatter 标志与项目 Skill 索引（人维护的速查表/登记处）一致；power-agent 仓运行 `scripts/check-invocation-consistency.sh` 机械校验，其他项目人工核对。
 - **no-op 裁决**：“这句话改不改变默认行为”的争议，删掉它跑一次评测——行为没变就是 no-op。这是唯一裁决方式。
 - **成本基准**：优化与否按总路径成本（整条 Skill 链）判断，不按单文件行数。
 
@@ -69,7 +69,7 @@ Skill 是可复用工作流，不是一次性经验记录。修改 Skill 时要�
 ### 4. 同步
 
 - **契约优先**：跨 Skill 交接明确上游输入字段、下游输出字段、状态枚举、缺失字段时如何降级或阻塞。上游模板和下游 prompt 对同一任务卡的要求不同时，先修契约，不靠执行时临时解释。
-- **路由一致**：新增、删除、改名 Skill 或改动触发词时，grep 全仓对该 Skill 的引用（AGENTS.md、docs、其他 Skill 的路由段），逐处同步——路由信息撒谎比没有路由更糟。
+- **路由一致**：新增、删除、改名 Skill 或改动触发词时，grep 全仓对该 Skill 的引用（项目的路由载体：如 AGENTS.md、docs、其他 Skill 的引用段），逐处同步——路由信息撒谎比没有路由更糟。
 - **配套同步**：frontmatter、插件 manifest 和相关 docs 按需更新。
 
 完成判据：grep 无残留旧引用；契约两侧字段一致。
@@ -95,13 +95,13 @@ Skill 是可复用工作流，不是一次性经验记录。修改 Skill 时要�
 ## 完成前检查
 
 - [ ] description 触发词合规：前置、无同义重复、无身份复述。
-- [ ] 调用方式命中三个付费理由之一；user-invoked 已登记速查表并通过一致性检查。
+- [ ] 调用方式命中三个付费理由之一；user-invoked 已登记项目 Skill 索引（power-agent 仓另需通过一致性脚本）。
 - [ ] 正文通过 no-op 测试；否定式禁令都是无法正面表述的硬护栏，且配对替代动作。
 - [ ] 流程步骤都有可检查的完成判据。
 - [ ] `SKILL.md` 无 TODO、TBD、占位路径或旧 Skill 名残留；references 路径真实存在。
 - [ ] 上下游契约字段一致；全仓对该 Skill 的引用已同步。
 - [ ] frontmatter / manifest / docs 已按需同步。
-- [ ] 证据齐备：description 改动已过路由评测或标“未验证”；行为改动有压力场景；调用方式改动已通过一致性脚本。
+- [ ] 证据齐备：description 改动已过路由评测或标“未验证”；行为改动有压力场景；调用方式改动已与项目 Skill 索引核对一致。
 
 ---
 

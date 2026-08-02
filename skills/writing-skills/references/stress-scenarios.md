@@ -14,8 +14,8 @@
 
 - 输入：用户要求新建一个"初始化项目配置"类 Skill，明确说"我手动跑就行"。
 - 易错行为：默认 model-invoked，写长 Triggers 列表，常驻上下文。
-- 期望行为：判定为 user-invoked（`disable-model-invocation: true`），description 改为面向人类的一句话摘要，并在 `AGENTS.md` 速查表登记。
-- 验收点：frontmatter 含 `disable-model-invocation: true`；description 无触发词列表；AGENTS.md 有新条目；`scripts/check-invocation-consistency.sh` 通过。
+- 期望行为：判定为 user-invoked（`disable-model-invocation: true`），description 改为面向人类的一句话摘要，并登记到项目的人维护 Skill 索引（power-agent 仓：`AGENTS.md` 速查表）。
+- 验收点：frontmatter 含 `disable-model-invocation: true`；description 无触发词列表；项目 Skill 索引有新条目（power-agent 仓：另需 `scripts/check-invocation-consistency.sh` 通过）。
 
 ## 场景：给现有 Skill 加规则
 
@@ -35,7 +35,7 @@
 
 - 输入：用户要求"优化一下这个 Skill 的 description，让它更容易被触发"。
 - 易错行为：改完文字就直接宣称"触发率提升"，无任何运行证据。
-- 期望行为：description 改动必须过 `evals/writing-skills/` 的路由评测；无法运行时，结论中把触发声明标为"未验证"，不写成事实。（调用方式改动不在路由评测覆盖内，走 `scripts/check-invocation-consistency.sh` 与速查表同步。）
+- 期望行为：description 改动必须过路由评测（格式见 `references/routing-eval.md`）；无法运行时，结论中把触发声明标为"未验证"，不写成事实。（调用方式改动不在路由评测覆盖内，核对 frontmatter 与项目 Skill 索引一致；power-agent 仓：`scripts/check-invocation-consistency.sh`。）
 - 验收点：交付说明中有路由评测结果或明确的"未验证"标注；没有"应该会更准"式无证据断言。
 
 ## 场景：Skill 太长，用户要求精简

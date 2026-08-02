@@ -15,9 +15,9 @@
 
 1. 模型需要**自主触达**它（如 `systematic-debugging` 在根因未知时该被自动想到）；
 2. 别的 Skill 需要**按名调用**它；
-3. 它是**自治工作流链路的一环**——discuss → writing-plans → implement → code-review → verification-before-completion 的自治交接依赖 model-invoked description 做路由发现。这是本仓与"人打字驱动"型 Skill 集的关键差异：router 不靠人工索引，靠 description。
+3. 它是**自治工作流链路的一环**——discuss → writing-plans → implement → code-review → verification-before-completion 的自治交接依赖 model-invoked description 做路由发现。这是自治 Skill 集与“人打字驱动”型 Skill 集的关键差异：router 不靠人工索引，靠 description。
 
-user-invoked 的 cognitive load 由 `AGENTS.md` Skill 速查表承担——它是本仓的 router：新增 user-invoked Skill 必须登记，改动触发词必须同步全仓引用。
+user-invoked 的 cognitive load 由项目的人维护 Skill 索引承担（power-agent 仓：`AGENTS.md` 速查表）——新增 user-invoked Skill 必须登记，改动触发词必须同步全仓引用。
 
 依赖方向固定：user-invoked 可以调用 model-invoked，反之禁止——user-invoked 的 description 不暴露给模型，模型按名也够不到。
 
@@ -102,7 +102,7 @@ user-invoked 的 cognitive load 由 `AGENTS.md` Skill 速查表承担——它�
 
 两层评测，各管一段：
 
-- **路由评测集**（管触发）：`evals/writing-skills/` 的标注集——输入 × 应触发 / 不应触发 × 边界用例。description 改动必须过路由评测；本仓 13 个 Skill 的基线见该目录 baseline 报告。调用方式（invocation mode）改动不在路由评测覆盖内——它改变的是模型能否看到 description，靠 `scripts/check-invocation-consistency.sh`（frontmatter 标志 ⇔ `AGENTS.md` 速查表登记）与依赖方向人工确认。
+- **路由评测集**（管触发）：输入 × 应触发 / 不应触发 × 边界用例的标注集 + judge 流程，格式见 `references/routing-eval.md`。description 改动必须过路由评测。调用方式（invocation mode）改动不在路由评测覆盖内——它改变的是模型能否看到 description，靠 frontmatter 与项目 Skill 索引的一致性核对（power-agent 仓：`scripts/check-invocation-consistency.sh`）与依赖方向人工确认。
 - **压力场景**（管行为）：`references/stress-scenarios.md` 的"输入 → 易错行为 → 期望行为 → 验收点"格式。核心工作流 Skill 修改至少 2-3 个场景。
 
 **no-op 运行裁决**："这句改不改变默认行为"的争议，本质是双方对模型默认行为的判断不同——把该句删掉跑一次压力场景或路由评测，行为没变就是 no-op。这是唯一裁决方式。
@@ -111,4 +111,4 @@ user-invoked 的 cognitive load 由 `AGENTS.md` Skill 速查表承担——它�
 
 - 没跑过评测的触发 / 行为声明标"未验证"，不写成事实；
 - 成本比较按**总路径成本**（完成任务的整条 Skill 链），不按单 Skill 行数——单文件行数下降但总链路上下文上升的"优化"是负优化；
-- 五平台分发（Claude Code / Cursor / Factory / Droid / Gemini）的 Skill 机制改动，没在各平台 smoke test 过就标"未验证"。
+- Skill 集跨平台分发时，机制改动没在各平台 smoke test 过就标“未验证”（power-agent 自身：Claude Code / Cursor / Factory / Droid / Gemini 五平台）。
