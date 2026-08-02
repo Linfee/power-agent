@@ -88,6 +88,7 @@ disable-model-invocation: [true|false]  # 可选，默认 false
 
 - 先写清楚触发场景、目标行为和无 Skill 时的失败模式。
 - 为关键路径准备 2-3 个压力场景。
+- description 改动必须过 `evals/writing-skills/` 路由评测（调用方式改动不在其覆盖内，走 frontmatter 核对与速查表同步）；判据 SSOT 见 `skills/writing-skills/references/criteria.md`。
 - 检查上游产物是否满足下游输入契约。
 - 对规划类 Skill，区分人类按需阅读入口与 Agent 执行材料；例如 `writing-plans` 默认使用 `review-contract.md` 提供压缩审阅面，但它不构成执行 Gate。
 - 计划审查按风险分层：低风险只做 self-review，中/高风险增加独立 reviewer。

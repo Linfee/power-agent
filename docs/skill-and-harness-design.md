@@ -28,15 +28,24 @@ scope:
 - **最小集**：从最小 prompt + 最强模型开始，只在 eval 显示失败模式时才加规则
 - **软硬配合**：prompt 是软约束（模型可绕过），安全需求必须用 harness 硬约束兜底
 
+## Skill 判据体系
+
+Skill 结构、description、渐进披露、完成判据、切分与剪枝的判据 SSOT 是 `skills/writing-skills/references/criteria.md`（成本模型、五种失败模式诊断、运行裁决）。本文不复制其内容。
+
 ## Skill 行为验证
 
-**Skill 修改需要压力场景。** 对核心工作流 Skill，不只检查 Markdown 格式，还要验证它是否改变 Agent 行为。
+两层评测，各管一段：
+
+- **路由评测集**（管触发）：description 改动必须过 `evals/writing-skills/` 的路由评测（标注集 + judge 流程）；没跑过的触发声明标"未验证"。调用方式（invocation mode）改动不在其覆盖内，靠 frontmatter 机械核对与速查表同步。
+- **压力场景**（管行为）：对核心工作流 Skill，不只检查 Markdown 格式，还要验证它是否改变 Agent 行为。
 
 最小压力场景包含：
 - 用户输入：真实用户会如何触发。
 - 无 Skill 易错行为：Agent 常见失败模式。
 - 期望行为：使用 Skill 后应出现的决策、输出或文件变化。
 - 验收点：可观察证据。
+
+判据分歧用运行裁决：删掉争议句跑一次评测，行为没变就是 no-op。
 
 优先覆盖：
 - 上游/下游契约交接。
