@@ -81,19 +81,16 @@ disable-model-invocation: [true|false]  # 可选，默认 false
 ## 禁止事项
 ```
 
-### Skill 行为验证
-
+### Skill 设计与维护
 
 新增或重写核心 Skill 时，使用 `writing-skills`：
 
 - 先写清楚触发场景、目标行为和无 Skill 时的行为缺口。
-- 为关键路径准备 2-3 个压力场景。
-- description 改动必须过 `evals/writing-skills/` 路由评测（调用方式改动走 `scripts/check-invocation-consistency.sh` 与速查表同步）；判据 SSOT 见 `skills/writing-skills/references/criteria.md`。
-- 检查上游产物是否满足下游输入契约。
+- 维护上游产物与下游输入契约的一致性。
 - 对规划类 Skill，区分人类按需阅读入口与 Agent 执行材料；例如 `writing-plans` 默认使用 `review-contract.md` 提供压缩审阅面，但它不构成执行 Gate。
 - 计划审查按风险分层：低风险只做 self-review，中/高风险增加独立 reviewer。
 - 高体积、可重建的 task brief、实现报告和 review diff 使用 `.power-agent/review-runs/` scratch artifacts 交接；截图、日志、trace、benchmark 等 reviewer 资产按 run 放入 `assets/`，只通过 `review-assets.md` 显式命名，并由当前 review session 的权威 run root 约束，同时绑定 target+paths/finding scope、freshness、source 与 sensitivity。它们不进入 commit，也不替代 exec-plan Session Log；无 manifest 时不得扫描目录。
-- 至少运行路径和引用检查；有条件时运行子代理 eval。
+- 运行与当前改动直接相关的路径和引用检查；调用方式改动额外运行 `scripts/check-invocation-consistency.sh`。
 
 ### 共享 reference 文件
 

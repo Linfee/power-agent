@@ -93,4 +93,3 @@ BLOCKED 时保持 handoff 完整：已确认的事实、已尝试的动作和缺
 
 - `references/testing-guide.md`：好测试、接缝与 mock 的位置；strict TDD 限定规则。
 - `references/testing-anti-patterns.md`：测试与 mock 的反模式约束。
-- `references/stress-scenarios.md`：行为边界的验证场景。

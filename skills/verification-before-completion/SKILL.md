@@ -51,7 +51,7 @@ verified_at：<验证时间>
 - 交给 `finishing-a-development-branch` 时，`commit_sha / passed / verified_at / 证据` 组成 `verification_evidence`。
 - `commit_sha`、退出码、时间只能来自真实工具输出、CI 或用户提供的可复查记录；拿不到就写 `unknown`，且不能据此给 DONE。计划运行但还没跑的命令不是证据。
 
-填写示例见 `references/output-contract-examples.md`；按任务类型选择验证路径的建议见 `references/verification-playbook.md`；行为边界的验证场景见 `references/stress-scenarios.md`。
+- 填写示例见 `references/output-contract-examples.md`；按任务类型选择验证路径的建议见 `references/verification-playbook.md`。
 
 ## 怎么审 Proof Block
 

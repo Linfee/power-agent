@@ -51,6 +51,7 @@ implement                      → 准备（git worktree 按需隔离 + exec-pla
 |-------|------|--------|
 | `discuss` | 通用讨论：任何需要想清楚再行动的问题（产品、架构、方案、营销等），行动前讨论、澄清与对齐 | '讨论', '方案讨论', 'brainstorming' |
 | `writing-plans` | 创建包含验收与验证路径的开发 compact exec-plan | '创建开发 exec-plan', '开发任务拆解' |
+| `codebase-design` | 具体模块的接口、深度、seam / adapter 与可观察测试表面判断 | '模块设计', '模块拆分', '接口收敛', '薄 wrapper', 'adapter', 'seam', 'port' |
 | `implement` | 执行或恢复任何开发计划（exec-plan、手写计划、任务清单或 spec） | '执行开发计划', '恢复开发实施' |
 | `systematic-debugging` | 探索式根因调查：以因果证据、安全边界和风险相称的性能/稳定性证据约束修复交接 | 'bug', '测试失败', '性能退化', 'flaky', 'debug' |
 | `proof-oriented-development` | 证明导向开发闭环：小步实现、最小相关验证、交付 Proof Block | '实现功能', 'Proof Block', '最小有效验证' |

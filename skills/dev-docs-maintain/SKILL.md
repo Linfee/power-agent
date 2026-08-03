@@ -62,7 +62,6 @@ python3 "$SKILL_DIR/scripts/bundle_status.py" record \
 | [维护策略](./references/maintenance-policy.md) | 判定 freshness、验证方法、登记资格或 accepted ADR 边界时 |
 | [OKF 规范](./references/okf-v0.1.md) | 修复 frontmatter、Concept、链接或 Bundle 结构时 |
 | [脚本](./scripts/bundle_status.py) | 确认扫描报告字段、record 参数或脚本失败原因时 |
-| [压力场景](./references/stress-scenarios.md) | 验证行为边界时 |
 
 ## scanner 输出语义
 

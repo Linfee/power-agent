@@ -31,6 +31,7 @@
 |-------|------|
 | `discuss` | 通用讨论——任何需要想清楚再行动的问题，行动前的讨论、澄清与对齐，审查强度与决策权重相称 |
 | `writing-plans` | 将会修改软件资产的讨论结论 / spec / 用户描述转化为开发 compact exec-plan，并按风险选择 self-review 或独立 reviewer |
+| `codebase-design` | 为具体模块收窄接口、评估模块深度，并判断 seam / adapter 与可观察测试表面是否必要 |
 | `implement` | 执行或恢复任何开发计划（exec-plan、手写计划、任务清单或 spec）；优先 team 模式，通过 scratch artifacts 交接并使用单 reviewer 双 verdict 内审，再完成全量审查、验证与收尾 |
 | `dev-docs` | 长期开发知识回写——把稳定系统事实、边界、决策依据或集成参考写入/修订 `docs/`；软件资产变更的开发计划委派给 `writing-plans` |
 | `dev-docs-maintain` | Docs Bundle 维护——按需检查健康状态、修复结构或知识漂移，并登记已完成验证 |

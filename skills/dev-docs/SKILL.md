@@ -86,7 +86,6 @@ Payment Domain 定义支付状态流转和重试约束。
 |---|---|
 | [OKF 规范](./references/okf-v0.1.md) | 判断 Concept、frontmatter、链接或 Bundle 最小合规时 |
 | [项目 Docs Profile](./references/project-docs-profile.md) | 写入本仓库 `docs/`、选择 custom fields、处理 YAML 迁移或 freshness 策略时 |
-| [压力场景](./references/stress-scenarios.md) | 触发边界、敏感来源、YAML 迁移或链接处理可能误判时 |
 
 ## 可选消费测试
 

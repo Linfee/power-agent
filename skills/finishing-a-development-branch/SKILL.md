@@ -59,7 +59,7 @@ description: |-
 
 ## References
 
-- `references/options-template.md`：未提交提示、标准选项展示与压力场景。
+- `references/options-template.md`：未提交提示与标准选项展示。
 - `references/destructive-confirmation-template.md`：丢弃路径的破坏性操作确认文案。
 - `references/pr-template.md`：选择“创建PR”时的 PR 描述模板。
 - `references/recovery-playbook.md`：阻塞/取消场景的恢复指引与最小恢复输出要求。

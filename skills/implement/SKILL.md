@@ -69,6 +69,5 @@ description: |-
 - `references/review-artifact-protocol.md`：scratch workspace、task/report 交接、review package 与 Review Assets 协议。
 - `references/task-reviewer-prompt.md`：单 reviewer 双 verdict 的输出契约。
 - `references/plan-amendment.md`：执行中需求变更的 material 判定与 Gate 处理。
-- `references/review-stress-scenarios.md`：行为边界的验证场景。
 - `references/progress-log-template.md`：Session Log 格式；正常路径 concise，`BLOCKED / UNKNOWN` 或关键冲突时 detailed。
 - `scripts/review-workspace` / `scripts/review-package`：scratch 目录与 review package 生成。

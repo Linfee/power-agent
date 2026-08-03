@@ -70,6 +70,8 @@ exec-plan 服务跨模块、多批次、跨会话或高风险工作；边界清�
 
 拆任务前先扫描预重构机会：能让变更变容易的小重构，先做或并入首个任务。
 
+涉及新模块、模块拆分/合并、接口变化、port、seam 或 adapter 时，按需调用 `codebase-design`：将其模块边界、删除测试和 seam 证据吸收进 Key Decisions / Proof Strategy，不创建平行设计产物。
+
 `plan.md` 与 `review-contract.md` 必须以同名字段一致表达 `Gate Revision`、`Plan Risk`、`Review Path`、`Plan Review Status`、`Independent Review` 与 `Independent Review Basis`；approved / issues_found 的 basis 必须绑定当前 revision 的稳定 history；material amendment 必须递增 Gate Revision、保留旧 history 并重新进入相应 Gate。
 
 ### Step 2：Self-Review 与风险驱动 Gate
@@ -112,4 +114,3 @@ exec-plan 服务跨模块、多批次、跨会话或高风险工作；边界清�
 
 - `references/plan-template.md`、`review-contract-template.md`、`context-template.md`、`tasks-template.md`：计划包模板。
 - `references/plan-reviewer-prompt.md`：medium/high 独立审查 prompt。
-- `references/risk-review-stress-scenarios.md`：风险分级与 Gate 的行为验证场景。

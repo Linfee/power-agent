@@ -74,6 +74,7 @@ graph TB
 |------|-------|------|
 | **规划层** | `discuss` | 通用讨论：任何需要想清楚再行动的问题（产品、架构、方案、营销等），行动前澄清与对齐；审查强度与决策权重相称，默认内联结论，按需落盘 spec/doc |
 | | `writing-plans` | 为跨模块、多批次、跨会话或高风险的软件资产变更创建开发 compact exec-plan；所有开发计划 self-review，中/高风险增加独立 reviewer，`review-contract.md` 供人类按需审阅 |
+| | `codebase-design` | 具体模块的结构深化判断：从消费者收窄接口、用删除测试评估深度，并以真实变化边界决定 seam / adapter；结论交给既有计划与 Proof |
 | | `dev-docs` | 维护 `docs/` 中可长期复用的工程知识：稳定系统事实、边界、决策依据与集成参考；软件资产变更的实施、重构或迁移计划交给 `writing-plans` |
 | **实现层** | `implement` | 任何开发计划的执行编排：准备（隔离工作区 + exec-plan Plan Review Gate）→ 批次调度与单 reviewer 双 verdict 内审 → 全量审查 → working-tree gate → 验证 → 收尾；优先 team 模式，缺失 team 工具时回退并行或单实现子代理；实质 amendment 递增 revision 并重新进入风险审查 |
 | | `proof-oriented-development` | 证明导向开发闭环：小步实现、最小相关验证、输出 Proof Block |
@@ -81,7 +82,7 @@ graph TB
 | | `verification-before-completion` | 审计 Proof Block / 等价证据块、原始复现、临时产物和风险相称的性能/稳定性证据，输出 verification_evidence |
 | **审查层** | `code-review` | 单主审多维审查、修复验证、重要性/实现风险分层与增强独立终审编排；评估内部与外部审查反馈 |
 | | `harness-engineering-review` | Agent 工作流七维度审查 |
-| **基础设施层** | `writing-skills` | Skill 创建、修改、契约审查与压力场景验证 |
+| **基础设施层** | `writing-skills` | Skill 创建、修改与契约审查 |
 | | `finishing-a-development-branch` | dirty 工作区或无 HEAD 仓库的待提交提示，以及验证通过后的分支处置决策（merge/PR/保留/丢弃） |
 | | `setup-power-agent` | 项目知识体系初始化 |
 | | `dev-docs-maintain` | 按需检查既有 `docs/` OKF Bundle 健康状态，修复结构或知识漂移，并登记已完成验证到 verification ledger |
@@ -126,7 +127,6 @@ code-review 在最终验证前默认强制执行；合并/PR 前不得跳过未�
 | 代码变更 | `implement` 子代理 | 单内部 reviewer / `code-review`（最终验证前） | Git working-tree diff |
 | Session Log | `implement` | 归档 | `docs/exec-plans/completed/` |
 | 分支处置结论 | `finishing-a-development-branch` | implement / 用户 | 结构化输出 |
-| Skill 压力场景 | `writing-skills` | Skill 作者 / reviewer | Skill 修改说明或 docs |
 
 ## 子代理模式
 

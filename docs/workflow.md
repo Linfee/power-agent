@@ -118,7 +118,18 @@ scope:
 
 **不做：** 不写任何代码，不创建 exec-plan，不做接口签名、数据表/字段、库选型、类/函数拆分、文件路径等实现细节；允许讨论影响范围/验收/planning 的上层技术方向。结论存在 planning 阻塞缺口时，先修复并重新审查。
 
+### codebase-design — 具体模块深化
+
+**触发：** 设计或审查具体模块簇，需要收窄接口、判断薄 wrapper、seam / adapter 或可观察测试表面时。
+
+**核心判断：** 从消费者需要的行为出发，识别模块隐藏的复杂度，执行删除测试，并只为真实外部 effect、协议边界或受需求支持的运行时变体建立 seam。测试 fake 本身不构成公开 seam 的理由。
+
+**交接：** 进入计划时把模块边界、接口、删除测试、seam 理由和接口级 Proof 写入 `writing-plans` 的 Key Decisions / Proof Strategy；直接实现时交给 `proof-oriented-development` 执行验证。
+
+**不做：** 不代替 `discuss` 的架构取舍、领域建模、迁移/风险决策、exec-plan、实施或最终 Proof；高影响替代接口比较仅按需使用。
+
 ---
+
 
 ### writing-plans — 开发实现计划创建
 
@@ -250,7 +261,7 @@ Review assets 只读权威当前 run root 内 manifest 命名且通过 containme
 
 **触发：** 新增、修改、审查或优化 Skill。
 
-**核心流程：** 诊断（行为缺口 + 五失败模式文本病灶）→ 改动 → 验证（description 过路由评测、行为过压力场景、调用方式过一致性脚本）→ 同步（契约、路由、frontmatter/docs）。判据 SSOT 为 `skills/writing-skills/references/criteria.md`。
+**核心流程：** 诊断（行为缺口 + 五失败模式文本病灶）→ 改动 → 核对（直接 consumer、契约、frontmatter、路由索引与引用路径）→ 同步（契约、路由、frontmatter/docs）。判据 SSOT 为 `skills/writing-skills/references/criteria.md`。
 
 **交棒给：** `code-review`，再经工作区检查进入最终验证阶段。
 

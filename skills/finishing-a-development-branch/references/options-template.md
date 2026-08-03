@@ -12,26 +12,6 @@
 
 工作区 dirty（含 staged、unstaged 或 untracked）或仓库尚无 HEAD 提交时使用。它是收尾前置提示，不是验证结果；不要先调用或展示 `verification-before-completion`，也不要显示 `PARTIAL`、`passed=false` 或 `commit_sha=unknown`。
 
-## 压力场景
-
-### 场景：新仓库尚无 HEAD
-- 用户输入：完成当前实现并收尾。
-- 无本规则易错行为：把 `commit_sha` 不存在渲染为 `PARTIAL / passed=false / unknown`。
-- 期望行为：直接展示“当前改动尚未提交”，提示提交后继续。
-- 验收点：不出现验证失败措辞；不要求 HEAD、base 或验证证据。
-
-### 场景：已有 HEAD，但本轮改动未提交
-- 用户输入：处理完改动后走分支收尾。
-- 无本规则易错行为：先运行完成前验证，再因 HEAD 未包含当前改动而报错。
-- 期望行为：在验证前展示未提交提示。
-- 验收点：不声称已有提交级验证；不展示 merge / PR 选项；提交后重新检查工作区，再决定是否进入 VBC。
-
-### 场景：工作区 clean，但验证失败
-- 用户输入：提交后验证失败，尝试继续分支收尾。
-- 无本规则易错行为：把任何收尾问题都包装成未提交提示。
-- 期望行为：按原 gate 返回 `BLOCKED / passed=false`。
-- 验收点：不展示未提交提示；明确报告真实失败证据。
-
 ## 标准展示
 
 Implementation complete. What would you like to do?

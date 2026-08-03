@@ -73,6 +73,6 @@ manifest 为 `not_applicable` 时，禁止扫描 `.power-agent`、`review-runs/`
 - 重要性/实现风险：`references/risk-classification.md`
 - 显式并行双审：`references/conflict-resolution.md`
 - 输出协议：`references/output-contract.md`
-- 维护/eval 场景：`references/review-workflow-scenarios.md`
+- 审查生命周期：`references/review-lifecycle.md`
 
 上游为 `implement`；下游依次为反馈评估、修复验证/独立终审、工作区 Gate 与完成前验证。`dev-docs-maintain` 仅在文档健康或验证登记需要时触发。
