@@ -3,13 +3,13 @@ type: Execution Plan
 scope:
   - skill-design
   - workflow-policy
-status: active
+status: completed
 runner:
-  state: AWAITING_COMMIT
+  state: DONE
   batch: 0/2
-  phase: null-outcome
+  phase: completed
   fix_round: 0/3
-  next_action: commit-then-run-final-verification
+  next_action: none
 ---
 
 # 最小充分实现与复杂性准入融合计划
@@ -206,7 +206,18 @@ runner:
 ### 临时产物处置
 - 上述 `local://` contract、packages、results 与 judgment 在独立审查消费后全部删除；不进入仓库或常驻 eval。
 
+## Completion Verification Evidence
+
+- 状态：`DONE`；`passed=true`；Proof Block 审计：`accepted`。
+- `commit_sha`：`5f1923bc68756c277cadaded189b4cdbe88611a4`。
+- `verified_at`：`2026-08-04T23:27:44Z`。
+- `git status --short`：退出码 0、无输出；验证时工作区 clean。
+- `git diff --name-only HEAD^ HEAD`：仅包含本计划的 `plan.md` 与 `review-contract.md`，candidate 目标未进入提交。
+- `bash scripts/check-invocation-consistency.sh`：退出码 0，调用方式标志与速查表登记一致。
+- `bash scripts/check-shared-references.sh`：退出码 0，共享 reference 文件一致。
+- 阻塞项：无。
+
 ## 当前状态
 
-- 当前进度：baseline 14/14 按 oracle 通过，触发 `NULL_OUTCOME`；常规独立主审通过且无阻塞，candidate 目标零 diff，会话 scratch 已清空，两个仓库结构检查均通过。
-- 下一步：提交本 exec-plan 记录；工作区 clean 后运行完成前验证并归档到 completed。
+- 当前进度：`NULL_OUTCOME` 已由 baseline 14/14、常规独立主审与 clean-HEAD 完成前验证闭合；candidate 目标零改动，会话 scratch 已清空。
+- 下一步：none；计划归档到 `docs/exec-plans/completed/2026-08-04-complexity-admission/`。
