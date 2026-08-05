@@ -28,12 +28,12 @@ scope:
 
 ## Acceptance
 
-- [ ] POD 的实现梯子只在满足当前契约、消费者、风险边界与 Proof 的方案间选择，并明确长期所有权证据与不可削减边界。
-- [ ] writing-plans 对五类长期所有权执行条件性 self-review；plan reviewer 使用既有 schema 将缺证据、不必要/高风险和轻微取舍分别映射为 missing evidence、blocking 与 advisory。
-- [ ] ADR 只记录维护决策和消费者投影，不成为 Skill 运行时依赖；architecture 仅增加一条原则。
-- [ ] 排除文件零 diff，且没有新增共享 reference、检查脚本、路由、状态或评测基础设施。
-- [ ] 预注册 baseline/candidate 对照中 candidate 无 oracle/acceptance/security/data/Proof 回退；baseline 已通过不再作为撤销条件。
-- [ ] 相关结构检查、独立代码审查和完成前验证有新鲜证据。
+- [x] POD 的实现梯子只在满足当前契约、消费者、风险边界与 Proof 的方案间选择，并明确长期所有权证据与不可削减边界。
+- [x] writing-plans 对五类长期所有权执行条件性 self-review；plan reviewer 使用既有 schema 将缺证据、不必要/高风险和轻微取舍分别映射为 missing evidence、blocking 与 advisory。
+- [x] ADR 只记录维护决策和消费者投影，不成为 Skill 运行时依赖；architecture 仅增加一条原则。
+- [x] 排除文件零 diff，且没有新增共享 reference、检查脚本、路由、状态或评测基础设施。
+- [x] 预注册 baseline/candidate 对照中 candidate 无 oracle/acceptance/security/data/Proof 回退；baseline 已通过不再作为撤销条件。
+- [x] 相关结构检查、独立代码审查和完成前验证有新鲜证据。
 
 ## Agent 自主边界
 

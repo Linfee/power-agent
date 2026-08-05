@@ -3,13 +3,13 @@ type: Execution Plan
 scope:
   - skill-design
   - workflow-policy
-status: active
+status: completed
 runner:
-  state: AWAITING_COMMIT
+  state: DONE
   batch: 2/2
-  phase: pre-verification
+  phase: completed
   fix_round: 2/3
-  next_action: commit-then-final-verification
+  next_action: none
 ---
 
 # 最小充分实现与复杂性准入融合计划
@@ -218,6 +218,19 @@ runner:
 ### 临时产物处置
 - `local://complexity-admission-r5/`：normal sensitivity；review 已消费，提交前删除并确认 `local://` 清空。
 
+## r5 Completion Verification Evidence
+
+- 状态：`DONE`；`passed=true`；Proof Block 审计：`accepted`。
+- `commit_sha`：`bfb8647bf104398985e6f3e495503838bacbb589`。
+- `verified_at`：`2026-08-05T00:14:52Z`。
+- `git status --short`：退出码 0、无输出；验证时工作区 clean。
+- `git diff --name-status HEAD^ HEAD`：只包含约定的三个 Skill/Prompt、ADR-0008、architecture 与 active plan package。
+- `bash scripts/check-invocation-consistency.sh`：退出码 0，调用方式标志与速查表登记一致。
+- `bash scripts/check-shared-references.sh`：退出码 0，共享 reference 文件一致。
+- `git diff --check HEAD^ HEAD` 与明确排除路径 diff：退出码 0、无输出。
+- 临时产物：`local://` 0 files；r5 scratch 已删除。
+- 阻塞项：无。
+
 ## r4 Execution Result（历史）
 
 - Outcome：`NULL_OUTCOME`。`smol` baseline 的 POD P1–P5、writing-plans P1–P5、plan reviewer R1–R4 全部符合预注册 oracle；按计划不生成 candidate，也不修改 Skill、reviewer、architecture 或新增 ADR。
@@ -267,5 +280,5 @@ runner:
 
 ## 当前状态
 
-- 当前进度：T1–T3 已实施；candidate fix round 2 的 14/14 probe、结构检查与常规全量主审均通过，scratch 已清空，工作区等待提交。
-- 下一步：提交候选；clean HEAD 后运行完成前验证并归档计划。
+- 当前进度：r5 实施、candidate fix round 2、常规全量主审与 clean-HEAD 完成前验证全部通过；scratch 已清空。
+- 下一步：none；计划归档到 `docs/exec-plans/completed/2026-08-04-complexity-admission/`。
