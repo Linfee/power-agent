@@ -3,13 +3,13 @@ type: Execution Plan
 scope:
   - skill-design
   - workflow-policy
-status: completed
+status: active
 runner:
-  state: DONE
-  batch: 0/2
-  phase: completed
-  fix_round: 0/3
-  next_action: none
+  state: AWAITING_COMMIT
+  batch: 2/2
+  phase: pre-verification
+  fix_round: 2/3
+  next_action: commit-then-final-verification
 ---
 
 # 最小充分实现与复杂性准入融合计划
@@ -19,6 +19,7 @@ runner:
 - 用户确认吸收 Ponytail 的“当前证据购买复杂性”与 ordered ladder，但不引入独立 Skill、mode、hook、命令族、debt/audit/gain 或常驻评测机制。
 - 与 `kimi-worker` 收敛后，候选范围缩小为 planning 与 implementation 两个真实缺口：显式实现选型顺序，以及规划阶段对长期所有权的证据准入。
 - 候选必须允许 null outcome：若 baseline 已稳定避免五类过度构建，或 candidate 造成 acceptance/security/Proof 回退，则撤销候选，不为完整性强行合入。
+- r5 material amendment：用户在新 `feat/complexity-admission` 分支明确要求实施该计划，覆盖 r4 的 null-outcome 停止条件。baseline 已通过不再撤销 candidate；candidate 仍须在相同 oracle 下无回退，任何 acceptance/security/data/Proof 回退仍立即撤销。
 
 ## Goal / Done Means
 
@@ -54,18 +55,18 @@ runner:
 ## Agent 自主边界
 
 - 可自由决策：在不改变语义的前提下收敛中文措辞、选择 ADR slug、确定 architecture 原则的链接表达，以及选择最小结构检查命令。
-- 不可自行决策：扩大到新 Skill/reference/script、修改 reviewer/workflow、弱化 Proof/security/correctness、改变 plan reviewer schema，或在探针失败/null outcome 时保留候选。
+- 不可自行决策：扩大到新 Skill/reference/script、修改 reviewer/workflow、弱化 Proof/security/correctness、改变 plan reviewer schema，或在 candidate 出现 oracle/acceptance/security/data/Proof 回退时保留候选。
 - 必须保持的不变量：`codebase-design` 独占 seam/adapter 裁决；Power-Agent 的契约、风险、Proof、review、verification 优先于最小化；Skill 独立安装不依赖 ADR 可达。
 - 升级条件：候选需要新增运行时状态、跨 Skill 共享规范文件、现有 reviewer 新职责或评测基础设施时停止并重新计划。
 
 ## Plan Review Gate
 
-- Gate Revision：r4
+- Gate Revision：r5
 - Plan Risk：medium
 - Review Path：self-review + independent reviewer
 - Plan Review Status：APPROVED
 - Independent Review：approved
-- Independent Review Basis：gate_revision=r4; kind=independent-review; record=Plan Review History › Gate Revision r4
+- Independent Review Basis：gate_revision=r5; kind=independent-review; record=Plan Review History › Gate Revision r5
 
 ## Plan Review History
 
@@ -98,6 +99,15 @@ runner:
 - Independent Review Basis：gate_revision=r4; kind=independent-review; record=Plan Review History › Gate Revision r4
 - Execution Adjustment：用户要求测试避免昂贵的 `gpt-5.6-sol`；probe 模型改为 `smol`，场景、oracle、package 与回滚不变。此前 default-model baseline 输出废弃，不参与任何对照或结论。
 
+### Gate Revision r5
+
+- Amendment Authorization：用户明确要求“在新的 feat 分支，实施该 plan”，授权覆盖 r4 的 null-outcome 停止条件，但不授权扩大 Scope 或接受 candidate 回退。
+- Material 判定：是；改变 Acceptance、Proof 通过条件、Agent 自主边界与 Rollback 触发条件。
+- Plan Risk：medium；Scope 与目标文件不变，不新增公共 API、运行时机制、依赖或 schema。
+- Self-review：通过。历史 NULL_OUTCOME 保留为 r4 证据；r5 只把 baseline 全通过从停止条件改为历史基线，candidate 仍必须通过同一 P1–P5/R1–R4 oracle、结构检查、独立审查与完成前验证。
+- Independent Review：approved；结论：APPROVED。用户授权、历史边界、Scope、hard rollback 与冻结 contract 均可执行且无缺口。
+- Independent Review Basis：gate_revision=r5; kind=independent-review; record=Plan Review History › Gate Revision r5
+
 ## Evidence Cache
 
 - `skills/proof-oriented-development/SKILL.md:24-34` 已规定每个增量的实现与 Proof 循环，但未定义实现选型顺序。
@@ -110,7 +120,7 @@ runner:
 
 - T1 [建立决策与实现准则]：新增短 ADR；在 POD 内联 ordered ladder、停止条件、长期所有权证据来源和不可削减边界；完成信号是规则自包含且不依赖 ADR 运行时可达。
 - T2 [增加规划准入]：在 writing-plans self-review 与 plan reviewer 中加入阶段特有的证据检查和三层 verdict 映射；完成信号是 low 路径由 self-review 覆盖，medium/high 路径无法带着未解释的长期所有权交棒，且 schema 不变。
-- T3 [同步架构并验证]：architecture 增加一条原则，运行预注册 baseline/candidate 对照、结构检查与审查；完成信号是无 null/regression 回滚触发，scratch 已删除且排除文件零 diff。
+- T3 [同步架构并验证]：architecture 增加一条原则，运行预注册 baseline/candidate 对照、结构检查与审查；完成信号是 candidate 无 regression 回滚触发，scratch 已删除且排除文件零 diff。
 
 ## Proof Strategy
 
@@ -140,12 +150,12 @@ runner:
 ### Consumer C — independent plan-reviewer probe
 
 - 规则输入：仅 `skills/writing-plans/references/plan-reviewer-prompt.md`；实际替换 `PLAN_DIR_PATH` 并读取下列临时完整 package，使用其现有 YAML schema。
-- **R1 missing evidence**：`local://complexity-admission-probes-r4-smol-v2/R1`；除 date-fns 所有权证据外，路径、Acceptance、任务、Proof、Gate 与 review-contract 均具体合法。Oracle：`ISSUES_FOUND`，`missing_evidence` 非空，要求补证或删除；不得仅 advisory。
-- **R2 blocking**：`local://complexity-admission-probes-r4-smol-v2/R2`；Evidence Cache 已确认官方 SDK 约束与两个具体消费者，但 Key Decisions 选择重复手写集成。Oracle：`ISSUES_FOUND`，`blocking_issues` 非空。
-- **R3 justified dependency/boundary**：`local://complexity-admission-probes-r4-smol-v2/R3`；官方 SDK、窄 adapter、具体路径、Acceptance 与 Proof 完整。Oracle：`APPROVED`，无 missing/blocking；轻微 advisory 允许。
-- **R4 justified config/lifecycle**：`local://complexity-admission-probes-r4-smol-v2/R4`；部署配置、共享 pool、具体路径、Acceptance 与生命周期 Proof 完整。Oracle：`APPROVED`，无 missing/blocking；轻微 advisory 允许。
-- 预注册交接：v1 smol package 因非 ownership 的计划信息不足而在 instrument self-check 中作废，未运行 candidate。修正合同冻结在 `local://complexity-admission-probe-contract-r4-smol-v2.json`，model=`smol`，SHA-256=`eee150bbc9d65cf69dc9b4b85646b738a7e6e207984323fb46e5450a0793ac23`；完整输出写入 `local://complexity-admission-probe-results-r4-smol-v2.json`。此前 default/v1 输出全部废弃；任何文件缺失、baseline 后修改或 hash 不匹配时立即中止。
-- 通过条件：candidate 修复 baseline 中可定位的 oracle 失败，三个消费者均无回退；Null outcome：baseline 的 A/B/C 全部符合 oracle，则不实施或撤销候选；硬失败：candidate 任一 oracle 失败，立即撤销候选。
+- **R1 missing evidence**：`local://complexity-admission-r5/plan-reviewer-cases/R1`；除 date-fns 所有权证据外，路径、Acceptance、任务、Proof、Gate 与 review-contract 均具体合法。Oracle：`ISSUES_FOUND`，`missing_evidence` 非空，要求补证或删除；不得仅 advisory。
+- **R2 blocking**：`local://complexity-admission-r5/plan-reviewer-cases/R2`；Evidence Cache 已确认官方 SDK 约束与两个具体消费者，但 Key Decisions 选择重复手写集成。Oracle：`ISSUES_FOUND`，`blocking_issues` 非空。
+- **R3 justified dependency/boundary**：`local://complexity-admission-r5/plan-reviewer-cases/R3`；官方 SDK、窄 adapter、具体路径、Acceptance 与 Proof 完整。Oracle：`APPROVED`，无 missing/blocking；轻微 advisory 允许。
+- **R4 justified config/lifecycle**：`local://complexity-admission-r5/plan-reviewer-cases/R4`；部署配置、共享 pool、具体路径、Acceptance 与生命周期 Proof 完整。Oracle：`APPROVED`，无 missing/blocking；轻微 advisory 允许。
+- r5 预注册交接：`local://complexity-admission-r5/contract.json` 已冻结，model=`smol`，SHA-256=`21f0dd027c07b19f135d0c330ee8983c734ae291fd5eff106531225a4f03a0e0`；包含三个 baseline 规则快照及 hash、R1–R4 八个 package 文件 hash、固定场景/instruction/oracle 与 baseline/candidate/judgment 输出路径。baseline 后合同或快照 hash 不匹配时立即中止。
+- r5 通过条件：baseline 仅作为历史对照，不再触发 null outcome；candidate 的 P1–P5 与 R1–R4 必须全部符合相同 oracle，任一回退立即撤销候选。
 - 次证明：检查 plan reviewer schema 未变、排除文件零 diff、无新 Skill/reference/script/Gate/state；运行仓库已有的 invocation/shared-reference 等相关结构检查。
 - 非证明：仅阅读、仅格式化、LOC 减少、Ponytail 外部 benchmark、未运行命令或 Prompt 快照。
 - 已知未验证面：小样本只作为采用闸，不证明跨模型普遍收益；不恢复本仓已删除的常驻 eval 机制。
@@ -163,14 +173,52 @@ runner:
 - 风险：相同概念在三个阶段投影后发生语义漂移。
   - 缓解：ADR 登记消费者与两个共享语义原子；同一变更检查全部投影，但不复制长篇规范。
 - 风险：一次性探针误被当作普遍有效性证明。
-  - 缓解：只作采用/非回归闸；null outcome 明确允许“不改”。
+  - 缓解：探针只作 non-regression 闸，不再把 baseline 已通过解释为无需实施；是否引入显式政策由本次用户授权决定。
 - 回滚：仅撤销本计划创建或修改的候选文件；不使用 reset/clean，不触碰任务外改动。
 
 ## Optional Split Files
 
 - none
 
-## Execution Result
+## r5 Execution Progress
+
+- r5 Gate：`APPROVED`；独立 reviewer 已核对用户授权、Scope、历史边界、contract 与 hard rollback。
+- Probe contract：`local://complexity-admission-r5/contract.json`；SHA-256 `21f0dd027c07b19f135d0c330ee8983c734ae291fd5eff106531225a4f03a0e0`；model=`smol`。
+- Baseline：14 个独立 invocation 已完成并写入 `local://complexity-admission-r5/baseline-results.json`；SHA-256 `100d4058ef0c770b3e6335e08867f3b2b1d9cfc1dd18177f7a17083260c8fa33`。
+- Candidate round 0：`candidate-results-round0.json` SHA-256 `acdd0ae63206b6a76576775b02036b7303dd390eecfb1a112a048f8a9f6c3abb`；judgment `0fb73c8f53729f6c6ac5837ce0c5553b5fb430de7e2c377dd8c953d10c17b50f`。唯一回退为 plan reviewer/R4 将已由运行边界购买的共享 pool 生命周期误要求提前选择私有库；已收窄证据粒度，fix round 1 待重跑。
+- Candidate round 1：`candidate-results-round1.json` SHA-256 `872b42fd7a682db57806d9d9ce50dbae6186e8ff8e965562b6c75ed4f7a05480`；judgment `99454ecc828d16dcdbf425d705ddec3035731108c014afe278657ca2baf01b20`。R4 已恢复，唯一回退转为 plan reviewer/R3 不接受 Evidence Cache 中具体且无保留的提供方 SDK 约束并建议手写 direct signing；已明确计划内已确认事实的证据效力，fix round 2 待重跑。
+- Candidate round 2：`candidate-results.json` SHA-256 `a34f3ba61ca9769e72f7b47445f35e3c1a202558b6b07f9d000c23413eb2deee`；judgment `5a1ab5be897d4d686524f81e7b062b5726d45abb104372e7412ba50208202d42`。POD P1–P5、writing-plans P1–P5、plan reviewer R1–R4 全部通过；`candidate_all_pass=true`、`regression_count=0`、`hard_failure=false`。
+
+## r5 Proof Block
+
+### 目标约束
+- 在原 Scope 内显式固化 ordered ladder 与长期所有权证据准入；不新增工作流机制、schema、shared reference 或第二套 seam/reviewer 职责。
+
+### 验收标准
+- POD、writing-plans、plan reviewer 三个阶段投影与 ADR/architecture 一致；candidate 的 P1–P5、R1–R4 无 oracle/security/data/Proof 回退；排除文件零 diff。
+
+### 最小验证命令
+- 会话级 `completion(..., model="smol")`：同一冻结 contract 下运行 baseline/candidate 共 28 个独立 invocation，并由独立 smol judge 逐例裁决。
+- `bash scripts/check-invocation-consistency.sh`、`bash scripts/check-shared-references.sh`、`git diff --check`：验证项目登记、共享引用与 diff 结构。
+
+### 运行结果
+- 状态：PASS
+- 关键输出：candidate fix round 2 为 14/14 PASS；`candidate_all_pass=true`、`regression_count=0`、`hard_failure=false`；两个结构检查输出 OK，`git diff --check` 无输出。
+- 常规全量主审：通过_含建议；重要性中、实现风险低、无阻塞，下一步继续流程。
+
+### 实现摘要
+- 修改 POD、writing-plans 与 plan reviewer 的阶段特有规则；新增 ADR-0008；architecture 只增加一条原则。plan reviewer schema 与明确排除文件未改。
+
+### 风险说明
+- baseline 与 candidate 均为 14/14；证据只证明显式政策无回退并形成稳定维护真源，不证明相对既有模型默认行为的增益。
+
+### 未验证项
+- 小样本不证明跨模型普遍收益；按约束未恢复常驻 eval 基础设施。
+
+### 临时产物处置
+- `local://complexity-admission-r5/`：normal sensitivity；review 已消费，提交前删除并确认 `local://` 清空。
+
+## r4 Execution Result（历史）
 
 - Outcome：`NULL_OUTCOME`。`smol` baseline 的 POD P1–P5、writing-plans P1–P5、plan reviewer R1–R4 全部符合预注册 oracle；按计划不生成 candidate，也不修改 Skill、reviewer、architecture 或新增 ADR。
 - 成本调整：用户要求普通测试避免昂贵的 `gpt-5.6-sol`；此前 default-model 输出与首版不完整 smol package 均作废，未参与裁决。
@@ -179,7 +227,7 @@ runner:
 - Independent judgment：`local://complexity-admission-baseline-judgment-r4-smol-v2.md`；SHA-256 `b1e4291b15226d234bd9367f52aa59a0d52f92e88517920a1ca554f45f0ba34f`；`baseline_all_pass=true`、`null_outcome=true`。
 - 标签说明：results JSON 的规范键为 `pod`、`planner`、`plan_reviewer`；independent judgment 展示层将 A/B 写作 planner/POD，与本计划 probe 章节的 A=POD、B=writing-plans 顺序相反。case 内容、输出映射与 oracle 核对无误，不影响 14/14 verdict。
 
-## Proof Block
+## r4 Proof Block（历史）
 
 ### 目标约束
 - 只在 baseline 暴露可定位缺口时引入复杂性准入规则；null outcome 必须保持候选文件零改动。
@@ -206,7 +254,7 @@ runner:
 ### 临时产物处置
 - 上述 `local://` contract、packages、results 与 judgment 在独立审查消费后全部删除；不进入仓库或常驻 eval。
 
-## Completion Verification Evidence
+## r4 Completion Verification Evidence（历史）
 
 - 状态：`DONE`；`passed=true`；Proof Block 审计：`accepted`。
 - `commit_sha`：`5f1923bc68756c277cadaded189b4cdbe88611a4`。
@@ -219,5 +267,5 @@ runner:
 
 ## 当前状态
 
-- 当前进度：`NULL_OUTCOME` 已由 baseline 14/14、常规独立主审与 clean-HEAD 完成前验证闭合；candidate 目标零改动，会话 scratch 已清空。
-- 下一步：none；计划归档到 `docs/exec-plans/completed/2026-08-04-complexity-admission/`。
+- 当前进度：T1–T3 已实施；candidate fix round 2 的 14/14 probe、结构检查与常规全量主审均通过，scratch 已清空，工作区等待提交。
+- 下一步：提交候选；clean HEAD 后运行完成前验证并归档计划。

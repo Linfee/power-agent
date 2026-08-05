@@ -18,7 +18,7 @@ scope:
 - POD 内联最小充分实现梯子、停止规则、长期所有权证据来源与不可削减边界。
 - writing-plans self-review 与 plan reviewer 增加条件性长期所有权证据准入。
 - 新增短 ADR，并在 architecture 设计原则中登记。
-- 运行预注册的一次性 baseline/candidate 对照，允许 null outcome 后撤销候选。
+- 运行预注册的一次性 baseline/candidate 对照；r5 中 baseline 仅作历史对照，candidate 回退仍触发撤销。
 
 ### Out of Scope
 
@@ -32,7 +32,7 @@ scope:
 - [ ] writing-plans 对五类长期所有权执行条件性 self-review；plan reviewer 使用既有 schema 将缺证据、不必要/高风险和轻微取舍分别映射为 missing evidence、blocking 与 advisory。
 - [ ] ADR 只记录维护决策和消费者投影，不成为 Skill 运行时依赖；architecture 仅增加一条原则。
 - [ ] 排除文件零 diff，且没有新增共享 reference、检查脚本、路由、状态或评测基础设施。
-- [ ] 预注册 baseline/candidate 对照未触发 null/regression 回滚；若触发则候选已撤销并如实记录结论。
+- [ ] 预注册 baseline/candidate 对照中 candidate 无 oracle/acceptance/security/data/Proof 回退；baseline 已通过不再作为撤销条件。
 - [ ] 相关结构检查、独立代码审查和完成前验证有新鲜证据。
 
 ## Agent 自主边界
@@ -43,8 +43,8 @@ scope:
 
 ## Proof
 
-- 主证明：r4 分别在 POD、writing-plans 与 plan reviewer 的真实消费边界运行 baseline/candidate；每次只提供对应规则，使用固定场景、instruction 与 oracle。任一消费者回退即失败，三组 baseline 全部符合 oracle 即 null outcome。
-- 预注册证据：用户要求 probe 使用 `smol`。v1 smol package 因非 ownership 的计划信息不足而在 instrument self-check 中作废，未运行 candidate；修正合同 `local://complexity-admission-probe-contract-r4-smol-v2.json` 已冻结，SHA-256=`eee150bbc9d65cf69dc9b4b85646b738a7e6e207984323fb46e5450a0793ac23`。R1–R4 现含具体路径、Acceptance、任务、Proof、Gate 与 review-contract；完整输出交接到 `local://complexity-admission-probe-results-r4-smol-v2.json`。此前 default/v1 输出不作为证据。
+- 主证明：r5 分别在 POD、writing-plans 与 plan reviewer 的真实消费边界运行同模型、同输入的 baseline/candidate；每次只提供对应规则。baseline 为历史对照，不再触发 null outcome；candidate 任一 oracle/acceptance/security/data/Proof 回退即失败并撤销。
+- 预注册证据：`local://complexity-admission-r5/contract.json` 已冻结，model=`smol`，SHA-256=`21f0dd027c07b19f135d0c330ee8983c734ae291fd5eff106531225a4f03a0e0`；包含三个 baseline 规则快照及 hash、R1–R4 八个 package 文件 hash、固定场景/instruction/oracle 与输出路径。
 - Plan reviewer oracle：缺证据→`ISSUES_FOUND + missing_evidence`；证据表明不必要→`ISSUES_FOUND + blocking_issues`；合理依赖/边界/配置/生命周期→`APPROVED` 且无 missing/blocking，schema 不变。
 - 次证明：目标文件结构与引用检查、排除文件零 diff、无新机制检查、独立代码审查。
 - 非证明：LOC 减少、外部 Ponytail benchmark、仅阅读或 Prompt 快照。
@@ -71,12 +71,12 @@ scope:
 
 ## Plan Review Gate
 
-- Gate Revision：r4
+- Gate Revision：r5
 - Plan Risk：medium
 - Review Path：self-review + independent reviewer
 - Plan Review Status：APPROVED
 - Independent Review：approved
-- Independent Review Basis：gate_revision=r4; kind=independent-review; record=Plan Review History › Gate Revision r4
+- Independent Review Basis：gate_revision=r5; kind=independent-review; record=Plan Review History › Gate Revision r5
 
 ## Plan Review History
 
@@ -106,7 +106,16 @@ scope:
 - Independent Review Basis：gate_revision=r4; kind=independent-review; record=Plan Review History › Gate Revision r4
 - Execution Adjustment：用户要求 probe 使用 `smol`；场景、oracle、package 与回滚不变，default-model 输出不作为证据。
 
-## Execution Disposition
+### Gate Revision r5
+
+- Gate Revision：r5
+- Amendment Authorization：用户明确要求在新 feat 分支实施该 plan，覆盖 r4 null-outcome 停止条件。
+- Material 判定：Acceptance、Proof、Agent 自主边界与 Rollback 触发条件变化；Scope、Plan Risk 与排除文件不变。
+- Self-review：通过；r5 contract 与 baseline snapshots 已冻结，candidate 仍受同一 oracle 和 hard rollback 约束。
+- Independent Review：approved；结论：APPROVED。授权、Scope、历史边界、contract/hash 与 candidate hard rollback 无缺口。
+- Independent Review Basis：gate_revision=r5; kind=independent-review; record=Plan Review History › Gate Revision r5
+
+## r4 Execution Disposition（历史）
 
 - Outcome：`NULL_OUTCOME`。低成本 `smol` baseline 的三个 consumer 组共 14 个 case 全部符合冻结 oracle。
 - Candidate：未生成；POD、writing-plans、plan reviewer、architecture、ADR 及明确排除文件均保持不变。
@@ -115,4 +124,4 @@ scope:
 
 ## Review Focus
 
-- 判断新增规则是否对应本仓真实边际缺口，范围是否保持最小，null outcome 是否可执行，以及 Proof 是否能防止“为了少而削减正确性与证据”。
+- 判断用户对 r4 null-outcome 的覆盖是否被准确限制为“仍在原 Scope 内实施”；r5 contract 是否可复查；candidate 是否仍以契约、安全、数据、Proof 和合理所有权优先，且不会新增第二套 seam/reviewer/workflow 职责。

@@ -164,3 +164,4 @@ code-review 在最终验证前默认强制执行；合并/PR 前不得跳过未�
 6. **证据优先** — 没有新鲜验证不得声称完成
 7. **上下文按需交接** — 大段任务、报告和 diff 通过 scratch artifacts 传递；review assets 按 run 隔离，只通过显式 manifest 交接，无 manifest 不扫描
 8. **实现/修复一次性，Reviewer 同会话连续** — reviewer 只在同一目标内验证自己的 findings，不能继续时回退新 reviewer（ADR-0007）
+9. **契约优先，层级最小** — 先满足当前契约、消费者、风险边界与 Proof，再选择 ordered ladder 上最早充分层级；长期所有权（新依赖、跨模块边界、外部配置面、持久共享状态、生命周期）由当前证据购买（ADR-0008）
