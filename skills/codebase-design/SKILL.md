@@ -1,8 +1,8 @@
 ---
 name: codebase-design
 description: |-
-  为具体模块、接口或重构判断模块深度、接口边界与 seam / adapter 是否必要时使用。用于设计或审查模块拆分、薄 wrapper、端口/adapter 与可观察测试表面；不用于需求讨论、领域建模、迁移规划或实施编排。
-  Triggers: 模块设计, 模块拆分, 接口收敛, 薄 wrapper, adapter, seam, port, 端口设计.
+  设计或审查模块拆分、接口边界、薄 wrapper、端口/adapter 与可观察测试表面时使用；不用于需求讨论、领域建模、迁移规划或实施编排。
+  Triggers: 模块设计, 接口收敛, seam, port, 端口设计.
 ---
 
 # Codebase Design

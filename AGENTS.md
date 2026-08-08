@@ -49,16 +49,16 @@ implement                      → 准备（git worktree 按需隔离 + exec-pla
 
 | Skill | 用途 | 触发词 |
 |-------|------|--------|
-| `discuss` | 通用讨论：任何需要想清楚再行动的问题（产品、架构、方案、营销等），行动前讨论、澄清与对齐 | '讨论', '方案讨论', 'brainstorming' |
+| `discuss` | 通用讨论：任何需要想清楚再行动的问题（产品、架构、方案、营销等），行动前讨论、澄清与对齐 | '讨论', '需求讨论', 'brainstorming' |
 | `writing-plans` | 创建包含验收与验证路径的开发 compact exec-plan | '创建开发 exec-plan', '开发任务拆解' |
-| `codebase-design` | 具体模块的接口、深度、seam / adapter 与可观察测试表面判断 | '模块设计', '模块拆分', '接口收敛', '薄 wrapper', 'adapter', 'seam', 'port' |
+| `codebase-design` | 具体模块的接口、深度、seam / adapter 与可观察测试表面判断 | '模块设计', '接口收敛', 'seam', 'port', '端口设计' |
 | `implement` | 执行或恢复任何开发计划（exec-plan、手写计划、任务清单或 spec） | '执行开发计划', '恢复开发实施' |
 | `systematic-debugging` | 探索式根因调查：以因果证据、安全边界和风险相称的性能/稳定性证据约束修复交接 | 'bug', '测试失败', '性能退化', 'flaky', 'debug' |
 | `proof-oriented-development` | 证明导向开发闭环：小步实现、最小相关验证、交付 Proof Block | '实现功能', 'Proof Block', '最小有效验证' |
 | `code-review` | 全量代码审查编排与审查反馈评估 | '代码审查', 'code review', '审查反馈' |
 | `verification-before-completion` | 完成前审计 Proof Block 并输出 verification_evidence | '完成前验证', 'verification', 'Proof Block 审计' |
-| `dev-docs` | 长期开发知识回写 | '文档知识沉淀', '系统事实回写', 'ADR 记录', '集成参考', 'dev-docs' |
-| `dev-docs-maintain` | Docs Bundle 健康检查、漂移修复与验证登记 | 'docs 健康检查', 'OKF Bundle 检查', '验证登记', '文档漂移修复', 'dev-docs-maintain' |
+| `dev-docs` | 长期开发知识回写 | '文档知识沉淀', 'ADR 记录', 'dev-docs' |
+| `dev-docs-maintain` | Docs Bundle 健康检查、漂移修复与验证登记 | 'docs 健康检查', '验证登记', '文档漂移修复', 'dev-docs-maintain' |
 | `setup-power-agent` | 项目初始化 | 手动调用 |
 | `harness-engineering-review` | 实践审查 | 手动调用 |
 | `writing-skills` | 创建/修改/验证 Skill | '写skill', '修改skill' |
@@ -74,6 +74,7 @@ implement                      → 准备（git worktree 按需隔离 + exec-pla
 | 证据优先 | 没有运行验证不得声称完成 |
 | 根因优先 | 没有根本原因分析没有修复 |
 | 并发限制 | 最大并行度 3 |
+| Skill description 长度 | 硬上限约 110 token、目标 ~100；改动后运行 `scripts/check-description-length.py`（cl100k 近似估算，误差 ±10） |
 
 ## 文档规范
 

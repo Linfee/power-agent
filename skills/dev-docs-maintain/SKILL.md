@@ -1,8 +1,8 @@
 ---
 name: dev-docs-maintain
 description: |-
-  当需要检查既有 `docs/` OKF Bundle 的健康状态、修复已发现的结构或知识漂移，或登记已经完成的验证时使用。不要用于首次撰写文档、裸“更新文档”或执行计划。
-  Triggers: docs 健康检查, OKF Bundle 检查, 验证登记, verification ledger, 文档漂移修复, dev-docs-maintain.
+  检查 `docs/` OKF Bundle 健康、修复已发现的结构或知识漂移、登记已完成验证时使用；不用于首次撰写文档、裸“更新文档”或执行计划。
+  Triggers: docs 健康检查, 验证登记, 文档漂移修复, dev-docs-maintain.
 ---
 
 # 维护既有 Docs Bundle

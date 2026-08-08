@@ -27,6 +27,7 @@ user-invoked 的 cognitive load 由项目的人维护 Skill 索引承担（power
 
 - **Leading word 调用锚定**：description 的用词应该是"你想要这个 Skill 时自己实际会说的词"。同一个词活在用户 prompt、docs、代码和 description 里时，模型把共享语言链接到 Skill，触发更可靠。审查时检查：触发词是用户嘴里的词，还是作者嘴里的词。
 - **弱词即 no-op**："要严谨""全面"不改变默认行为，只付负载。修法是换强词，不是加句子。
+- **长度上限**：硬上限约 110 token、目标 ~100——description 常驻上下文（§1 context load），超限部分每轮都在付 load。超限先删同义触发词、身份复述和弱词，不动"用于/不用于"边界信息。power-agent 仓由 `scripts/check-description-length.py` 把关（stdlib 近似估算 cl100k，误差约 ±10，fail 阈值留了余量）。
 
 争议裁决：双方对模型默认行为看法不同时，优先回到当前契约、直接 consumer 和已有系统事实；没有可观察依据时明确保留不确定性，不用猜测扩大规则。
 

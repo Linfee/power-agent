@@ -1,7 +1,7 @@
 ---
 name: finishing-a-development-branch
 description: |-
-  分支收尾 Skill。工作区 dirty 或仓库尚无 HEAD 时先给出友好的待提交提示；clean 且验证通过后给出 merge/PR/保留/丢弃选项。实现完成并需要处置分支时触发。
+  实现完成后处置分支：工作区 dirty 或无 HEAD 时给出待提交提示；clean 且验证通过后给出 merge/PR/保留/丢弃选项。
   Triggers: 分支收尾, finishing, 合并到目标分支, 创建 PR, 保留分支, 丢弃已完成工作.
 ---
 

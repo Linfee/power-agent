@@ -90,7 +90,7 @@ disable-model-invocation: [true|false]  # 可选，默认 false
 - 对规划类 Skill，区分人类按需阅读入口与 Agent 执行材料；例如 `writing-plans` 默认使用 `review-contract.md` 提供压缩审阅面，但它不构成执行 Gate。
 - 计划审查按风险分层：低风险只做 self-review，中/高风险增加独立 reviewer。
 - 高体积、可重建的 task brief、实现报告和 review diff 使用 `.power-agent/review-runs/` scratch artifacts 交接；截图、日志、trace、benchmark 等 reviewer 资产按 run 放入 `assets/`，只通过 `review-assets.md` 显式命名，并由当前 review session 的权威 run root 约束，同时绑定 target+paths/finding scope、freshness、source 与 sensitivity。它们不进入 commit，也不替代 exec-plan Session Log；无 manifest 时不得扫描目录。
-- 运行与当前改动直接相关的路径和引用检查；调用方式改动额外运行 `scripts/check-invocation-consistency.sh`。
+- 运行与当前改动直接相关的路径和引用检查；调用方式改动额外运行 `scripts/check-invocation-consistency.sh`，description 改动运行 `scripts/check-description-length.py`（硬上限约 110 token，目标 ~100）。
 
 ### 共享 reference 文件
 

@@ -47,7 +47,7 @@ Skill 是可复用工作流，不是一次性经验记录。修改 Skill 时先�
 
 每条一句话判据；拿不准判据含义时读 criteria.md 对应节。
 
-- **description 只服务触发**：触发词前置；一个触发分支只写一次（“需求讨论 / 需求分析 / PRD 细化”是同义重复，保留真正不同的分支）；删掉正文已有的身份复述。用词是“你想要这个 Skill 时自己实际会说的词”；“要严谨”“全面”这类弱词是 no-op，换强词。
+- **description 只服务触发**：触发词前置；一个触发分支只写一次（“需求讨论 / 需求分析 / PRD 细化”是同义重复，保留真正不同的分支）；删掉正文已有的身份复述。用词是“你想要这个 Skill 时自己实际会说的词”；“要严谨”“全面”这类弱词是 no-op，换强词。长度硬上限约 110 token、目标 ~100——description 常驻上下文，超出的部分每轮都在付 load；超限先删同义触发词与身份复述，不动用于/不用于边界信息。
 - **调用方式二选一**：model-invoked（默认）付 context load——只有三个理由值这笔钱：模型需要自主触达、别的 Skill 需要按名调用、它是自治工作流链路的一环。user-invoked（`disable-model-invocation: true`）零 context load 但付 cognitive load——人得记得它存在，description 改写成面向人类的一句话摘要，并登记到项目的人维护 Skill 索引（power-agent 仓：`AGENTS.md` 速查表）。依赖方向：user-invoked 可以调用 model-invoked，反之禁止。
 - **渐进披露**：所有使用路径都需要的内容内联，只有部分路径用到的下沉 `references/`。有步骤的 Skill 别让长篇引用埋没步骤；无步骤的扁平 Skill 全是引用是合法安排，不要硬造步骤；指针后的材料模型够不到时，先锐化指针措辞，失败了才回拉内联。
 - **步骤带完成判据**：可检查、重要处穷尽（“每个改动过的文件都已核对”，而不是“产出变更清单”）。防提前交卷：先锐化判据；判据不可再锐化、且实际观察到 rush，才按 sequence 切分——只有子代理派发或 user-invoked 交接才藏得住后续步骤，inline 的 model-invoked 调用什么都清不掉。
@@ -58,7 +58,7 @@ Skill 是可复用工作流，不是一次性经验记录。修改 Skill 时先�
 
 ### 3. 核对
 
-- **description 改动** → 核对 frontmatter、项目路由载体和直接调用方的触发语义一致；没有直接证据时，不把“触发更准”写成事实。
+- **description 改动** → 核对 frontmatter、项目路由载体和直接调用方的触发语义一致；没有直接证据时，不把“触发更准”写成事实。power-agent 仓运行 `scripts/check-description-length.py` 校验长度上限，其他项目人工估算。
 - **行为改动** → 读取相关 `SKILL.md`、references、调用方和 docs，确认目标、约束、输入/输出契约没有冲突或遗漏。
 - **调用方式改动** → 核对 frontmatter 标志与项目 Skill 索引（人维护的速查表/登记处）一致；power-agent 仓运行 `scripts/check-invocation-consistency.sh`，其他项目人工核对。
 - **no-op 裁决**：不能表达当前行为、约束或直接 consumer 需要的文字就是 no-op，删除而不改写。
@@ -94,7 +94,7 @@ Skill 是可复用工作流，不是一次性经验记录。修改 Skill 时先�
 
 ## 完成前检查
 
-- [ ] description 触发词合规：前置、无同义重复、无身份复述。
+- [ ] description 触发词合规：前置、无同义重复、无身份复述；长度 ≤ 约 110 token（目标 ~100）。
 - [ ] 调用方式命中三个付费理由之一；user-invoked 已登记项目 Skill 索引，并已核对 frontmatter 与索引一致。
 - [ ] 正文的每条规则都表达当前行为、约束或直接 consumer 需要；否定式禁令都是无法正面表述的硬护栏，且配对替代动作。
 - [ ] 流程步骤都有可检查的完成判据。
