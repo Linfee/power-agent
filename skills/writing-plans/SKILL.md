@@ -13,9 +13,9 @@ description: |-
 
 仅在后续工作会修改代码、测试、构建或运行配置、自动化、Skill/prompt 或开发工作流等软件资产时使用：用户要求创建开发实施计划；已有 `discuss` 结论或 spec 需要落成可执行计划；开发跨模块，或技术决策、验收、证明策略需要在实施前锁定。
 
-exec-plan 服务跨模块、多批次、跨会话或高风险工作；边界清楚的中等偏小工作不需要它——`discuss` 结论或任务清单可直接交 `implement`。
+exec-plan 服务跨模块、多批次、跨会话或高风险工作；边界清楚的中等偏小工作不需要它——`discuss` 结论交 `proof-oriented-development` 或主代理直做。已是多任务且用户要编排时才交 `implement`。
 
-命中以下跳过条件时直接实施，不强行 planning：单文件小改、拼写/文案/格式调整；明确且局部的 bugfix 且无跨模块设计决策；已有完整可执行的任务清单且无新技术决策。需求仍不清晰时回 `discuss`。
+命中以下跳过条件时直接实施（`proof-oriented-development`），不强行 planning：单文件小改、拼写/文案/格式调整；明确且局部的 bugfix 且无跨模块设计决策；已有完整可执行的任务清单且无新技术决策（清单本身可交 `implement`，不必先写 exec-plan）。需求仍不清晰时回 `discuss`。
 
 非开发工作（研究、运营、普通清单、长期文档维护、读者文档）按主要交付物路由到对应 Skill 或直接推进，不创建 `docs/exec-plans`。
 
@@ -38,8 +38,8 @@ exec-plan 服务跨模块、多批次、跨会话或高风险工作；边界清�
 
 默认产物：
 
-- `plan.md`：执行真源，承载讨论结论、Goal / Done Means、Scope、Key Decisions、Agent 自主边界、Plan Review Gate、Evidence Cache、Tasks、Proof Strategy、Blockers / Escalation、Risks / Rollback。
-- `review-contract.md`：人类按需审阅入口；短小、独立、可判定，覆盖 Intent、In / Out、Acceptance、Agent 自主边界、Proof、Blockers、Risks。
+- `plan.md`：执行真源，承载讨论结论、Goal / Done Means、Scope、Key Decisions、Agent 自主边界、Evidence Cache、Tasks、Proof Strategy、Blockers / Escalation、Risks / Rollback。
+- `review-contract.md`：人类按需审阅入口与 **唯一 Gate**：Intent、In / Out、Acceptance、Agent 自主边界、Proof、Blockers、Risks、Plan Review Gate。
 
 可选拆分（只在证据昂贵、任务图复杂、多 Agent 协作、上下文过大或可读性明显受损时）：
 
@@ -72,7 +72,7 @@ exec-plan 服务跨模块、多批次、跨会话或高风险工作；边界清�
 
 涉及新模块、模块拆分/合并、接口变化、port、seam 或 adapter 时，按需调用 `codebase-design`：将其模块边界、删除测试和 seam 证据吸收进 Key Decisions / Proof Strategy，不创建平行设计产物。
 
-`plan.md` 与 `review-contract.md` 必须以同名字段一致表达 `Gate Revision`、`Plan Risk`、`Review Path`、`Plan Review Status`、`Independent Review` 与 `Independent Review Basis`；approved / issues_found 的 basis 必须绑定当前 revision 的稳定 history；material amendment 必须递增 Gate Revision、保留旧 history 并重新进入相应 Gate。
+Gate 只写在 `review-contract.md`（`Plan Risk`、`Review Path`、`Plan Review Status`、`Independent Review`、按需 `Gate Revision` / 历史）。`plan.md` 不复制这些字段。material amendment 只改 contract 的 Gate 并追加历史，然后按风险重入审查。
 
 ### Step 2：Self-Review 与风险驱动 Gate
 
@@ -109,7 +109,7 @@ exec-plan 服务跨模块、多批次、跨会话或高风险工作；边界清�
 - 任务尺寸三判据：纵向切穿所需各层（而非某一层的水平切片）、可独立演示或验证、单个全新上下文可承载；不跨无强依赖子系统，也不细到逐行改动或私有 helper。
 - 爆炸半径大的机械性重构（改共享符号、改列名）塞不进纵向切片时，用 expand–contract：新旧并存 → 按爆炸半径分批迁移（每批一个任务，批间保持可验证）→ 删除旧路径。
 - 高风险且不可逆、权限/安全/隐私/并发语义、公共 API、数据模型、迁移、发布或关键 UX 决策，必须在计划阶段闭合或写入阻塞/升级条件。
-- 交棒材料要让执行 Agent 明确：要达成什么、边界在哪、哪些可自主发挥、如何证明完成、何时停止。`plan.md` 是执行材料；`review-contract.md` 是按需人审入口。
+- 交棒材料要让执行 Agent 明确：要达成什么、边界在哪、哪些可自主发挥、如何证明完成、何时停止。`plan.md` 是执行材料；`review-contract.md` 是按需人审入口和唯一 Gate。
 
 ## References
 

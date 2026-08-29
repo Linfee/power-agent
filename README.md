@@ -32,38 +32,38 @@
 | `discuss` | 通用讨论——任何需要想清楚再行动的问题，行动前的讨论、澄清与对齐，审查强度与决策权重相称 |
 | `writing-plans` | 将会修改软件资产的讨论结论 / spec / 用户描述转化为开发 compact exec-plan，并按风险选择 self-review 或独立 reviewer |
 | `codebase-design` | 为具体模块收窄接口、评估模块深度，并判断 seam / adapter 与可观察测试表面是否必要 |
-| `implement` | 执行或恢复任何开发计划（exec-plan、手写计划、任务清单或 spec）；优先 team 模式，通过 scratch artifacts 交接并使用单 reviewer 双 verdict 内审，再完成全量审查、验证与收尾 |
+| `implement` | 执行或恢复开发计划（exec-plan、手写计划、任务清单或 spec）；L2 编排，按需内审与风险相称审查，不是每条任务的固定全链路 |
 | `dev-docs` | 长期开发知识回写——把稳定系统事实、边界、决策依据或集成参考写入/修订 `docs/`；软件资产变更的开发计划委派给 `writing-plans` |
 | `dev-docs-maintain` | Docs Bundle 维护——按需检查健康状态、修复结构或知识漂移，并登记已完成验证 |
 | `setup-power-agent` | 从零为项目建立 Harness Engineering 知识体系 |
 | `writing-skills` | 创建、修改、审查和压力测试 Skill |
 | `systematic-debugging` | 探索式根因调查：以因果证据、安全边界及风险相称的性能/稳定性证据约束修复交接 |
-| `proof-oriented-development` | 证明导向开发闭环：小步实现、最小相关验证、交付 Proof Block |
-| `code-review` | 通过子代理编排代码审查并评估审查反馈，输出结构化发现 |
-| `verification-before-completion` | 证据优先验证——没有新鲜证据不得声称完成 |
+| `proof-oriented-development` | 证明导向开发闭环：小步实现、最小相关验证、默认短证据；L0/L1 默认入口 |
+| `code-review` | 合并/PR、L2、高风险或用户要求时编排全量审查，并评估审查反馈 |
+| `verification-before-completion` | 合并/PR、L2、高风险或对外宣称完成前审计证据；没有新鲜证据不得声称完成 |
 | `harness-engineering-review` | 对照 Harness Engineering 最佳实践审查项目 Agent 工作流 |
 | `finishing-a-development-branch` | dirty / 无 HEAD 待提交提示；clean 验证后的分支收尾（merge/PR/保留/丢弃） |
 
 ### 完整工作流
 
 ```
-开发工作流（仅处理修改代码、测试、配置、自动化、Skill/prompt 或开发工作流的软件资产变更）：
+默认分层（先选最早充分层级，ADR-0009）：
 
-discuss skill          ← 通用讨论：任何需要想清楚再行动的问题 → 内联讨论结论（按需落盘 spec）
-    ↓（独立审查通过后；边界清楚的工作可跳过 writing-plans 直接交 implement）
-writing-plans skill    ← 为跨模块 / 多批次 / 高风险工作创建 compact exec-plan，并按 low/medium/high 选择 self-review 或独立 reviewer
-    ↓
-implement skill ← 准备（git worktree 按需隔离 + exec-plan Gate）→ 轻量启动通知
-                     └── 优先 team 模式；缺失 team 工具时回退 proof-oriented 实现子代理并行/单代理推进 → scratch artifacts + 单 reviewer 双 verdict → 全量审查 → 工作区检查（dirty / 无 HEAD 先提交）→ 验证 → 分支收尾
+L0/L1（多数）
+  直做（POD / 主代理）→ 最小验证 → 短证据
+  合并/PR 或高风险再升级审查 / VBC
 
-Bug / 测试失败 → systematic-debugging skill
-                     └── → proof-oriented-development → 全量审查 → 工作区检查 → verification-before-completion
+L2（跨模块 / 多批次 / 跨会话 / 高风险）
+  discuss（按需）→ writing-plans → implement
+    → POD + 按需内审 → code-review（风险相称）→ 工作区检查 → VBC → 分支收尾
 
+Bug / 测试失败 → systematic-debugging
+                     └── FIXABLE + 授权匹配 → POD → 风险相称审查 → 工作区 / 验证
 ```
 
 非开发的路由不进入 exec-plan：根因未知的异常先用 `systematic-debugging`；长期项目知识用 `dev-docs` / `dev-docs-maintain`；面向读者的实质文档用 `doc-coauthoring`（范围或验收未定时先 `discuss`）；研究、运营和普通清单使用宿主原生任务清单或直接推进。重叠时以当前主要交付物为准：诊断优先于实施，软件资产变更优先于附带文档，长期项目知识优先于通用文档共创。
 
-`code-review` 在最终验证前默认强制执行；合并/PR 前不得跳过未通过的审查结果，除非用户明确要求跳过并记录原因。
+`code-review` 在 L2、合并/PR 或高风险路径上于最终验证前执行；L0/L1 不默认全量审查。用户明确要求跳过时记录原因。
 `dev-docs-maintain` 是在 docs 健康检查、漂移修复或 verification ledger 登记需要时按需触发的普通 Skill，不是每次开发执行的固定主流程。
 
 详细的 Skill 协调机制见 [docs/workflow.md](docs/workflow.md)。

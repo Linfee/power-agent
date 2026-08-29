@@ -24,8 +24,8 @@
 
 - 只实现任务规格中的内容，不多不少。
 - 遵循计划中的边界、接口、不变量和现有代码模式。
-- 使用 `proof-oriented-development`：小步实现，运行最小相关验证，并输出 Proof Block。
-- 优先运行计划指定验证；若验证过宽，改用与当前任务强相关、最低成本、可复现的验证，并在 Proof Block 解释原因。
+- 使用 `proof-oriented-development`：小步实现，运行最小相关验证，默认输出短证据。
+- 优先运行计划指定验证；若验证过宽，改用与当前任务强相关、最低成本、可复现的验证，并在证据里解释原因。
 - 只有计划、项目约束或风险要求时才扩大回归范围。
 - 仅当用户明确要求 `TDD`、`测试驱动`、`先写失败测试` 或 `Red/Green/Refactor` 时，才使用 strict TDD。
 - 不要修改任务范围之外的代码。
@@ -48,7 +48,7 @@
 - `状态：DONE | DONE_WITH_CONCERNS | BLOCKED`
 - 实现摘要（或阻塞时已尝试的动作）
 - 修改的文件列表
-- `## Proof Block`：格式以 `proof-oriented-development` 的「Proof Block 契约」为唯一来源，命中条件性小节（bugfix 复现、临时产物、性能/稳定性）时必须包含
+- 短证据（改了什么 / 验证命令 / 结果 / 未验证项）。命中 bugfix、临时产物、性能/稳定性或高风险时再按 `proof-oriented-development/references/proof-block.md` 补全。
 - `### 阻塞项`
 - `### 非阻塞建议`
 - `### 下一步`：动作 retry / split / proceed / escalate，负责人 orchestrator / implementer

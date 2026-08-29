@@ -1,16 +1,17 @@
 # Power-Agent — Agent 指南
 
-AI 编码 Agent 工作流插件系统，融合 superpowers + Harness Engineering 方法论。
+Power-Agent 是面向前沿模型的 Constraint + Verification + Domain Knowledge pack（融合 superpowers 与 Harness Engineering）。完整多阶段编排是 L2 升级能力，不是默认身份。
 
 ## 快速参考
 
-- **类型**: AI Agent Skill/Prompt 工程
+- **类型**: AI Agent Skill / 可升级 harness pack
 - **Skills**: 13 个可复用 Skill
-- **支持平台**: Claude Code, Cursor, Factory, Droid, Gemini
+- **支持平台**: Claude Code, Cursor, Factory, Droid, Gemini, OMP / Codex 类宿主
+- **默认姿态**: 单强代理 + 系统外证据；编排与双重审查仅在可靠性边界升级（ADR-0009）
 
 ## 架构概览
 
-四层架构：规划层 → 实现层 → 审查层 → 基础设施层。详见 [docs/architecture.md](docs/architecture.md)。
+能力按规划 / 实现 / 审查 / 基础设施分层，**按需加载**，不是每条任务都跑满层。详见 [docs/architecture.md](docs/architecture.md)。
 
 ## 知识库导航
 
@@ -29,21 +30,31 @@ AI 编码 Agent 工作流插件系统，融合 superpowers + Harness Engineering
 
 ## 核心工作流
 
-**适用范围：** 以下链路只处理修改代码、测试、配置、自动化、Skill/prompt 或开发工作流等软件资产的开发工作；“计划”“待办”或“任务拆解”本身不触发 exec-plan。
+**适用范围：** 软件资产变更（代码、测试、配置、自动化、Skill/prompt 或开发工作流）。“计划 / 待办 / 任务拆解”本身不触发 exec-plan。
+
+### 默认分层（先选最早充分层级）
+
+| 层级 | 何时 | 路径 |
+|---|---|---|
+| **L0（默认）** | 局部、边界清楚、单轮可完成 | `proof-oriented-development` 或主代理直做 → 最小验证 → 短证据 |
+| **L1** | 单模块、边界清楚的中等改动 | 讨论结论或短任务卡 → 直做（POD）；仅已有多任务计划时才 `implement` → 短证据；审查按需一次 |
+| **L2** | 跨模块 / 多批次 / 跨会话 / 高风险 / 需人审恢复点 | `writing-plans` 薄 exec-plan → `implement` → 风险相称审查 → 完成前验证 → 分支收尾 |
 
 ```
-discuss skill [通用讨论]      → 内联讨论结论（按需 docs/specs/*.md）；边界清楚的工作可携结论直接交 implement，复杂/高风险工作再经 writing-plans 成型
-    ↓
-writing-plans                 → 开发 compact exec-plan（plan.md + review-contract.md，按需 context/tasks）→ low self-review / medium/high 独立 reviewer
-    ↓
-implement                      → 准备（git worktree 按需隔离 + exec-plan Gate）→ 优先 team 模式，缺失 team 工具时回退并行/单代理委派 → scratch artifacts + 单 reviewer 双 verdict → 分层全量审查（常规主审 / 增强独立终审）→ 工作区检查（dirty / 无 HEAD 先提交）→ 验证 → 分支收尾
+L0/L1（多数任务）
+  直做 + 短证据
+  合并/PR 或高风险时再升级审查 / VBC
+
+L2（少数任务）
+  discuss（按需）→ writing-plans → implement
+    → POD + 按需内审 → code-review（风险相称）→ 工作区检查 → VBC → 分支收尾
 ```
 
-**调试路径**: `systematic-debugging` → `proof-oriented-development` → 全量审查 → 工作区检查 → `verification-before-completion`
+**调试路径**: `systematic-debugging` →（FIXABLE + 授权匹配）`proof-oriented-development` → 风险相称审查 → 工作区检查 → 完成前验证（L0 可在短证据足够时收束）。
 
-**非开发路由：** 根因未知的异常先用 `systematic-debugging`，确认修复边界后才进入开发实施；项目长期知识用 `dev-docs` / `dev-docs-maintain`；研究、运营和其他普通工作使用宿主原生任务清单或直接推进。重叠请求按当前主要交付物选择单一入口：诊断优先于实施，软件资产变更优先于附带文档，长期项目知识优先于通用文档。
+**非开发路由：** 根因未知先 `systematic-debugging`；长期项目知识用 `dev-docs` / `dev-docs-maintain`；研究、运营等用宿主原生清单。按当前主要交付物选单一入口。
 
-**最终验证前审查**: `code-review`（全量审查）在 `verification-before-completion` 前默认强制执行；常规审查由单主审收敛，增强审查在主审收敛后增加全新 reviewer 独立终审；合并/PR 前不得跳过未通过的审查结果，除非用户明确要求跳过并记录原因。`dev-docs-maintain`（文档维护）是按需触发的普通 Skill，不是每次开发执行的固定阶段。
+**审查与完成证明:** 证据必须来自模型外且新鲜。短 Proof 为默认；全量 `code-review`、独立终审与完整 VBC 在合并/PR、高风险、L2 或用户要求时升级——不是每条 L0 实现的固定税。用户明确要求跳过审查时记录原因。`dev-docs-maintain` 仅按需，不是固定阶段。
 
 ## Skill 速查
 
@@ -69,11 +80,12 @@ implement                      → 准备（git worktree 按需隔离 + exec-pla
 | 规则 | 说明 |
 |------|------|
 | 依赖方向 | 只能从上层指向下层，禁止反向 |
-| 子代理生命周期 | 实现/修复子代理与跨目标调用保持一次性；同一 review session 内优先由原 reviewer 验证其 findings，不能继续时使用携带完整修复上下文的新 reviewer |
-| 规划审查与证据 Gate | discuss / writing-plans 通过独立审查交棒；实现阶段使用轻量启动通知，完成声明依赖 Proof Block 与验证证据（ADR-0006） |
-| 证据优先 | 没有运行验证不得声称完成 |
+| 默认分层 | 先 L0/L1；仅可靠性不足时升 L2（ADR-0009） |
+| 子代理生命周期 | 实现/修复子代理一次性；启用 reviewer 时同 session 优先原 reviewer 验证 findings（ADR-0007） |
+| 规划 Gate | 仅 L2 exec-plan：low self-review；medium/high 独立审查通过后方可执行（ADR-0006） |
+| 证据优先 | 没有运行验证不得声称完成；完成证明外置于模型 |
 | 根因优先 | 没有根本原因分析没有修复 |
-| 并发限制 | 最大并行度 3 |
+| 并发与变更边界 | 控制 mutation boundary；并行探索可以，写冲突要收敛；默认并发上限 3 |
 | Skill description 长度 | 硬上限约 110 token、目标 ~100；改动后运行 `scripts/check-description-length.py`（cl100k 近似估算，误差 ±10） |
 
 ## 文档规范
@@ -98,13 +110,14 @@ status: active # 按生命周期需要添加
 
 ## 工作流约定
 
-- 开始复杂开发任务（预估 >3 步）前，先在 `docs/exec-plans/active/` 创建开发执行计划；非开发工作按上方路由使用专长 Skill 或宿主原生清单。
+- **L0/L1 不强制** `docs/exec-plans/`；仅 L2（跨模块、多批次、跨会话或高风险）才创建开发执行计划。
 - 开发任务完成后，将 exec-plan 从 `active/` 移动到 `completed/`。
-- 开发执行上下文接近极限时，更新 exec-plan 进度并提醒用户。
-- 重大变更后，检查 docs/ 相关文档是否需要同步更新
-- 需要文档维护时，由 `dev-docs-maintain` 按需触发；它不是每次开发的固定阶段
-- ADR 保留历史决策与 YAML lifecycle status；决策过期时用新 ADR supersede
-- Concept 的验证运行状态以 `docs/.okf/verification.json` ledger 为准；来源变化或策略到期时运行验证，不把旧日期迁入文档
+- 跨会话 L2 执行接近极限时，更新 exec-plan 进度并提醒用户；L0/L1 不写 session 仪式日志。
+- 重大变更后，检查 docs/ 相关文档是否需要同步更新。
+- 需要文档维护时，由 `dev-docs-maintain` 按需触发；它不是每次开发的固定阶段。
+- ADR 保留历史决策与 YAML lifecycle status；决策过期时用新 ADR supersede。与 ADR-0003 的**默认义务**冲突时以 [ADR-0009](docs/adr/0009-lean-default-orchestration.md) 为准（0003 文本保留、不标 superseded）；其余默认解读冲突时以更新的 accepted ADR 为准。
+- Concept 的验证运行状态以 `docs/.okf/verification.json` ledger 为准；来源变化或策略到期时运行验证，不把旧日期迁入文档。
+- Harness 随模型/宿主升级做 ablation：先问可删的默认组件，再加编排。
 
 ## 上游追踪
 

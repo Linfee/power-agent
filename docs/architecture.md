@@ -6,7 +6,7 @@ scope:
 
 # 系统架构
 
-Power-Agent 是一个 AI 编码 Agent 工作流插件系统，融合了 superpowers 和 Harness Engineering 两套方法论。
+Power-Agent 是面向前沿模型的 Constraint + Verification + Domain Knowledge pack，融合 superpowers 与 Harness Engineering。完整多阶段编排是 L2 升级能力，不是默认身份（[ADR-0009](adr/0009-lean-default-orchestration.md)）。
 
 ## 顶层架构
 
@@ -16,13 +16,13 @@ graph TB
 
     subgraph "规划层"
         D2[discuss 通用讨论]
-        WP[writing-plans 开发计划创建]
+        WP[writing-plans L2 计划]
         DD[dev-docs 长期知识维护]
         NATIVE[宿主原生任务清单]
     end
 
     subgraph "实现层"
-        EP[implement 开发实施]
+        EP[implement L2 编排]
         POD[proof-oriented-development]
         DBG[systematic-debugging]
         WTG[working-tree gate]
@@ -30,7 +30,7 @@ graph TB
     end
 
     subgraph "审查层"
-        RCR[code-review]
+        RCR[code-review 风险相称]
         HER[harness-engineering-review]
     end
 
@@ -42,22 +42,26 @@ graph TB
     end
 
     D -->|根因未知| DBG
-    D -->|需求、范围或验收未收敛| D2
-    D -->|软件资产变更| WP
+    D -->|需求未收敛| D2
+    D -->|L0/L1 软件变更| POD
+    D -->|L2 软件变更| WP
     D -->|长期项目知识| DD
     D -->|普通任务| NATIVE
-    D2 -->|复杂工作| WP
-    D2 -->|结论即计划| EP
+    D2 -->|L0/L1 结论即做| POD
+    D2 -->|L2 复杂工作| WP
     D2 -->|长期项目知识| DD
     D2 -->|普通工作| NATIVE
     WP --> EP
 
     EP --> POD
-    EP -.->|合并前强制审查| RCR
-    POD --> RCR
-    EP -->|审查通过后| WTG
+    EP -.->|L2/合并/高风险| RCR
+    POD --> WTG
+    POD -.->|升级审查| RCR
+    POD -.->|L0 无合并意图且短证据自足| FAB
+    RCR --> WTG
+    EP -->|审查后| WTG
     WTG -->|clean && has_head| VBC
-    WTG -->|dirty || !has_head 待提交| FAB
+    WTG -->|dirty || !has_head| FAB
     VBC --> FAB
     User -.->|按需维护| DDM
 
@@ -66,7 +70,7 @@ graph TB
 
 `systematic-debugging` 的 `missing | unknown | basis mismatch` 只保留 `FIXABLE` handoff 并请求最小授权，不进入 POD。
 
-`writing-plans` 与 `implement` 只构成软件资产变更的开发链路。根因未知时 `systematic-debugging` 优先；长期项目知识由 `dev-docs` / `dev-docs-maintain` 维护；无专长匹配的普通任务不进入该链路。
+默认走 **L0/L1 → POD + 短证据**（完成声明仍须模型外新鲜证据；短证据豁免的是独立 VBC 编排，不豁免证据本身）。`writing-plans` 与 `implement` 构成 **L2** 软件资产变更链路。根因未知时 `systematic-debugging` 优先；长期项目知识由 `dev-docs` / `dev-docs-maintain` 维护；无专长匹配的普通任务不进入该链路。
 
 ## 模块划分
 
@@ -76,11 +80,11 @@ graph TB
 | | `writing-plans` | 为跨模块、多批次、跨会话或高风险的软件资产变更创建开发 compact exec-plan；所有开发计划 self-review，中/高风险增加独立 reviewer，`review-contract.md` 供人类按需审阅 |
 | | `codebase-design` | 具体模块的结构深化判断：从消费者收窄接口、用删除测试评估深度，并以真实变化边界决定 seam / adapter；结论交给既有计划与 Proof |
 | | `dev-docs` | 维护 `docs/` 中可长期复用的工程知识：稳定系统事实、边界、决策依据与集成参考；软件资产变更的实施、重构或迁移计划交给 `writing-plans` |
-| **实现层** | `implement` | 任何开发计划的执行编排：准备（隔离工作区 + exec-plan Plan Review Gate）→ 批次调度与单 reviewer 双 verdict 内审 → 全量审查 → working-tree gate → 验证 → 收尾；优先 team 模式，缺失 team 工具时回退并行或单实现子代理；实质 amendment 递增 revision 并重新进入风险审查 |
+| **实现层** | `implement` | L2 开发计划的执行编排：准备（隔离工作区 + exec-plan Plan Review Gate）→ 批次调度与按需内审 → 风险相称审查 → working-tree gate → 验证 → 收尾；优先 team 模式，缺失 team 工具时回退并行或单实现子代理；实质 amendment 递增 revision 并重新进入风险审查 |
 | | `proof-oriented-development` | 证明导向开发闭环：小步实现、最小相关验证、输出 Proof Block |
 | | `systematic-debugging` | 探索式根因调查：可区分 feedback loop、因果证据、original/minimal repro、安全边界，以及与执行授权解耦的修复交接 |
 | | `verification-before-completion` | 审计 Proof Block / 等价证据块、原始复现、临时产物和风险相称的性能/稳定性证据，输出 verification_evidence |
-| **审查层** | `code-review` | 单主审多维审查、修复验证、重要性/实现风险分层与增强独立终审编排；评估内部与外部审查反馈 |
+| **审查层** | `code-review` | 风险相称的全量审查编排（L2/合并/高风险或用户要求时）；修复验证、重要性分层与增强独立终审；评估内部与外部审查反馈 |
 | | `harness-engineering-review` | Agent 工作流七维度审查 |
 | **基础设施层** | `writing-skills` | Skill 创建、修改与契约审查 |
 | | `finishing-a-development-branch` | dirty 工作区或无 HEAD 仓库的待提交提示，以及验证通过后的分支处置决策（merge/PR/保留/丢弃） |
@@ -92,27 +96,37 @@ graph TB
 ```
 用户需求
     │
-    ▼
-discuss / 直接描述
+    ├─ L0/L1（默认）──────────────────────────────┐
+    │                                            ▼
+    │                              proof-oriented-development
+    │                                → 短证据（写在回复/commit，非口头宣称）
+    │                                →（升级）风险相称 code-review
+    │                                → 有合并/对外宣称完成意图时：工作区检查 + VBC → 收尾
+    │                                → 无合并意图且短证据自足时可收束（证据仍须外置）
     │
-    ▼
-writing-plans（规划）
-    │
-    ▼
-docs/exec-plans/active/
-    │
-    ▼
-implement（实现编排）
-    │
-    ├── proof-oriented-development（证明导向实现子代理）
-    ├── scratch review artifacts（task brief / report / review package / optional review-assets manifest）
-    ├── 单内部 reviewer（规格符合性 + 代码质量双 verdict；只读当前 manifest 命名资产）
-    ├── code-review（主审 → 修复验证 → 按强度进入独立终审；无 manifest 不扫描 `.power-agent`）
-    ├── working-tree gate（dirty / 无 HEAD 先提示提交；clean 且有 HEAD 进入最终验证）
-    ├── verification-before-completion（Proof Block 审计与 verification_evidence）
-    └── finishing-a-development-branch（分支收尾）
+    └─ L2（跨模块/多会话/高风险）
+            │
+            ▼
+        discuss / 直接描述（按需）
+            │
+            ▼
+        writing-plans
+            │
+            ▼
+        docs/exec-plans/active/
+            │
+            ▼
+        implement（编排）
+            │
+            ├── proof-oriented-development
+            ├── scratch artifacts（多 agent / 审查时）
+            ├── 按需批次审查
+            ├── code-review（风险相称；合并/高风险）
+            ├── working-tree gate
+            ├── verification-before-completion
+            └── finishing-a-development-branch
 
-code-review 在最终验证前默认强制执行；合并/PR 前不得跳过未通过的审查结果，除非用户明确要求跳过。`dev-docs-maintain` 是按需触发的既有 `docs/` Bundle 健康检查、漂移修复和 verification ledger 登记入口，不属于 implement 的固定主流程。
+L0/L1 不经 exec-plan Gate，不默认双重审查。L2/合并/高风险路径上 code-review 在完成验证前执行；用户明确跳过时记录原因。`dev-docs-maintain` 按需触发，不是固定主流程。
 ```
 
 **硬规则：** 依赖只能从上层指向下层，禁止反向依赖。
@@ -121,11 +135,11 @@ code-review 在最终验证前默认强制执行；合并/PR 前不得跳过未�
 
 | 产出物 | 生产者 | 消费者 | 位置 |
 |--------|--------|--------|------|
-| 讨论结论 / Spec 文档 | `discuss` | 建议去向：结论即计划 → `implement`；复杂工作 → `writing-plans`；长期知识 → `dev-docs` / `dev-docs-maintain`；普通工作不建 exec-plan | 默认内联传递；按需 `docs/specs/YYYY-MM-DD-*.md` |
-| Compact 开发 exec-plan（`plan.md + review-contract.md`，按需 `context.md/tasks.md`） | `writing-plans` | 人类默认审 `review-contract.md`；`implement` 必读两份材料并在准备阶段校验 Gate，按需读取拆分材料 | `docs/exec-plans/active/` |
-| Scratch review artifacts | `implement` / 实现子代理 | 单内部 reviewer / 显式接收 manifest 的最终 reviewer | `.power-agent/review-runs/<run-id>/`（自忽略、per-run、可重建；资产只通过 `review-assets.md` 命名） |
-| 代码变更 | `implement` 子代理 | 单内部 reviewer / `code-review`（最终验证前） | Git working-tree diff |
-| Session Log | `implement` | 归档 | `docs/exec-plans/completed/` |
+| 讨论结论 / Spec 文档 | `discuss` | 建议去向：L0/L1 → POD 直做；L2 → `writing-plans` / `implement`；长期知识 → `dev-docs` / `dev-docs-maintain`；普通工作不建 exec-plan | 默认内联传递；按需 `docs/specs/YYYY-MM-DD-*.md` |
+| Compact 开发 exec-plan（`plan.md + review-contract.md`，按需 `context.md/tasks.md`） | `writing-plans` | 人类默认审 `review-contract.md`；`implement` 必读两份材料并在准备阶段校验 Gate，按需读取拆分材料 | `docs/exec-plans/active/`（仅 L2） |
+| Scratch review artifacts | `implement` / 实现子代理 | 单内部 reviewer（启用时）/ 显式接收 manifest 的最终 reviewer | `.power-agent/review-runs/<run-id>/`（自忽略、per-run、可重建；多 agent 或 L2 审查时） |
+| 代码变更 | 实现路径（POD / `implement` 子代理） | 启用时的内部 reviewer / `code-review`（L2、合并/高风险时） | Git working-tree diff |
+| Session Log | `implement` | 归档（L2 执行） | `docs/exec-plans/completed/` |
 | 分支处置结论 | `finishing-a-development-branch` | implement / 用户 | 结构化输出 |
 
 ## 子代理模式
@@ -140,7 +154,7 @@ code-review 在最终验证前默认强制执行；合并/PR 前不得跳过未�
 | 审查子代理 | 单 reviewer 多维主审；同 session 修复验证；增强审查使用全新 reviewer 独立终审 | implement, code-review |
 | 验证子代理 | 最终验证 | implement |
 
-**并发限制：** 最大并行度 3，超过则分批。
+**并发：** 控制 mutation boundary；默认并发上限 3，超过则分批；并行探索可以，写冲突要收敛。
 
 ## Gate 机制
 
@@ -148,20 +162,22 @@ code-review 在最终验证前默认强制执行；合并/PR 前不得跳过未�
 |-----------|---------|------|
 | discuss 最终审查 | 讨论结论完成 + 审查强度与决策权重相称（实质行动/不可逆决策派独立 reviewer） | 建议去向：直接实施 / `writing-plans` / `dev-docs` |
 | writing-plans 风险审查 | 开发 exec-plan 的 low=self-review；medium/high=独立 reviewer 通过 | 交给 `implement` |
-| implement 准备 | 首次执行或恢复执行前 | 校验两份计划材料同名的 Gate Revision、风险状态和 revision-bound basis；medium/high pending、缺失、冲突或 basis 不匹配时不得执行 |
+| implement 准备 | 首次执行或恢复执行前 | 只校验 `review-contract.md` 的 Gate；medium/high 未 approved、缺失或非法时不得执行 |
 | implement 执行中 | 3 轮修复失败，或计划前提假设失效 | Escalate 给用户 |
 | finishing-a-development-branch | 丢弃路径（破坏性操作） | 要求明确确认 |
 
 ## 设计原则
 
-详见 [ADR 目录](adr/)。核心原则概要：
+详见 [ADR 目录](adr/)。核心原则概要（默认解读以 [ADR-0009](adr/0009-lean-default-orchestration.md) 为准）：
 
-1. **Skill 是执行单元，人类是决策者**（ADR-0001）
-2. **产出物是协调介质** — 跨阶段状态通过文件传递，编排调用必须保留明确契约（ADR-0003）
-3. **仓库是唯一真相来源** — Agent 看不到的内容不存在
-4. **AGENTS.md 是目录，不是百科全书**（ADR-0004）
-5. **机械化约束优于 Prompt 啰嗦** — 证据/测试 > 文字规则
-6. **证据优先** — 没有新鲜验证不得声称完成
-7. **上下文按需交接** — 大段任务、报告和 diff 通过 scratch artifacts 传递；review assets 按 run 隔离，只通过显式 manifest 交接，无 manifest 不扫描
-8. **实现/修复一次性，Reviewer 同会话连续** — reviewer 只在同一目标内验证自己的 findings，不能继续时回退新 reviewer（ADR-0007）
-9. **契约优先，层级最小** — 先满足当前契约、消费者、风险边界与 Proof，再选择 ordered ladder 上最早充分层级；长期所有权（新依赖、跨模块边界、外部配置面、持久共享状态、生命周期）由当前证据购买（ADR-0008）
+1. **约束与验证优先，编排按需** — 产品是 Constraint + Verification + Domain Knowledge pack；完整 `plan → implement → 多审 → VBC` 是 L2，不是默认身份（ADR-0009）
+2. **Skill 是执行单元；人类保留意图与不可逆决策**（ADR-0001）
+3. **产出物按需协调** — 跨会话/高风险/人审才落 durable artifact；同会话 L0/L1 以代码与短证据交接（ADR-0003 经 0009 限定）
+4. **仓库是工程 canonical store** — 不变量与决策 versioned 可达；外部权威源须 machine-legible，不靠聊天记忆冒充规范
+5. **AGENTS.md 是目录，不是百科全书**（ADR-0004）
+6. **机械化约束优于 Prompt 啰嗦** — 证据/测试/hook > 文字规则；给约束不给剧本
+7. **证据优先且外置于模型** — 没有新鲜验证不得声称完成；短 Proof 默认，长 Proof 条件触发
+8. **上下文 pull-based** — 大块经按需引用加载；scratch review artifacts 仅多 agent / L2 审查启用
+9. **启用审查时：实现/修复一次性，Reviewer 同会话连续**（ADR-0007）— 不强制 L0 启用审查
+10. **契约优先，层级最小** — 先满足当前契约与 Proof，再选 L0→L1→L2 上最早充分层级；长期所有权由当前证据购买（ADR-0008）
+11. **Harness ablation** — 模型/宿主升级后先删不再承重的默认组件，再加编排

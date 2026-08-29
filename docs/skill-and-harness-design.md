@@ -6,7 +6,7 @@ scope:
 
 # Skill 与 Harness 设计指南
 
-基于 Anthropic/OpenAI Harness Engineering 实践提炼的 Skill 设计原则。
+基于 Anthropic/OpenAI Harness Engineering 实践提炼的 Skill 设计原则。默认姿态与编排升级见 [ADR-0009](adr/0009-lean-default-orchestration.md)：面向前沿模型给约束与证据，不把 generic planning/loop/handoff 写进默认路径。
 
 ---
 
@@ -22,11 +22,11 @@ scope:
 | Constraints & Format | 规则冲突优先级必须显式声明 |
 
 **核心原则**
-
 - **正确高度**：具体到能指导行为，但不硬编码执行路径。把经验编码为边界条件（"文件不超过 400 行"）而非步骤（"先写测试再写实现"）
 - **字面遵从**：Claude 4.7+ 不会自动泛化规则，需要广泛应用时必须显式声明范围
-- **最小集**：从最小 prompt + 最强模型开始，只在具体失败证据显示稳定失败模式时才加规则
+- **最小集**：从最小 prompt + 最强模型开始，只在具体失败证据显示稳定失败模式时才加规则；模型升级后先 ablation 再加规则
 - **软硬配合**：prompt 是软约束（模型可绕过），安全需求必须用 harness 硬约束兜底
+- **默认 vs 升级**：L0/L1 直做+短证据；计划/多 agent/全量审查仅在可靠性边界升级（ADR-0009）
 
 ## Skill 判据体系
 

@@ -6,7 +6,9 @@ scope:
 
 # Harness Engineering 体系设计
 
-基于 OpenAI Harness Engineering 实践构建的 Agent 驱动开发体系。核心理念：**人类掌舵，Agent 执行**——人类的职责是设计意图、构建反馈循环，Agent 负责执行闭环。
+基于 OpenAI Harness Engineering 实践，并按前沿模型能力做 ablation 后的 Agent 开发体系。核心理念：**让环境与验证可靠，让更强 Agent 用最少脚手架工作**——人类设计意图、约束与反馈循环；Agent 在 machine-legible 世界里自主执行。完整多阶段工作流是可靠性边界上的升级，不是默认骨架。
+
+**产品身份：** Constraint + Verification + Domain Knowledge pack（见 [ADR-0009](adr/0009-lean-default-orchestration.md)）。
 
 **原始参考：** [Harness engineering: leveraging Codex in an agent-first world](https://openai.com/index/harness-engineering/) — Ryan Lopopolo, OpenAI, Feb 11, 2026
 
@@ -38,7 +40,7 @@ scope:
 
 ### 长任务 Harness 设计
 
-**跨窗口的增量进展是长任务成功的关键。** Anthropic 提出 initializer agent + coding agent 两阶段方案：
+**跨窗口的增量进展是长任务成功的关键。** 以下为长任务/跨会话场景的参考模式；是否启用按 [ADR-0009](adr/0009-lean-default-orchestration.md) 分层，L0/L1 不默认启用 initializer、progress file 或 feature_list。Anthropic 提出 initializer agent + coding agent 两阶段方案：
 
 - **Initializer Agent**：首次运行时搭建环境——创建 `init.sh`、progress 文件、功能清单（JSON 格式，带 pass/fail 状态）、初始 git 提交。
 - **Coding Agent**：每次会话只做一个功能的增量进展，结束时保持代码"可合并"状态（无重大 bug、有序、有文档）。
@@ -98,16 +100,25 @@ scope:
 
 ## 设计哲学
 
-### 三个核心原则
+### 核心原则
 
-**1. 仓库即唯一真相来源（Repo as SSOT）**
-所有知识必须版本化、存储在仓库中。Agent 看不到的东西等同于不存在。架构决策写在 Slack 里、口头约定的规范、只存在聊天记录中的"为什么这样设计"——这些信息对 Agent 而言完全不可见。
+**1. 环境可读，工程真相可执行**
+仓库是**工程 canonical store**（架构不变量、ADR、验收入口、技能契约须 versioned 可达）。运行时还可消费 CI、issue、观测、宿主 session/memory 等权威源——前提是 machine-legible。Agent 读不到的工程约束等于不存在；能做成 lint/test/hook 的不要只写在 prompt 里。
 
 **2. 目录式上下文（Context as Map, Not Encyclopedia）**
-`AGENTS.md` 控制在 ~200 行，是一张**地图**而非百科全书。具体知识下沉到 `docs/` 的结构化文件中。当所有事情都标为重要，就没有什么重要。
+`AGENTS.md` 控制在 ~200 行，是一张**地图**而非百科全书。具体知识下沉到 `docs/` 与 Skills，按需 pull。当所有事情都标为重要，就没有什么重要。
 
 **3. 机械化约束优于 Prompt 啰嗦**
-核心规范靠 Linter/Test 强制执行，而非在 Prompt 中写 50 条"你应该如何写代码"。Linter 错误信息对 Agent 友好，含直接可执行的修复建议。
+核心规范靠 Linter/Test/权限策略强制执行，而非在 Prompt 中写 50 条“你应该如何写代码”。Linter 错误信息对 Agent 友好，含直接可执行的修复建议。给约束与边界，不给思维剧本。
+
+**4. 完成证明外置于模型**
+“看起来对”或 self-review 不是完成门闩。默认交付短证据（命令、退出码、关键结果、未验证项）；bugfix / 安全 / 数据 / 性能 / 对外宣称完成时再加码。
+
+**5. 默认单强代理；编排只在可靠性边界升级**
+多数任务：L0/L1 直做 + 验证。跨模块、多会话、高风险才进入 L2（薄计划、按需多 agent、风险相称审查）。模型或宿主升级后先 ablation 默认组件，再考虑加编排（ADR-0009）。
+
+**6. Durable 产出物用于协调，不作 session 仪式**
+跨会话、人审、恢复点与高风险决策才落盘；同会话局部改动以 git 与短证据为准，不默认写 progress/handoff/feature_list。
 
 ---
 
@@ -157,10 +168,12 @@ status: active # 按生命周期需要添加
 
 核心决策概要：
 
-| 决策                             | ADR                                                         |
+| 决策 | ADR |
 | -------------------------------- | ------------------------------------------------------------ |
-| Skill 作为执行单元，人类是决策者 | [ADR-0001](adr/0001-skill-as-execution-unit.md)             |
-| 实现/修复一次性，Reviewer 同会话连续 | [ADR-0007](adr/0007-reviewer-session-continuity.md)         |
-| 产出物作为协调介质               | [ADR-0003](adr/0003-artifacts-as-coordination.md)           |
-| AGENTS.md 精简（≤200 行）        | [ADR-0004](adr/0004-lean-agents-md.md)                      |
-| Gate 机制重构：规划 Gate + 实现自主 | [ADR-0006](adr/0006-gate-restructuring.md)                  |
+| Skill 作为执行单元，人类抓意图与不可逆 | [ADR-0001](adr/0001-skill-as-execution-unit.md) |
+| 实现/修复一次性；启用时 Reviewer 同会话连续 | [ADR-0007](adr/0007-reviewer-session-continuity.md) |
+| 产出物按需协调（非每 hop 默认落盘） | [ADR-0003](adr/0003-artifacts-as-coordination.md)、[ADR-0009](adr/0009-lean-default-orchestration.md) |
+| AGENTS.md 精简（≤200 行） | [ADR-0004](adr/0004-lean-agents-md.md) |
+| Gate：规划可执行性 + 实现自主 | [ADR-0006](adr/0006-gate-restructuring.md) |
+| 复杂性准入：ordered ladder 与证据购买 | [ADR-0008](adr/0008-complexity-admission.md) |
+| Lean default：L0/L1 默认，L2 升级 | [ADR-0009](adr/0009-lean-default-orchestration.md) |

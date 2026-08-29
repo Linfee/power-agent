@@ -22,7 +22,7 @@ description: |-
 3. **澄清与收敛**：先给当前理解和不确定点；澄清问题少量分批，关键取舍一次只问一个；优先选择题并给推荐和理由；用户回答后立即沉淀为事实、假设或 open question。只在真实分歧存在时比较 2-3 个方向并先给推荐；比较围绕该问题的真实判据——效果、成本、风险、可逆性、与约束的契合度。
 4. **按需可视化**：仅当“看见”比“阅读”更容易决策时使用 HTML（布局、流程、状态切换、关系结构、side-by-side 方案）；能用文字/表格说清的不用。启用前读取 `references/visual-companion.md`。一屏只解决一个主题，终端文字反馈优先于 HTML 点击事件。
 5. **输出讨论结论**：默认在对话中内联输出。结论沉淀最终决定，不转录对话；未确认内容进入 Open Questions 并标明 blocking / non-blocking。产品需求类结论的正文可使用 `references/spec-template.md`。只有用户明确要求、合规/流程要求或需要长期维护的结论才落盘。
-6. **审查与去向**：审查强度与决策权重相称——结论将驱动实质行动或不可逆决策时，先自查（无占位符、前后一致、未滑入执行细节），再派独立 reviewer 审查（产品需求类可用 `references/spec-reviewer-prompt.md`），blocking issue 修正后重审；探索性讨论自查即可。通过后给出建议去向：软件开发类——边界清楚的可携结论直接交 `implement`，复杂或高风险工作先经 `writing-plans` 成型；长期知识类——`dev-docs` / `dev-docs-maintain`；其他结论到此为止。
+6. **审查与去向**：审查强度与决策权重相称——结论将驱动实质行动或不可逆决策时，先自查再派独立 reviewer（产品需求类可用 `references/spec-reviewer-prompt.md`）；探索性讨论自查即可。建议去向：软件变更按 `AGENTS.md` 分层；长期知识 → `dev-docs` / `dev-docs-maintain`；其他结论到此为止。本 Skill 不持有后续路由。
 
 ## 输出契约
 

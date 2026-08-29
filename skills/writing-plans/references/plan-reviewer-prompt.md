@@ -4,7 +4,7 @@
 
 待审查计划目录：[PLAN_DIR_PATH]
 参考 spec（如有）：[SPEC_FILE_PATH 或 "无"]
-计划风险：[PLAN_RISK，必须与 plan.md 一致，只允许 medium 或 high]
+计划风险：[PLAN_RISK，必须与 review-contract.md 一致，只允许 medium 或 high]
 
 审查原则：按“文档契约”验收，不按固定文件数量打分。
 - 必需文档：`plan.md`
@@ -15,8 +15,8 @@
 
 文档契约检查：
 1) 所有计划包文件的元数据：是否以合法 YAML frontmatter 开始并具有非空 `type`（`Execution Plan`、`Review Contract`、`Evidence Cache`、`Task Graph`）；`scope` 是否只表达实际覆盖范围，且验证运行状态没有写入 Concept。
-2) `plan.md` 契约：是否包含并说清讨论/产品结论（如有）、Goal / Done Means、Scope、Key Decisions、Agent 自主边界、Plan Review Gate（含 Gate Revision、Independent Review 与状态匹配的 basis）、Evidence Cache（仅非显然事实）、紧凑 Tasks、Proof Strategy、Blockers / Escalation、Risks / Rollback
-3) `review-contract.md` 契约：是否保持短小、独立、可判定，覆盖 Intent、In / Out、Acceptance、Agent 自主边界、Proof、Blockers、Risks、Plan Review Gate；它与 `plan.md` 的 Gate Revision、Plan Risk、Review Path、Plan Review Status、Independent Review、Independent Review Basis 必须一致；approved / issues_found record 必须可定位到本 revision 的 Plan Review History
+2) `plan.md` 契约：是否包含并说清讨论/产品结论（如有）、Goal / Done Means、Scope、Key Decisions、Agent 自主边界、Evidence Cache（仅非显然事实）、紧凑 Tasks、Proof Strategy、Blockers / Escalation、Risks / Rollback。不要要求 `plan.md` 复制 Gate 字段。
+3) `review-contract.md` 契约：是否保持短小、独立、可判定，覆盖 Intent、In / Out、Acceptance、Agent 自主边界、Proof、Blockers、Risks、以及唯一的 Plan Review Gate；approved / issues_found 时记录可定位即可，不与 `plan.md` 对账。
 4) `context.md` 契约（仅在存在时检查）：是否真的是高成本证据缓存，而不是上下文百科；是否只沉淀非显然事实、关键现状/契约、未确认项与直接参考指针
 5) `tasks.md` 契约（仅在存在时检查）：是否只在复杂任务图/交接需要时展开；是否保持紧凑，不使用 Contract Mirror、微步骤脚本、私有 helper 设计或默认 strict TDD micro-cycle
 

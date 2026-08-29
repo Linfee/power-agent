@@ -46,45 +46,25 @@ description: |-
 
 探索不得绕过安全控制、扩大权限、访问无关敏感数据，或执行未经授权的生产、破坏性和不可逆操作。证据引用和输出必须排除或脱敏密钥、凭证与隐私数据。需要越界时输出 `BLOCKED`，说明最小授权、风险和安全替代路径；临时观测手段必须最小化、可清理。
 
-## 状态契约
+## 交接
 
-| 状态 | 进入判据 | 必要输出 | 下一步 |
-|---|---|---|---|
-| `INVESTIGATING` | 尚无足够区分性证据 | 当前证据、主要解释、关键证据缺口 | 继续调查 |
-| `HYPOTHESIS_VERIFIED` | 关键因果解释已被支持，但修复边界或交接尚未闭合 | 因果解释、证据引用、剩余不确定性 | 闭合交接 |
-| `FIXABLE` | 因果链闭合，主要替代解释已排除且交接完整 | canonical handoff、执行授权状态 | 按授权路由 |
-| `BLOCKED` | 外部依赖、安全、授权或环境边界阻止继续调查 | 已排查证据、阻塞项、最小解除条件 | 解除阻塞 |
-| `ESCALATE` | 证据表明局部修复边界不成立，需要架构或设计决策 | 最小 architectural_finding、证据、待决策项 | `discuss`；只有决策将导向软件资产变更时再交给 `writing-plans` |
+用简洁 Markdown。每次都要有：当前判断、已跑过的证据（指到哪、支持或排除了什么）、因果一句话。没跑过的命令不算证据。
 
-`ESCALATE` 由证据触发，不使用固定失败次数；`architectural_finding` 只说明为何局部不变量、所有权或边界不足以解决症状。高影响故障可提出可回滚的临时缓解，但必须明确根因状态；缓解不能标记为 `FIXABLE` 或根因修复。
+可以修的时候再补：
 
-## 输出与修复交接
+- 允许改 / 不许改
+- 修完应看到什么
+- 怎么复验（original repro；有 minimal 也要，二者不替代）
+- 用户这句请求能不能覆盖这次改动；不能就停下问最小授权。生产、破坏性、密钥要专项确认。
 
-用简洁 Markdown 输出。所有状态必须包含：
+能修且已授权 → `proof-oriented-development`。不能改文件 → 问授权。局部边界不够 → `discuss`。创建过临时探针、授权含糊或要升级架构时读 `references/handoff.md`。
 
-- `status`
-- `evidence_refs`：可复查的已运行命令、日志、trace、测试、diff 或观测路径，并说明其支持或排除了什么。计划运行但还没运行的命令只能写进下一步，不算证据。
-- `causal_explanation`：当前工作假设、最可信解释或已验证因果链
+分层与完成证明见 `AGENTS.md`。
 
-`FIXABLE` 的 canonical handoff 还必须包含：
+## References
 
-- `fix_boundary`：允许修改与禁止修改的范围。
-- `target_behavior`：修复后应恢复或建立的可观察行为。
-- `verification_path`：`original_repro`（报告的失败/观测及可重复条件），以及存在时的 `minimal_repro`；修复后必须复验 original，minimal 存在时也复验，二者不互相替代。没构造 minimal 时明确说明，不编造。
-- `execution_authorization`：`granted | missing | unknown`。
-- `execution_authorization_basis`：授权来源、覆盖的动作与 `fix_boundary`，以及生产、破坏性、配置等专项确认是否满足；`missing|unknown` 时记录具体缺口。
-
-`granted` 只在 basis 能引用当前用户请求或已授权任务卡、并明确覆盖当前 `fix_boundary`、动作类型和所需专项确认时成立；只授权诊断或尚未授权实施时是 `missing`；无法确认来源或范围时是 `unknown`。后两种状态保留 `FIXABLE` 交接并请求最小授权，不进入实施。
-
-`remaining_uncertainty` 在 `HYPOTHESIS_VERIFIED` 时必填，其他状态可选；`bug_class` 和 `recommended_proof_strategy` 始终可选。剩余不确定性不得动摇 `FIXABLE` 的因果链、修复边界或验证判据。Proof strategy 最终由 `proof-oriented-development` 决定；strict TDD 仅在用户明确要求时启用。
-
-调查创建过临时 instrumentation、探针、配置、数据或文件时，所有终止状态都必须以 `temporary_artifacts` 逐项记录：位置或标识、敏感性/安全影响、disposition（`removed | retained`）、保留原因（仅 retained）、责任人和处置验证；已删除也要记录。创建者负责清理或记录，后续 POD 消费未闭合项，VBC 最终审计。未创建时可省略；无法判断且可能影响安全或交接时写 `unknown`。
-
-`BLOCKED` 必须说明已排查证据、阻塞项和最小解除条件，并保留已证实的因果解释与已明确的交接内容；外部或环境问题还须给出可回滚缓解（如适用）和后续观测。缺少实施授权不把已闭合诊断降为 `BLOCKED`；只有继续调查本身需要越权动作时才使用该状态。
-
-## 路由与机制化
-
-- `FIXABLE + execution_authorization=granted + basis 匹配`：交给 `proof-oriented-development` 建立 Proof Plan、实施修复并输出 Proof Block。
-- `FIXABLE + missing | unknown | basis 不匹配`：保留 canonical handoff，请求覆盖 exact fix boundary 和动作类型的最小授权。
-- 修复完成声明前：先执行全量审查，再按工作区检查语义（dirty 或无 HEAD 先提交）进入待提交提示或最终验证。
-- 调用方应机制化校验状态枚举、`FIXABLE` 条件必填字段、授权 basis 与当前动作的匹配、执行路由和安全工具权限；因果是否充分仍由模型基于证据判断。
+- `references/handoff.md`：状态表与可校验字段，按需。
+- `references/root-cause-tracing.md`：第一处偏离。
+- `references/building-feedback-loops.md`：反馈循环。
+- `references/performance-and-flakiness.md`：性能与 flaky。
+- `references/defense-in-depth.md`：根因修复后的防护。

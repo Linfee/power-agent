@@ -58,17 +58,17 @@ scope:
 - Review Path：self-review / self-review + independent reviewer
 - Plan Review Status：SELF_REVIEWED / PENDING_INDEPENDENT_REVIEW / APPROVED / ISSUES_FOUND
 - Independent Review：not_required / pending / approved / issues_found
-- Independent Review Basis：[not_required 时写 not_required；pending 时写 pending；approved / issues_found 时写 `gate_revision=rN; kind=independent-review; record=<稳定位置>`]
+- Independent Review 记录：approved / issues_found 时给可定位位置；不必与 `plan.md` 对账。
 
 ## Plan Review History
 
-仅向该节追加记录，不得原地改写历史 revision。`approved` 或 `issues_found` 的 Gate basis 必须指向对应的 `### Gate Revision rN` 锚点。
+仅向该节追加记录，不得原地改写历史 revision。
 
 ### Gate Revision rN
 
 - Gate Revision：rN
 - Independent Review：[not_required / pending / approved / issues_found]
-- Independent Review Basis：[与 Plan Review Gate 完全一致的 basis]
+- 记录：[approved / issues_found 时的可定位位置]
 
 ## Review Focus
 

@@ -1,15 +1,15 @@
 ---
 name: code-review
 description: |-
-  代码审查 Skill。编码完成后、合并或 PR 前编排全量审查；收到审查反馈（内部 finding、外部 reviewer、PR 评论）时评估采纳/驳回/澄清。
+  代码审查 Skill。合并或 PR 前、高风险或用户要求时编排全量审查；评估内部 finding、外部 reviewer 或 PR 评论。
   Triggers: 代码审查, code review, 审查反馈, 双重审查, 合并前审查, 全量审查.
 ---
 
 # 代码审查
 
-实现目标完成后、合并或 PR 前的全量审查编排器，同时负责评估审查反馈。不替代 `implement` 的批次内审查，也不替代 `verification-before-completion`。
+合并/PR 前、L2、高风险或用户要求时的全量审查编排器，同时评估审查反馈。不替代 `implement` 的按需批次内审，也不替代 `verification-before-completion`。分层见 `AGENTS.md`。
 
-合并主分支或创建 PR 前默认必须执行；仅用户明确要求时可跳过，并记录原因。
+合并主分支或创建 PR 前必须执行；仅用户明确要求时可跳过，并记录原因。
 
 ## 输入与范围
 
@@ -47,15 +47,9 @@ description: |-
 
 ## Review Assets
 
-manifest 为 `not_applicable` 时，禁止扫描 `.power-agent`、`review-runs/` 或 `assets/`。
+无 manifest：不扫 `.power-agent`。有 manifest：只读当前 run 的 `review-assets.md` 点名的文件；校验失败只报 evidence gap，不扩扫。细节见 `references/review-lifecycle.md`。
 
-提供 manifest 时按以下原则校验；任一校验缺失、未知或失败就不读、不采信、不扩扫，只报告 evidence gap；关键验收只能依赖无效资产时返回 `需澄清`：
-
-- `REVIEW_RUN_ROOT` 解析后必须严格为当前 run 的 `.power-agent/review-runs/<run-id>`，root 及父组件均非 symlink；manifest 必须严格等于该 root 的 `review-assets.md`。
-- 只读 manifest 显式列出的普通文件：位于同一 root 的 `assets/` 下，拒绝绝对路径、空段、`..`、symlink 和解析越界；scope 匹配当前 target 与 paths/finding；freshness 匹配 `REVIEW_BASIS`；source 可追溯；sensitivity 已获当前派发授权。
-- 无法给 working tree 提供可比较 snapshot 时，不传 manifest。
-
-证据优先级：当前代码/diff > 当前需求/exec-plan > 匹配当前 basis 的新验证 > repair context/findings > implementer report > 其它 review assets。
+证据：当前代码/diff > 需求 > 新验证 > 其它 assets。
 
 ## 输出与路由
 
@@ -64,7 +58,7 @@ manifest 为 `not_applicable` 时，禁止扫描 `.power-agent`、`review-runs/`
 - 阻塞 finding → `启动修复子代理`；范围/口径变化或信息补齐 → `重新审查`；轮次耗尽 → `升级处理`。
 - 常规主审收敛 → `继续流程`；增强主审收敛 → `进入独立终审`；独立终审收敛 → `继续流程`。
 - 只有反馈评估为 BLOCKED、轮次耗尽或修复涉及破坏性/越权操作时才询问用户。
-- dirty 或无 HEAD 的仓库不得进入完成前验证；先走未提交分支收尾 Gate，clean HEAD 后再验证。
+- 完成前验证与工作区状态见 `AGENTS.md` 与 `finishing-a-development-branch`。
 
 ## References
 
@@ -75,4 +69,4 @@ manifest 为 `not_applicable` 时，禁止扫描 `.power-agent`、`review-runs/`
 - 输出协议：`references/output-contract.md`
 - 审查生命周期：`references/review-lifecycle.md`
 
-上游为 `implement`；下游依次为反馈评估、修复验证/独立终审、工作区 Gate 与完成前验证。`dev-docs-maintain` 仅在文档健康或验证登记需要时触发。
+上游可为 `implement` 或独立 `proof-oriented-development` 的升级路径。`dev-docs-maintain` 仅在文档健康或验证登记需要时触发。
