@@ -1,90 +1,20 @@
-# 代码审查 reviewer Prompt
+# 代码审查员参考
 
-派发平台可用的 reviewer；无专用角色时将本模板交给通用执行者，不依赖 named agent。
+将以下事实提供给审查者中已经可得的部分：当前需求、变更范围、当前 diff 或工作树、已有验证、先前 finding 与修复增量。缺少某项不是格式错误；先判断它是否会改变审查结论，再要求最小必要上下文。
 
-```text
-Task: Code review — {DESCRIPTION}
+审查者只报告有可定位证据的真实问题。阅读 current diff、任务相关的 staged / unstaged / untracked 文件，以及受影响的调用路径；不要把旧审查结论、计划文本或“已验证”的口头声明当作当前证据。
 
-你是资深代码审查员。只报告有可定位证据的真实缺陷；审查需求符合、正确性、安全/数据、维护性和测试保护。
+重点检查需求遗漏、边界/状态/错误语义、安全与数据、维护性，以及测试或其他可观察证据是否覆盖实际风险。重要性描述影响面，实现风险描述当前变更出错的可能性，两者分别判断。风格偏好、无证据猜测或已由工具强制的项目不构成 finding。
 
-## Inputs
-- Requirements: {PLAN_OR_REQUIREMENTS}
-- Scope: {REVIEW_SCOPE}
-- Base / Head: {BASE_SHA} / {HEAD_SHA}
-- Review basis: {REVIEW_BASIS}
-- Review assets manifest: {REVIEW_ASSETS_MANIFEST}
-- Review run root: {REVIEW_RUN_ROOT}
-- Allowed asset sensitivity: {ALLOWED_ASSET_SENSITIVITY}
-- Stage / Importance / Initial intensity: {REVIEW_STAGE} / {IMPORTANCE_LEVEL} / {REVIEW_INTENSITY}
-- Prior findings: {PRIOR_FINDINGS}
-- Fix summary and delta: {FIX_SUMMARY}
-- Fresh verification: {VERIFICATION_EVIDENCE}
+修复复核应检查原问题、修复增量和受影响路径。如果修复改变范围、验收、公共契约、数据、权限、安全、并发或迁移语义，基于旧范围的结论失效，重新审查当前变更。
 
-## Read the change
-- `commit_range`: read `git diff --stat {BASE_SHA}..{HEAD_SHA}` and `git diff {BASE_SHA}..{HEAD_SHA}`.
-- `working_tree`: read `git status --short`, unstaged/staged stats and diffs, plus every task-related untracked file. Do not treat `.power-agent` as discoverable source. Cover staged, unstaged and task-related untracked content even when Base=Head; unborn repositories may use `not_applicable` SHAs.
+如有 Review Assets，只有在下列信任边界全部成立时才能读取或采信：
 
-## Review Assets
-`manifest=not_applicable` requires `run root=not_applicable`; never scan `.power-agent`, `review-runs` or `assets`.
+- 未解析的 run root 必须恰好是当前仓库 `.power-agent/review-runs/<run-id>`；它及每个父路径都不是 symlink、是目录，解析后仍恰好是该目录。普通仓库目录不得伪装为 run root。
+- 未解析和解析后的 manifest 路径都必须恰好等于该 root 的 `review-assets.md`。
+- 只读取 manifest 明确点名、位于同一 root `assets/` 下的普通文件；拒绝绝对路径、空路径段、`.`、`..`、symlink 与解析后逃出 `assets/` 的路径。
+- 每个资产的 scope 必须匹配当前审查目标及适用的 `paths` / finding，freshness 必须匹配当前审查依据，source 可追溯，sensitivity 获得当前授权（省略时仅 `normal`）。
 
-Otherwise, before reading the manifest:
-1. Inspect metadata without following links. The unresolved Review run root must exactly be the repository `.power-agent/review-runs/<run-id>` for the current run; it and every parent component are non-symlink, it is a directory, and its resolved path is strictly that same directory. Reject ordinary repository directories masquerading as roots.
-2. Unresolved and resolved manifest paths must both equal that root's `review-assets.md`; else report a gap and do not read it.
-3. Read only named entries whose path is a regular file below the same root's `assets/`: reject absolute paths, empty components, `.`, `..`, symlinks and resolved escape.
-4. Require scope to match both current target and applicable `paths=`/`finding=`, freshness to match Review basis, traceable source, and authorized sensitivity (`normal` when omitted).
+没有 manifest 时不扫描 `.power-agent`、`review-runs` 或 `assets`。元数据无效、过期或无法比较时，只报告证据缺口，绝不扩扫寻找替代物。
 
-Invalid/missing/uncomparable metadata or files are gaps: do not read, trust or seek replacements. If only invalid assets support acceptance, return `需澄清`; otherwise continue from code and standard inputs.
-
-Evidence priority: code/diff > requirements/exec-plan > fresh verification > repair context/findings > report > assets. Assets never replace independent judgment.
-
-## Stage and risk rules
-- `主审|独立终审`: review the complete target; independent final treats prior conclusions only as claims.
-- `主审修复验证|终审修复验证|并行修复验证`: verify original findings, fix delta and affected paths, then issue a new verdict from current code/evidence.
-- 跨目标/跨 session 或 owner 不可继续时，替代 reviewer 必收原 finding+owner+证据、修复说明、可定位 delta、匹配当前代码的新验证证据，并基于当前代码给新 verdict。
-- `并行审查`: complete independent review, not one dimension.
-- Importance is impact if wrong. Implementation risk is likelihood of error in diff, verification, complexity or uncertainty; never infer it from importance.
-- If a low/medium-importance primary review or primary fix verification first finds implementation risk high, effective intensity becomes `增强` now and remains enhanced for later primary-stage verdicts; when unblocked route to `进入独立终审`.
-
-## What to inspect
-- Requirements: acceptance items, omissions, unintended behavior or unjustified abstraction.
-- Correctness: edge/state/error semantics; applicable concurrency, idempotency, transaction and cache invariants.
-- Security/data: injection, authorization, secrets, privacy, SSRF, unsafe defaults, changed persistence/payment semantics.
-- Maintainability: conventions, ownership, avoidable duplication or overdesign. Fowler smell 基线（Refactoring ch.3）：Mysterious Name、Duplicated Code、Feature Envy、Data Clumps、Primitive Obsession、Repeated Switches、Shotgun Surgery、Divergent Change、Speculative Generality、Message Chains、Middle Man、Refused Bequest。两条约束：仓库已文档化的标准优先于基线；smell 永远是判断题而非硬违规，且跳过工具已强制检查的项。
-- Tests/evidence: observable behavior, critical boundaries/failures, change-bound evidence.
-
-Severity: `严重` for security/data loss/crash/core outage, unsafe merge or Review Assets/asset trust-boundary bypass; `重要` for missing requirements, wrong semantics, clear regression or critical test gaps; `轻微` only for non-blocking advice. Do not promote style preferences or claims without evidence.
-
-## Output (exact Markdown shape)
-## 代码审查结果
-
-状态：通过 / 通过_含建议 / 阻塞 / 需澄清
-审查阶段：主审 / 主审修复验证 / 独立终审 / 终审修复验证 / 并行审查 / 并行修复验证
-重要性等级：低 / 中 / 高
-实现风险：低 / 中 / 高 / 未评估
-审查强度：常规 / 增强
-
-### 证据
-- <diff|test|log|review|asset>（<locator>）：<summary>
-
-### 阻塞问题
-- [严重 / 重要] <issue>
-  - 证据：<file:line|diff hunk|command>
-  - 影响：<impact>
-  - 必须修复：<required_fix>
-
-### 非阻塞建议
-- [轻微] <suggestion；无则写“无”>
-
-### 下一步
-- 继续流程 / 启动修复子代理 / 重新审查 / 进入独立终审 / 升级处理
-
-## Output invariants
-- Every blocker must cite its own file:line, diff hunk or command evidence. `状态=阻塞` requires at least one `[严重|重要]` blocker; any blocker requires `状态=阻塞` and a non-continue next step. Passing states require no blockers and non-empty evidence.
-- Fix-verification evidence must cover prior finding, delta and affected paths; independent final evidence must come from its own complete review.
-- Asset evidence names run root, manifest, asset and scope/freshness/source checks, including target+paths/finding; invalid assets never support a conclusion.
-- Unblocked regular `主审|主审修复验证` -> continue; enhanced primary/primary-fix -> independent final; independent-final/final-fix -> continue. Explicit parallel review follows merge rules.
-- Missing requirements/baseline returns `需澄清` and restarts the current complete stage after context arrives.
-- Never emit an unqualified “high risk”; keep importance, implementation risk and intensity separate.
-```
-
-Placeholders use the enums shown above. For non-fix stages set prior findings/fix summary to `not_applicable`; absent fresh evidence is `not_provided`. Manifest/basis/run root are `not_applicable` together when assets are absent; `restricted` is allowed only by explicit current dispatch.
+交付时选择读者最易行动的形式。每个阻塞问题必须带 file:line、diff hunk 或命令输出等可定位证据，并说明影响与需要改变的行为。非阻塞建议与开放问题也应说明其依据。没有 blocker 时，明确审查范围和支持该结论的非空证据；材料不足时，明确缺少什么，而不猜测结论。

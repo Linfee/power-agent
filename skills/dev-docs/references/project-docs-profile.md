@@ -10,7 +10,7 @@
 - `docs/log.md` 可选，用于记录 Bundle 级重要知识变化。
 - `docs/` 下除 `index.md`、`log.md` 外的 Markdown 都是 Concept Document，包括 ADR 和 exec-plan 包中的 Markdown。
 
-若仓库当前不满足这一边界，按渐进迁移处理：新建和实质修改的文档先合规，完整迁移交给 `dev-docs-maintain full-maintain`。
+若仓库当前不满足这一边界，按渐进迁移处理：新建和实质修改的文档先合规，需要结构级迁移时交给 `dev-docs-maintain` 做结构性维护。
 
 ## 推荐 type
 
@@ -129,10 +129,10 @@ freshness:
 
 1. 新建 Concept 必须合规。
 2. 实质更新旧文档时，补齐 frontmatter 和直接相关链接。
-3. `fix-safe` 可做无争议格式迁移；移动、拆分、合并与删除由 `full-maintain` 处理。
+3. 无争议格式迁移可直接做；移动、拆分、合并与删除是结构级操作，需要证据与授权。
 4. 遇到已弃用的 HTML header metadata 时，删除而不读取、不复制、不迁移其值。需要 `scope`、`status` 或 `verification` 时，仅依据当前正文和权威来源写入 YAML；旧 `verified` 日期绝不回填验证登记。
 5. 修改 Concept ID 时更新全部内部链接，并在相关 `log.md` 记录 Move/Rename。
 
 ## 与现有 Skill 套件的兼容提醒
 
-`setup-power-agent`、`writing-plans` 及其模板现已同步：它们生产的 `docs/` Concept 具有合法 YAML frontmatter 和非空 `type`，验证运行状态由 verification ledger 维护。对本次未涉及的其他文档生产者仍采用渐进迁移；`dev-docs` 和 `dev-docs-maintain` 不擅自重写它们的执行契约。
+`setup-power-agent` 初始化产出、`dev-docs` 语义写入与 `dev-docs-maintain` 机械维护同属知识维护子系统：它们生产的 Concept 具有合法 YAML frontmatter 和非空 `type`，验证运行状态由 verification ledger 维护。对未走该子系统的其他文档生产者仍采用渐进迁移，不擅自重写其已有文档。

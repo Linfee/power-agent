@@ -62,4 +62,4 @@ Flaky 的目标是获得可比较的复现率，而非一次干净失败。记�
 
 ## 无法建立有效 loop
 
-明确列出已经尝试的 observation boundary 和失败原因。请求能真正解除缺口的最小条件，例如环境访问、脱敏 HAR/trace/core dump、带时间戳的录屏，或新增最小生产观测的专项授权。没有区分性 observation boundary 时保持 `INVESTIGATING` 或在调查动作受阻时 `BLOCKED`，不要靠代码阅读直接升级为根因。
+明确列出已经尝试的 observation boundary 和失败原因。请求能真正解除缺口的最小条件，例如环境访问、脱敏 HAR/trace/core dump、带时间戳的录屏，或新增最小生产观测的专项授权。没有区分性 observation boundary 时如实报告仍在调查中，或在调查动作受阻时停下说明缺口，不要靠代码阅读直接升级为根因。

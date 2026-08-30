@@ -16,6 +16,10 @@ runner:
 ---
 
 # 移除 Skill 评测机制实现计划
+## Current applicability
+
+本文档记录移除 eval 时的旧执行方案，不能作为当前 Skill 路由、Gate 或具名依赖的执行契约。若恢复，先依 [ADR-0010](../../../adr/0010-judgment-oriented-skills.md) 重新判断目标、约束与验收，只复用仍与当前仓库一致的事实。
+
 
 ## 讨论结论 / 产品结论
 

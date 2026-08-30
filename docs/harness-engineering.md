@@ -6,174 +6,103 @@ scope:
 
 # Harness Engineering 体系设计
 
-基于 OpenAI Harness Engineering 实践，并按前沿模型能力做 ablation 后的 Agent 开发体系。核心理念：**让环境与验证可靠，让更强 Agent 用最少脚手架工作**——人类设计意图、约束与反馈循环；Agent 在 machine-legible 世界里自主执行。完整多阶段工作流是可靠性边界上的升级，不是默认骨架。
+Power-Agent 的 Harness 目标是让环境、约束、知识和验证对 Agent 清晰可用，同时避免用固定流程替代模型判断。当前产品身份是 **Judgment + Verification + Domain Knowledge pack**，见 [ADR-0010](adr/0010-judgment-oriented-skills.md)。
 
-**产品身份：** Constraint + Verification + Domain Knowledge pack（见 [ADR-0009](adr/0009-lean-default-orchestration.md)）。
+## 参考来源
 
-**原始参考：** [Harness engineering: leveraging Codex in an agent-first world](https://openai.com/index/harness-engineering/) — Ryan Lopopolo, OpenAI, Feb 11, 2026
+- [Harness engineering: leveraging Codex in an agent-first world](https://openai.com/index/harness-engineering/) — Ryan Lopopolo, OpenAI, 2026-02-11
+- [Effective harnesses for long-running agents](https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents)
+- [Effective context engineering for AI agents](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents)
+- [Writing effective tools for AI agents — with agents](https://www.anthropic.com/engineering/writing-tools-for-agents)
+- [Building effective agents](https://www.anthropic.com/engineering/building-effective-agents)
+- [Code execution with MCP: Building more efficient agents](https://www.anthropic.com/engineering/code-execution-with-mcp)
 
-**补充参考（Anthropic Engineering）：**
+这些来源描述了可用模式，不构成项目的固定运行剧本。Power-Agent 根据前沿模型与宿主能力持续做 ablation，只保留当前仍能提高结果可靠性的机制。
 
-- [Effective harnesses for long-running agents](https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents) — 长任务 harness、initializer/coding agent 分工、progress file、增量提交
-- [Effective context engineering for AI agents](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents) — 上下文裁剪、structured note-taking、sub-agent 架构
-- [Writing effective tools for AI agents — with agents](https://www.anthropic.com/engineering/writing-tools-for-agents) — 工具边界、命名空间、token-efficient 返回、eval 驱动迭代
-- [Building effective agents](https://www.anthropic.com/engineering/building-effective-agents) — workflow / agent / orchestrator-workers / evaluator-optimizer 模式选择
-- [Code execution with MCP: Building more efficient agents](https://www.anthropic.com/engineering/code-execution-with-mcp) — MCP 工具按需加载、代码执行、上下文效率
+## 环境可读性
 
----
+Agent 无法读取、查询或执行的工程事实，不能稳定约束结果。重要知识应进入模型实际可达的载体：代码、类型、测试、linter、命令帮助、结构化日志、可查询文档或外部权威系统。
 
-## 参考文献关键洞察
+仓库是长期工程真相的 canonical store，不是唯一运行时信息来源。CI、issue、观测系统、宿主 session 和 memory 都可提供权威事实；关键是来源可定位、与当前版本匹配，并能被再次检查。
 
-基于上述 6 篇参考文献提炼的核心原则与启发，按主题组织。
+`AGENTS.md` 是地图而非百科全书。高频、跨任务约束留在入口；专门知识放到清晰路径并按需读取。上下文越大不等于判断越好，高信号和可发现性比预加载更重要。
 
-### 上下文工程（Context Engineering）
+## 约束与自由度
 
-**上下文是有限资源，边际收益递减。** 随着 token 数量增加，模型准确回忆信息的能力下降（context rot）。有效的上下文工程目标是找到**最小的高信号 token 集合**，最大化期望结果的概率。
+Harness 应明确必须保护的边界，例如授权、兼容性、数据完整性、外部协议和验收入口；不应规定模型可以根据现场证据自行选择的工具、顺序或表达形式。
 
-- **系统提示的"正确高度"**：避免两个极端——过于刚性的 if-else 硬编码逻辑，和过于模糊的高层指导。最优点是"具体到足以引导行为，灵活到能提供强启发式"。
-- **即时上下文检索（Just-in-Time）**：不预加载所有数据，而是维护轻量引用（文件路径、查询、链接），运行时按需加载。Claude Code 的 `glob`/`grep` 就是此模式。
-- **渐进式披露（Progressive Disclosure）**：Agent 从小而稳定的入口点开始，逐层发现相关上下文。每次交互产生的上下文指引下一步决策。
-- **三种跨窗口持久化策略**：
-  - **压缩（Compaction）**：接近窗口上限时，摘要关键信息并开启新窗口。保留架构决策、未解决 bug、实现细节，丢弃冗余工具输出。
-  - **结构化笔记（Structured Note-taking）**：Agent 定期将进度写入窗口外的持久化文件（如 progress.txt、TODO 列表），后续窗口拉回使用。
-  - **子代理架构**：专用子代理在干净的上下文窗口中处理深度任务，仅返回浓缩摘要（通常 1,000-2,000 tokens），主代理负责综合与分析。
+可迁移的 Skill 会说明：
 
-### 长任务 Harness 设计
+- 什么结果对用户真正有用；
+- 哪些事实会改变方案；
+- 哪些约束不能为了速度牺牲；
+- 什么证据足以支持结论；
+- 哪些实现选择留给当前模型。
 
-**跨窗口的增量进展是长任务成功的关键。** 以下为长任务/跨会话场景的参考模式；是否启用按 [ADR-0009](adr/0009-lean-default-orchestration.md) 分层，L0/L1 不默认启用 initializer、progress file 或 feature_list。Anthropic 提出 initializer agent + coding agent 两阶段方案：
+这些是设计审查维度，不是统一 Prompt 模板。Skill 应允许不同的正确路径，不要求输出固定章节来证明遵循。
 
-- **Initializer Agent**：首次运行时搭建环境——创建 `init.sh`、progress 文件、功能清单（JSON 格式，带 pass/fail 状态）、初始 git 提交。
-- **Coding Agent**：每次会话只做一个功能的增量进展，结束时保持代码"可合并"状态（无重大 bug、有序、有文档）。
-- **会话启动仪式**：读 progress 文件 → 读 git log → 读功能清单 → 运行基本健康检查 → 选择最高优先级未完成功能开始工作。
-- **功能清单用 JSON 而非 Markdown**：模型不太容易不当修改 JSON 文件。强措辞禁止删除或编辑测试条目。
-- **端到端验证**：提供浏览器自动化工具让 Agent 像人类用户一样测试，而非仅依赖单元测试或 curl。
+## 机械化边界
 
-### 工具设计原则
+重复、确定、机器可裁决的工作不应长期留在 Prompt：
 
-**工具是确定性系统与非确定性 Agent 之间的契约。** Agent 的"可供性"（affordances）与传统软件不同：
+- 文件格式、ledger 和 API 使用 schema；
+- 代码不变量使用类型、lint、测试或 hook；
+- 原子更新、扫描、同步和计算使用脚本；
+- 工具错误返回可执行上下文，而不是只给错误码；
+- 大结果支持过滤、分页和摘要，避免无关数据占满上下文。
 
-- **少而精 > 多而杂**：过多或重叠的工具会分散 Agent 注意力。每个工具应有清晰独立的用途，针对高影响力工作流设计。
-- **合并操作**：工具可在底层处理多步操作。例如 `schedule_event` 比 `list_users` + `list_events` + `create_event` 三个工具更有效。
-- **命名空间**：按服务和资源前缀分组（如 `asana_projects_search`），帮助 Agent 在大量工具中选择正确的那个。
-- **返回有意义上下文**：优先返回 `name`、`file_type` 而非 `uuid`、`mime_type`。将不透明 ID 解析为语义化名称可显著减少幻觉。
-- **Token 效率**：实现分页、过滤、截断，带合理默认值。提供 `response_format` 枚举（concise/detailed）让 Agent 控制返回详细程度。
-- **可执行的错误信息**：错误响应应包含具体可执行的修复建议，而非不透明的错误码或堆栈跟踪。
-- **Eval 驱动迭代**：工具描述值得与系统提示同等的 prompt engineering 投入。用真实场景评估，让 Agent 分析结果并自我改进工具。
+精确步骤只在外部世界确实要求顺序时保留，例如授权确认、破坏性动作、事务性写入或机器协议。其他地方优先陈述判断原则。
 
-### 架构与可读性
+## Sub-agent 作为基础能力
 
-**Agent 可读性（Legibility）是首要目标。** Agent 看不到的东西等同于不存在。
+Power-Agent 面向支持普通 sub-agent 的宿主。主代理可以把独立调查、实现、审查或验证交给干净上下文中的子代理，再整合局部结果。
 
-- **代码库为 Agent 而非人类优化可读性**：就像为新工程师提升代码可导航性一样，为 Agent 优化仓库结构。
-- **"无聊"技术更适合 Agent**：组合性好、API 稳定、训练数据中代表充分的技术更容易被 Agent 建模。某些情况下重新实现子功能比依赖不透明的外部库更划算。
-- **强制不变量，而非微管架实现**：例如要求"在边界处解析数据形状"，但不指定使用哪个具体库。Agent 在有严格边界和可预测结构的环境中最有效。
-- **机械化执行 > Prompt 啰嗦**：自定义 linter 的错误消息注入修复指令到 Agent 上下文。人类感觉"过于严格"的规则，对 Agent 而言是乘数效应。
-- **Worktree 隔离**：每个变更对应独立的 worktree，包含独立的应用实例、日志、指标——任务完成后销毁。
+是否使用一个或多个子代理由任务依赖决定，不由固定层级决定：独立工作并行，共享写边界协调，后续依赖前序证据时串行。仓库不引入 team mode、平台专属 group API 或数字并发上限，也不维护无 sub-agent fallback。
 
-### Agent 模式选择
+子代理不会自动创造可信度。调用者仍需检查任务解释、证据来源、改动边界和最终整合结果。
 
-**从最简单方案开始，仅在有明确收益时增加复杂度。**
+## 证据优先
 
-- **Workflow vs Agent**：Workflow 是通过预定义代码路径编排 LLM；Agent 是 LLM 动态指导自身流程和工具使用。
-- **五种 Workflow 模式**：Prompt Chaining（顺序链）、Routing（路由分发）、Parallelization（并行/投票）、Orchestrator-Workers（编排-执行）、Evaluator-Optimizer（评估-优化循环）。
-- **Agent-to-Agent 审查**：随着吞吐量增加，几乎所有审查工作可以由 Agent 之间相互完成，人类不再必须审查每个 PR。
-- **吞吐量改变合并哲学**：在高吞吐环境中，修正成本低，等待成本高。最小化阻塞式合并门控，PR 保持短生命周期。
+模型的流畅解释、自检或流程记录不能证明结果。完成声明需要新鲜、可复现、与实际风险匹配的系统外证据。
 
-### 熵与技术债治理
+证据不是固定报告格式。一个局部改动可能只需要真实入口的成功输出；一个 bugfix 需要原失败场景不再失败；性能、安全、数据和 UI 则需要覆盖相应属性的专门观察。Harness 的责任是让这些观察容易获得、容易理解、容易复现。
 
-**全 Agent 自主性带来的新问题：Agent 复制仓库中已有的模式——包括不良模式。**
+验证可以针对 dirty working tree。只有提交、PR、合并等操作才需要把证据与 commit identity 绑定。授权和外部副作用是独立边界，不能用测试绿色代替用户确认。
 
-- **"黄金原则"机械化**：将质量规则编码到仓库中，定期扫描偏差、更新质量评分、开修复 PR。
-- **技术债是高利贷**：每日小额偿还优于积攒后痛苦清算。人类品味只需捕获一次，然后在每行代码上持续执行。
-- **Doc Gardening Agent**：后台 Agent 定期扫描过时或不反映实际代码行为的文档，自动开修复 PR。
+## 长任务与持久产物
 
-### MCP 与代码执行
+跨窗口、跨会话、人类审阅或外部审计可能需要计划、进度、任务图或 manifest。它们是否值得落盘取决于恢复成本和消费者，而不是任务被归入哪个等级。
 
-**当工具数量增长，直接工具调用会淹没上下文。** 让 Agent 写代码调用工具而非直接调用：
+好的 durable artifact 保存未来行动真正需要的目标、约束、决定、证据与剩余未知。可从 git、CI 或工具重新生成的大体量中间结果留在 scratch 空间；短任务不创建仪式性 handoff、feature list 或 session log。
 
-- **工具定义按需加载**：将 MCP 工具呈现为文件系统上的代码文件，Agent 按需浏览和读取定义，而非预加载全部。实测可减少 98.7% 的 token 消耗。
-- **执行环境内过滤**：中间结果在代码执行环境中处理后再返回模型，避免大量原始数据流经上下文。
-- **隐私保护**：中间数据默认留在执行环境中，不进入模型上下文。可自动对 PII 做 tokenize/detokenize。
-- **状态持久化与技能沉淀**：Agent 将可复用代码保存为函数/技能（Skills），配合 SKILL.md，逐步构建高层能力工具箱。
+## 知识系统
 
----
-
-## 设计哲学
-
-### 核心原则
-
-**1. 环境可读，工程真相可执行**
-仓库是**工程 canonical store**（架构不变量、ADR、验收入口、技能契约须 versioned 可达）。运行时还可消费 CI、issue、观测、宿主 session/memory 等权威源——前提是 machine-legible。Agent 读不到的工程约束等于不存在；能做成 lint/test/hook 的不要只写在 prompt 里。
-
-**2. 目录式上下文（Context as Map, Not Encyclopedia）**
-`AGENTS.md` 控制在 ~200 行，是一张**地图**而非百科全书。具体知识下沉到 `docs/` 与 Skills，按需 pull。当所有事情都标为重要，就没有什么重要。
-
-**3. 机械化约束优于 Prompt 啰嗦**
-核心规范靠 Linter/Test/权限策略强制执行，而非在 Prompt 中写 50 条“你应该如何写代码”。Linter 错误信息对 Agent 友好，含直接可执行的修复建议。给约束与边界，不给思维剧本。
-
-**4. 完成证明外置于模型**
-“看起来对”或 self-review 不是完成门闩。默认交付短证据（命令、退出码、关键结果、未验证项）；bugfix / 安全 / 数据 / 性能 / 对外宣称完成时再加码。
-
-**5. 默认单强代理；编排只在可靠性边界升级**
-多数任务：L0/L1 直做 + 验证。跨模块、多会话、高风险才进入 L2（薄计划、按需多 agent、风险相称审查）。模型或宿主升级后先 ablation 默认组件，再考虑加编排（ADR-0009）。
-
-**6. Durable 产出物用于协调，不作 session 仪式**
-跨会话、人审、恢复点与高风险决策才落盘；同会话局部改动以 git 与短证据为准，不默认写 progress/handoff/feature_list。
-
----
-
-## 知识库结构
-
-```
+```text
 docs/
-├── architecture.md          # 系统架构：模块划分、层级依赖、数据流
-├── development.md           # 开发指南：环境搭建、构建命令、调试
-├── workflow.md              # Skill 协调机制详解
-├── harness-engineering.md   # 本文档：体系设计与参考
-├── skill-and-harness-design.md # Skill 与 Harness 设计原则
-├── domain/                  # 领域/模块专题文档
-├── references/              # 外部依赖、集成、第三方参考
-├── adr/                     # ADR 历史架构决策记录
-├── exec-plans/              # 执行计划
-│   ├── active/              # 进行中
-│   └── completed/           # 已归档
-└── specs/                   # 需求规格文档
+├── architecture.md
+├── development.md
+├── workflow.md
+├── harness-engineering.md
+├── skill-and-harness-design.md
+├── domain/
+├── references/
+├── adr/
+├── exec-plans/
+└── specs/
 ```
 
-**文档 YAML frontmatter（ADR 除外，普通 docs Concept 必须包含）：**
+`setup-power-agent`、`dev-docs`、`dev-docs-maintain` 共同维护这个系统：分别拥有初始化、语义和机械完整性。它们可以按实际知识缺口互相使用；scanner、frontmatter 和 verification ledger 继续保持机器可验证的精确协议。
 
-```yaml
----
-type: Concept # 替换为能表达文档用途的非空类型
-scope:
-  - architecture
-status: active # 按生命周期需要添加
----
-```
+## 熵与 ablation
 
-验证运行状态由 `docs/.okf/verification.json` ledger 维护，不写入 Concept。ADR 是历史决策记录，使用 `type: Decision` 和 YAML `status` 表示生命周期。
+Agent 会复制仓库中的模式，包括坏模式。高价值不变量应通过工具和自动检查持续执行；文档 freshness、重复实现和技术债需要可观察入口。
 
----
+同时，Harness 本身也会积累熵。模型和宿主升级后先问：
 
-## 体系组件
+- 哪些步骤模型现在能稳定自行判断；
+- 哪些模板没有真实消费者；
+- 哪些状态只在描述流程而未保护结果；
+- 哪些检查可改成确定性工具；
+- 删除机制后，失败率或风险是否真的上升。
 
-架构分层、Skill 清单和协调机制见：
-
-- [系统架构](architecture.md) — 模块划分、依赖方向、Gate 机制
-- [工作机制与 Skill 协调](workflow.md) — 各 Skill 职责、产出物流转、反模式
-
-## 关键设计决策
-
-所有历史架构决策已独立建档，见 [ADR 目录](adr/)。
-
-核心决策概要：
-
-| 决策 | ADR |
-| -------------------------------- | ------------------------------------------------------------ |
-| Skill 作为执行单元，人类抓意图与不可逆 | [ADR-0001](adr/0001-skill-as-execution-unit.md) |
-| 实现/修复一次性；启用时 Reviewer 同会话连续 | [ADR-0007](adr/0007-reviewer-session-continuity.md) |
-| 产出物按需协调（非每 hop 默认落盘） | [ADR-0003](adr/0003-artifacts-as-coordination.md)、[ADR-0009](adr/0009-lean-default-orchestration.md) |
-| AGENTS.md 精简（≤200 行） | [ADR-0004](adr/0004-lean-agents-md.md) |
-| Gate：规划可执行性 + 实现自主 | [ADR-0006](adr/0006-gate-restructuring.md) |
-| 复杂性准入：ordered ladder 与证据购买 | [ADR-0008](adr/0008-complexity-admission.md) |
-| Lean default：L0/L1 默认，L2 升级 | [ADR-0009](adr/0009-lean-default-orchestration.md) |
+只有能改善真实结果的机制才留下。当前架构与 Skill 边界见 [architecture.md](architecture.md)，协作方式见 [workflow.md](workflow.md)。

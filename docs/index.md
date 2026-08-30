@@ -15,11 +15,11 @@ timestamp: 2026-07-10T00:00:00Z
 
 ## 系统与工作流
 
-- [系统架构](architecture.md)：模块、依赖方向与工作流边界。
-- [开发指南](development.md)：Skill 结构、文档元数据和开发约定。
-- [工作机制](workflow.md)：Skill 协调、交接契约与 Gate。
-- [Harness Engineering](harness-engineering.md)：Harness 设计原则与知识体系。
-- [Skill 与 Harness 设计](skill-and-harness-design.md)：Skill、prompt 和 Harness 的设计规则。
+- [系统架构](architecture.md)：Skill 边界、独立性与知识子系统。
+- [开发指南](development.md)：Skill 结构、文档元数据和验证入口。
+- [工作方式](workflow.md)：判断导向协作、证据与反模式。
+- [Harness Engineering](harness-engineering.md)：环境、知识与验证设计。
+- [Skill 与 Harness 设计](skill-and-harness-design.md)：如何维护可迁移判断。
 
 ## 决策与执行状态
 
@@ -29,7 +29,7 @@ timestamp: 2026-07-10T00:00:00Z
 ## 文档维护入口
 
 - 新建或修订稳定系统事实、领域边界、Playbook、Reference 或 ADR，使用 [`dev-docs`](../skills/dev-docs/SKILL.md)。
-- 检查既有 Bundle 健康、验证 freshness、修复已发现漂移或登记验证，使用 [`dev-docs-maintain`](../skills/dev-docs-maintain/SKILL.md)；Concept 重组使用其 `full-maintain`。
-- 只要后续会修改代码、测试、配置、自动化、Skill/prompt 或开发工作流，实施、重构和迁移计划交给 [`writing-plans`](../skills/writing-plans/SKILL.md)；研究、运营和其他非开发清单不创建 exec-plan。
-- README、CHANGELOG、发布公告以及未改变稳定契约的私有实现调整不进入长期知识维护。裸“更新文档”且缺少变化事实、来源或消费场景时先补证据，不猜测写入。
+- 扫描 Bundle、验证 freshness、修复结构或漂移、登记验证，使用 [`dev-docs-maintain`](../skills/dev-docs-maintain/SKILL.md)。
+- 初始化发现语义缺口、语义写入需要机械验证、或维护发现知识缺口时，这三个知识维护能力可按需协作；它们不形成固定链。
+- 软件资产变更、研究、运营或普通清单各自从当前目标选择适当 Skill 或直接行动；没有固定的“必须交给”路由。
 - 验证运行状态由 `docs/.okf/verification.json` 维护；Git diff 或文档年龄不能单独证明 `fresh`，也不使用 HTML `verified` / `scope` 注释。

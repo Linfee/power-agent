@@ -1,72 +1,56 @@
 ---
 name: code-review
 description: |-
-  代码审查 Skill。合并主分支、高风险或用户要求时编排全量审查；创建 PR 按重要性分层；评估内部 finding、外部 reviewer 或 PR 评论。
+  代码审查 Skill。合并主分支、高风险或用户要求时审查变更；评估内部 finding、外部 reviewer 或 PR 评论，在授权范围内实施修复。
   Triggers: 代码审查, code review, 审查反馈, 双重审查, 合并前审查, 全量审查.
 ---
 
 # 代码审查
 
-合并主分支、L2、高风险或用户要求时的全量审查编排器，同时评估审查反馈。创建 PR 按重要性分层：低/中一次常规审查，高重要性才增强并终审。不替代 `implement` 的按需批次内审，也不替代 `verification-before-completion`。分层见 `AGENTS.md`。
+## 什么值得判断
 
-全量审查（增强 + 独立终审）在合并主分支、高重要性或用户明确要求时执行。创建 PR 不是全量触发。仅用户明确要求跳过审查时记录原因。
+审查回答一个问题：**当前变更是否值得合入**。从这些维度找答案，不套固定步骤：
 
-## 输入与范围
+- **需求符合**：验收项是否覆盖、有没有漏掉的行为、越界的抽象。
+- **正确性**：边界、状态与错误语义；适用的并发、幂等、事务与缓存不变量。
+- **安全 / 数据**：注入、鉴权、密钥、隐私、SSRF、不安全的默认值、持久化与支付语义的变化。
+- **可维护性**：仓库已文档化的约定优先；明显重复、过度设计、职责混乱等 smells 是判断题，不是硬违规。
+- **测试保护**：可观察行为、关键边界与失败路径是否有变更绑定的证据。
 
-- `REVIEW_SCOPE=commit_range|working_tree`；有任务相关未提交变更时必须用 `working_tree`，且覆盖 staged、unstaged 和任务相关 untracked 文件；不得因 Base=Head 或空 commit diff 判定无变更。`.power-agent` 不属于可自由发现的 untracked 范围。
-- `BASE_SHA / HEAD_SHA`：commit range 必填；基线依次取 merge-base with `origin/main`、`origin/main`、最后才是 `HEAD~N`；unborn working tree 可为 `not_applicable`。
-- **先定死审查基点再派发**：commit_range 确认 ref 可解析、diff 非空；working_tree 以 `git status` + diff + 已确认的任务相关 untracked 判定非空——基点错误要在这里失败，不要在 reviewer 内部失败。
-- 需求/规格按序查找：commit message 的 issue 引用 → 用户提供的路径 → `docs/` 或 `specs/` 下匹配文档 → 问用户；确实没有时向用户确认后按无 spec 审查。缺失信息按需读取。
-- 可选 Review Assets：`REVIEW_ASSETS_MANIFEST`、权威 `REVIEW_RUN_ROOT`、`REVIEW_BASIS`、`ALLOWED_ASSET_SENSITIVITY`（默认 `normal`）；无 manifest 时前三项写 `not_applicable`。
+每个 finding 必须绑定可定位证据（file:line、diff hunk、命令输出），严重度只由证据支持：`严重`（安全 / 数据丢失 / 崩溃 / 核心故障、unsafe merge）、`重要`（缺需求、语义错误、明确回归、关键测试缺口）、`轻微`（非阻塞建议）。
 
-## 编排
+风险是两个独立维度，分开判断，不用未限定的"高风险"：
 
-1. 按 `references/risk-classification.md` 判定重要性；派一名主审按 `references/code-reviewer.md` 完成多维全量审查。
-2. 有阻塞 finding：按下方「反馈评估」逐项处理，实施 `采纳|部分采纳` 项并运行相关验证，然后进入修复验证。
-3. 修复验证在同一实现目标、同一 review session 内优先由原 finding owner 继续；跨目标、跨 session 或 owner 不可继续时派新 reviewer，并提供完整的原 finding/证据、修复说明、修复增量和新验证。每次修复验证都基于当前代码产生新 verdict，不沿用旧结论。
-4. 修复实质改变 Scope、Acceptance、公共契约、数据、权限、安全、并发或迁移边界时，停止窄验证，按当前范围重启完整主审并重新分级。
-5. 当前目标最多 3 轮修复-复审；仍阻塞且不收敛时升级处理。需求/基线不足则补齐后重启当前阶段的完整审查。
+- **重要性** = 变更出错后的影响面：仅文档 / 测试 / 格式 → 低；局部逻辑或 bugfix → 中；公共 API / 数据 / 鉴权 / 并发事务语义 → 高。
+- **实现风险** = 当前实现出错的可能性，只依据 diff、验证、复杂度和未解决不确定性：集中直接且验证充分 → 低；跨路径逻辑或验证缺口 → 中；证据显示可能错误或关键路径有重大缺口 → 高。
 
-### 强度与终审
+## 哪些事实改变判断
 
-- 高重要性从主审起就是 `增强`；低/中重要性初始为 `常规`，但主审或主审修复验证首次判定 `实现风险=高` 时立即升级并保持 `增强`。
-- 常规主审收敛 → `继续流程`；增强主审收敛 → 派一个此前未参与该目标的 reviewer 做 `独立终审`，终审 finding 由终审 reviewer 优先验证，通过后不再回到主审。
-- 只有用户或上游契约明确要求时才启用并行双审：两名 reviewer 各做完整审查，按 `references/conflict-resolution.md` 归并，不因每次修复机械重启双方。
-- 用平台可用的 reviewer；没有专用 reviewer 时给通用执行者完整模板。不依赖特定 agent 名称、消息接口或私有续接机制。
+- **证据新鲜度**：结论必须基于当前代码与当前 diff。旧 session 的结论、过期验证、或与当前范围不符的材料只能算线索，不算证据。
+- **范围变化**：修复实质改变 Scope、Acceptance、公共契约、数据、权限、安全、并发或迁移边界时，之前的结论不再成立，重新审查当前范围。
+- **修复验证**：修复后必须基于当前代码、修复增量与受影响路径给出新判断，不沿用旧结论。
+- **高风险**：高重要性或高实现风险（以及公共 API 变更）时，收敛前让一个未参与该目标的独立 reviewer 复核——独立复核把先前结论只当主张重新验证，给出自己的判断。
+
+## 保护什么
+
+- **只按授权修复**：阻塞 finding 在授权范围内实施修复并验证；修复超出授权（破坏性操作、越权范围）时不擅自动手，把需要授权的事说明清楚，不自行决定扩大范围。
+- **不表演性同意**：对每条反馈做技术判断，驳回要有反证，信息不足就要求澄清，不输出无证据的附和。
+- **证据不出自猜测**：资产、日志、测试输出都必须是可复查的真实来源；无效或过期的证据形成 evidence gap，不支撑结论。
+
+## 什么证据足够
+
+证据优先级：当前代码 / diff > 需求 > 新验证 > 其它材料。给出结论至少需要：与审查范围直接相关的可定位证据、逐条 blocker 自己的证据、覆盖需求与风险的判断。有 blocker 就阻塞，不继续；无 blocker 且证据非空才判通过。需要更多上下文才能判定时，明确缺什么，不猜。
+
+Review Assets（`REVIEW_ASSETS_MANIFEST`、权威 run root、`ALLOWED_ASSET_SENSITIVITY` 等，若提供）：只读当前 run 的 manifest 点名的普通文件，先做 containment / freshness / source / sensitivity 校验；无 manifest 不扫 `.power-agent`；校验失败只报 evidence gap，不扩扫。
 
 ## 反馈评估
 
-收到审查反馈（本 Skill 的阻塞 finding、外部 reviewer 或 PR 评论）时，逐项基于代码事实做技术判断，不输出表演性同意：
+收到内部 finding、外部 reviewer 或 PR 评论时，逐项基于代码事实判断：`采纳`（成立可实施）、`部分采纳`（拆分后采纳）、`驳回`（给出反证）、`需澄清`（信息不足，先问清楚再判断）。采纳或驳回都必须附可定位证据；需澄清时明确缺什么信息。评估后实施采纳项并验证，然后对修复增量复核。只有反馈超出授权、涉及破坏性 / 越权操作时才请求用户介入。示例见 `references/response-examples.md`。
 
-- `decision` 仅允许：`采纳`（建议成立，可实施）、`部分采纳`（部分成立，需拆分）、`驳回`（不成立，给出反证）、`需澄清`（信息不足）。
-- `需澄清` 时状态必须为 BLOCKED，下一步是具体澄清问题；`采纳 | 部分采纳 | 驳回` 必须附可定位证据（file:line、diff 片段、测试输出）。
-- 评估通过后：实施所有 `采纳 | 部分采纳` 的阻塞项，运行相关验证，然后进入当前审查阶段的修复验证（优先原 reviewer；替代 reviewer 带完整修复上下文）。不得要求用户决定是否继续。
-- 只有反馈超出授权范围、修复涉及破坏性/越权操作，或修复-复审达到轮次上限时，才请求用户介入。
-
-反馈示例见 `references/response-examples.md`。
-
-## Review Assets
-
-无 manifest：不扫 `.power-agent`。有 manifest：只读当前 run 的 `review-assets.md` 点名的文件；校验失败只报 evidence gap，不扩扫。细节见 `references/review-lifecycle.md`。
-
-证据：当前代码/diff > 需求 > 新验证 > 其它 assets。
-
-## 输出与路由
-
-严格遵循 `references/output-contract.md`：输出 `状态 / 审查阶段 / 重要性等级 / 实现风险 / 审查强度 / 证据 / 阻塞问题 / 非阻塞建议 / 下一步`，不用 YAML。
-
-- 阻塞 finding → `启动修复子代理`；范围/口径变化或信息补齐 → `重新审查`；轮次耗尽 → `升级处理`。
-- 常规主审收敛 → `继续流程`；增强主审收敛 → `进入独立终审`；独立终审收敛 → `继续流程`。
-- 只有反馈评估为 BLOCKED、轮次耗尽或修复涉及破坏性/越权操作时才询问用户。
-- 完成前验证与工作区状态见 `AGENTS.md` 与 `finishing-a-development-branch`。
+用户明确要求双审时，两名独立 reviewer 各自完成完整审查，同一问题取最高严重度归并并保留各自证据；修复由提出该 finding 的 reviewer 验证。
 
 ## References
 
-- reviewer prompt：`references/code-reviewer.md`
+- 审查维度与证据规则：`references/code-reviewer.md`
+- 重要性 / 实现风险：`references/risk-classification.md`
 - 反馈评估示例：`references/response-examples.md`
-- 重要性/实现风险：`references/risk-classification.md`
-- 显式并行双审：`references/conflict-resolution.md`
-- 输出协议：`references/output-contract.md`
-- 审查生命周期：`references/review-lifecycle.md`
-
-上游可为 `implement` 或独立 `proof-oriented-development` 的升级路径。`dev-docs-maintain` 仅在文档健康或验证登记需要时触发。

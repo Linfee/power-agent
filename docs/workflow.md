@@ -1,321 +1,110 @@
 ---
-type: Process
+type: Guide
 scope:
   - workflow
 ---
 
-# 工作机制与 Skill 协调
-
-本文档描述 power-agent 的完整工作机制：各 Skill 的职责边界、产出物、以及它们之间如何协调。
-
----
-
-## 核心设计原则
-
-**约束与验证优先；编排按可靠性边界升级（ADR-0009）。** 默认 L0/L1：单强代理（或 `proof-oriented-development`）直做 + 系统外短证据。完整 `writing-plans → implement → 多阶段审查 → VBC` 只用于 L2（跨模块、多批次、跨会话、高风险或需人审恢复点）。
-
-**Skill 是执行单元，人类可按需参与决策。** 每个 Skill 只做一件事，通过明确的输入/输出协议协作。人类抓意图、不可逆与授权边界；不默认审批 decomposition 与每次 handoff。L2 规划以独立审查闭合可执行性；实施阶段 Agent 自主闭环，worktree 沙盒兜底（ADR-0006）。
-
-**产出物按需协调，不作 session 仪式。** 开发链路中，discuss 结论可直接作为实施输入；仅 L2 需要时由 writing-plans 写入 `plan.md`。Durable 状态用于跨会话、高风险与人审；同会话 L0/L1 以 git 与短证据为准，避免每个 hop 复制第二套真源（ADR-0003 经 0009 限定）。
-
-## 开发计划边界与非开发路由
-
-`writing-plans` 与 `implement` 只处理会修改代码、测试、构建或运行配置、自动化、Skill/prompt 或开发工作流等软件资产的开发工作；“计划”“待办”或“任务拆解”本身不是触发条件。
-
-按当前主要交付物选择单一入口，并在状态改变时交棒：
-
-| 当前主要交付物 | 主入口 | 交棒 / 排除 |
-|---|---|---|
-| 根因未知的错误、测试失败、性能退化或异常行为 | `systematic-debugging` | 不直接进入 exec-plan；确认修复边界后按 L0/L1/L2 进入实施。 |
-| 软件资产变更（局部/边界清楚） | **L0/L1**：`proof-oriented-development` 或短卡直做 | 不写 exec-plan；合主或高风险再升级全量审查，创建 PR 按重要性分层。 |
-| 软件资产变更（跨模块/多会话/高风险） | **L2**：`writing-plans → implement` | 附带的长期知识更新在验证后按需 `dev-docs`。 |
-| 项目 `docs/` 的长期系统知识、ADR、Playbook 或 reference | `dev-docs` / `dev-docs-maintain` | 不创建 exec-plan。 |
-| 研究、运营、个人事务、信息整理或普通工作 | 宿主原生任务清单或直接推进 | 不进入 implement 执行流程。 |
+# 工作方式与 Skill 协调
 
-开发工作流图中的全链路描述的是 **L2**；上游 `discuss` 给出建议去向——多数结论走 L0/L1，仅复杂或高风险工作经 `writing-plans` 成型。
+Power-Agent 不定义标准工作流。它提供一组可以独立使用的判断能力；模型从用户要达到的结果和当前缺失的判断出发，选择最轻、足够可靠的行动方式。
 
-## 状态协议速查
+## 从承重问题开始
 
-本项目不使用全局单一状态枚举。每个 Skill 保留自己的输出协议，但上下游交接必须显式写清字段与映射。
+面对任务时，先识别什么会改变行动：
 
-| Skill / 场景 | 状态值 | 下游消费规则 |
-|--------------|--------|--------------|
-| `writing-plans` plan review | `SELF_REVIEWED / PENDING_INDEPENDENT_REVIEW / APPROVED / ISSUES_FOUND`（只在 `review-contract.md`） | low self-review 后可交棒；medium/high 需 reviewer APPROVED |
-| `implement` 实现/修复子代理 | `DONE / DONE_WITH_CONCERNS / BLOCKED / UNKNOWN` | `DONE*` 可继续；`BLOCKED/UNKNOWN` 需要补上下文、拆分、重试或升级 |
-| `implement` 单内部 reviewer | `DONE / DONE_WITH_CONCERNS / BLOCKED` + Spec/Quality 双 verdict | `BLOCKED` 进入 fix loop；`DONE_WITH_CONCERNS` 必须闭合 Cannot Verify From Diff；连续同类问题无收敛则升级 |
-| `code-review` 全量审查 | `通过 / 通过_含建议 / 阻塞 / 需澄清` + 主审、主审修复验证、独立终审、终审修复验证、并行审查阶段 | 常规主审收敛后继续；增强主审收敛后进入全新 reviewer 独立终审 |
-| `code-review` 反馈评估 | `DONE / BLOCKED` + 采纳/部分采纳/驳回/需澄清 | `DONE` 表示反馈已完成采纳/驳回判断；`BLOCKED` 等待澄清 |
-| `verification-before-completion` | `DONE / PARTIAL / BLOCKED` | 仅 `DONE` 且 `passed=true` 可交给分支收尾；输出 `commit_sha/passed/verified_at/evidence[]` |
-| `finishing-a-development-branch` | `READY / BLOCKED / DONE / CANCELLED` | dirty / 无 HEAD 时 `READY + mode=uncommitted` 提示提交；clean 且验证通过后进入标准分支处置 |
+- 用户最终要观察到什么结果；
+- 哪些现有事实已经确定，哪些未知会改变方案；
+- 哪些范围、兼容性、授权、安全或数据边界不能破坏；
+- 什么系统外证据足以让当前结论成立。
 
----
+这些是检查维度，不是要求模型按顺序输出的四个章节。信息已经足够时直接行动；只有无法从仓库、工具或权威来源获得、且不同答案会实质改变结果时才询问用户。
 
-## 完整工作流图
+## 选择能力，而不是进入流程
 
-> 下图为 **L2 升级路径**。L0/L1 默认：直做 → 最小验证 → 短证据；不经 exec-plan Gate，不默认双重审查。
+Skill 的触发表示“一类判断值得专门帮助”，不表示任务必须经过它前后的其他 Skill。
 
-```
-┌─────────────────────────────────────────────────────────┐
-│                    开发需求阶段（按需）                      │
-│                                                         │
-│   discuss skill（问题模糊 / 有真实取舍 / 需对齐时）          │
-│   输入：任何需要想清楚再行动的问题                            │
-│   产出：内联 Discussion Conclusion / 讨论结论                │
-│        （仅按需落盘 docs/specs/YYYY-MM-DD-<topic>.md）       │
-│   审查：强度与决策权重相称；实质/不可逆决策才独立 reviewer        │
-└─────────────────────┬───────────────────────────────────┘
-                      │ 经对齐的开发类讨论结论（或用户直接描述软件变更）
-                      ▼
-┌─────────────────────────────────────────────────────────┐
-│                 开发规划阶段                               │
-│                                                         │
-│   writing-plans skill                                   │
-│   输入：开发类讨论结论 / spec 文档 / 用户描述 + 软件资产上下文    │
-│   产出：docs/exec-plans/active/YYYY-MM-DD-title/         │
-│           plan.md + review-contract.md                  │
-│           （按需拆出 context.md / tasks.md）               │
-│   gate：low=self-review；medium/high=独立 reviewer             │
-└─────────────────────┬───────────────────────────────────┘
-                      │ compact 开发 exec-plan（人类默认只审 review-contract.md）
-                      ▼
-┌─────────────────────────────────────────────────────────┐
-│                 开发实施阶段                               │
-│                                                         │
-│   implement skill（准备 → 执行 → 审查 → 验证 → 收尾）          │
-│   ├── 准备：git worktree 按需隔离 + exec-plan Gate     │
-│   ├── 执行：依赖驱动批次并行 + 按需 conflict_check/review/fix │
-│   ├── 审查：风险相称 code-review（非与批次审机械双重默认）   │
-│   ├── 工作区检查：dirty || !has_head → 待提交；clean && has_head → 验证 │
-│   ├── 验证：verification-before-completion          │
-│   └── 收尾：finishing-a-development-branch        │
-└─────────────────────┬───────────────────────────────────┘
+- 问题需要先想清楚时，可以使用 `discuss`；它本身交付可评审结论。
+- 用户需要跨会话、供人审或可恢复的计划时，可以使用 `writing-plans`；计划不因任务复杂自动产生。
+- 已有目标、任务清单、spec 或任意形式计划需要执行时，可以直接使用 `implement`。
+- 一个明确的实现目标需要最小充分改动和证据时，可以直接使用 `proof-oriented-development`。
+- 根因不明时，`systematic-debugging` 负责把解释与证据对齐；授权覆盖时可以直接修复。
+- 用户要审查时，`code-review` 独立给出 findings；用户要判断完成或处置分支时，`finish-development` 独立完成该目标。
 
-调试路径（独立入口）：
-   systematic-debugging skill
-       └── [status=FIXABLE && execution_authorization=granted + matching basis] → proof-oriented-development skill
-               └── 短证据或 Proof Block →（风险相称）code-review → 工作区检查 → verification-before-completion
-       └── [status=ESCALATE] → `discuss`，或仅在后续为软件实施时转 `writing-plans`
-```
+这些能力可以由同一个模型连续使用，也可以在同一任务中只使用一个。调用者不得因为某个 Skill 名字出现在文档里就把它变成强制下一站。
 
----
+## 使用已有材料
 
-## 各 Skill 详解
+每个 Skill 接受完成判断所需的普通材料，而不是要求专用上游格式：用户描述、代码、diff、计划、日志、截图、benchmark、issue、CI 结果或 sub-agent 结论都可以。
 
-### discuss — 通用讨论与对齐
+材料的价值由以下问题决定：
 
-**触发：** 任何需要想清楚再行动的问题：问题本身模糊、存在真实取舍，或决策需要同他人或未来的自己对齐。
+- 它是否直接约束当前结论；
+- 来源是否可信且与当前版本匹配；
+- 它能否被调用者定位或复现；
+- 缺少它是否会让两个实质不同的方案都看似成立。
 
-**输入：** 用户描述、草稿、issue、截图或其他背景材料。
+短任务通常不需要持久中间产物。跨会话恢复、人类审阅、外部审计或机器消费需要稳定接口时，才把计划、manifest、ledger 或报告落盘。文件布局服务真实消费者，不服务流程完整感。
 
-**核心流程：**
-1. 建立上下文，识别已明确、冲突和缺失的信息。
-2. 判断是否需要拆分；复杂需求先收敛到一个最小闭环。
-3. 分批澄清目标、范围、用户流程、关键状态、异常路径、验收标准，以及影响范围/验收/planning 的上层技术方向。
-4. 按问题判断是否使用 HTML 可视化辅助；视觉/流程/关系/方案对比复杂时一屏一决策。
-5. 仅在真实分歧存在时呈现 2-3 个方向对比，先给推荐，再说明取舍。
-6. 默认产出内联 `Discussion Conclusion` / `讨论结论`，先自查占位符、歧义、范围膨胀，以及是否滑入可直接执行的细节。
-7. 审查强度与决策权重相称：结论将驱动实质行动或不可逆决策时派独立 reviewer 审查，blocking issue 修正后重审；探索性讨论自查即可。
-8. 给出建议去向：按层级——L0/L1 边界清楚的开发工作携结论直做（`proof-oriented-development` 或主代理）；L2 跨模块、多批次、高风险工作经 `writing-plans` / `implement`；只有用户明确要求、合规/流程要求或需要长期维护的结论时，才按需落盘 spec/doc。
+## Sub-agent 协作
 
-**产出：** 内联 `Discussion Conclusion` / `讨论结论`；按需 `docs/specs/YYYY-MM-DD-<topic>.md`
+Power-Agent 假设宿主提供普通 sub-agent。模型先画出实际依赖和写所有权，再决定是否并行：
 
-**交棒给：** 建议去向——L0/L1 → POD 直做；L2 → `writing-plans` / `implement`；长期知识 → `dev-docs` / `dev-docs-maintain`
+- 互不依赖、写范围不重叠的调查或实现可以并行；
+- 多个消费者共享接口时，先明确最小契约；
+- 同一文件或同一状态边界只有一个整合所有者；
+- 后续任务需要前序证据时串行，不用虚假并行增加交接；
+- 子代理得到的是局部证据和改动，调用者负责校验、整合与最终声明。
 
-**不做：** 不写任何代码，不创建 exec-plan，不做接口签名、数据表/字段、库选型、类/函数拆分、文件路径等实现细节；允许讨论影响范围/验收/planning 的上层技术方向。结论存在 planning 阻塞缺口时，先修复并重新审查。
+仓库不规定并发上限，也不提供 team mode 或无 sub-agent fallback。平台容量和调度由宿主处理。
 
-### codebase-design — 具体模块深化
+## 计划与恢复
 
-**触发：** 设计或审查具体模块簇，需要收窄接口、判断薄 wrapper、seam / adapter 或可观察测试表面时。
+计划只在未来执行者无法仅凭当前上下文可靠恢复时有价值。一个好计划应让执行者知道要实现的结果、不能越过的边界、已经作出的关键决策、需要观察的验收和剩余未知。
 
-**核心判断：** 从消费者需要的行为出发，识别模块隐藏的复杂度，执行删除测试，并只为真实外部 effect、协议边界或受需求支持的运行时变体建立 seam。测试 fake 本身不构成公开 seam 的理由。
+格式取决于消费者：同会话可以是简短任务列表；跨会话或人审可以写入 `docs/exec-plans/active/`。`review-contract.md`、revision、状态枚举或固定任务卡不再是默认契约；实际机器或外部流程需要时才保留精确格式。
 
-**交接：** 进入计划时把模块边界、接口、删除测试、seam 理由和接口级 Proof 写入 `writing-plans` 的 Key Decisions / Proof Strategy；直接实现时交给 `proof-oriented-development` 执行验证。
+恢复执行时，以当前仓库、用户最新要求和仍有效的计划事实为准。计划与现实冲突时重新判断受影响部分，不为了维持状态机而执行失效步骤。
 
-**不做：** 不代替 `discuss` 的架构取舍、领域建模、迁移/风险决策、exec-plan、实施或最终 Proof；高影响替代接口比较仅按需使用。
+## 证据与完成
 
----
+证据强度与声明精确匹配：
 
+- 调查结论需要可区分替代解释的运行结果或权威来源；
+- bugfix 需要原失败场景在相同条件下不再失败；
+- 行为变更需要真实入口或保护该契约的测试；
+- UI 需要实际界面交互或视觉证据；
+- 性能、稳定性、安全和数据语义需要覆盖对应风险的专门证据。
 
-### writing-plans — 开发实现计划创建
+“运行过命令”“子代理说通过”或“流程阶段齐全”都不是充分证据。模型必须检查结果是否新鲜、是否针对当前工作、是否覆盖声称的行为。未覆盖面直接说明，不用固定 Proof 或 verification schema 包装。
 
-**触发：** 用户要求创建软件资产变更的开发 exec-plan，或为跨模块、多批次、跨会话、高风险的开发工作成型计划；边界清楚的中等偏小工作不需要 exec-plan，`discuss` 结论按 L0/L1 直做（POD），不默认进 `implement`。
+`finish-development` 可以在 dirty working tree 上验证并判断完成。只有提交、PR、合并等 commit-bound 操作才要求将证据绑定具体提交。commit、push、PR、merge、discard、删除或其他有外部副作用的动作在执行点遵守用户授权。
 
-**输入：** 经对齐的开发类讨论结论 / spec 文档 / 用户描述 + 相关代码库上下文
+## 知识维护子系统
 
-**非开发转向：** 长期项目知识用 `dev-docs` / `dev-docs-maintain`，普通工作用宿主原生清单；这些请求不创建 exec-plan。
+`setup-power-agent`、`dev-docs`、`dev-docs-maintain` 共享 Knowledge Bundle，因此可以具名协作：
 
-**核心流程：**
-1. 读取讨论结论、spec 或用户描述，以及直接相关代码/文档。
-2. 默认生成 compact exec-plan：`plan.md + review-contract.md`；仅在证据昂贵、上下文过大、任务图复杂或多 Agent 交接需要时拆出 `context.md / tasks.md`。
-3. `plan.md` 是执行真源，包含目标、Scope、关键决策、Agent 自主边界、紧凑任务、Proof Strategy、阻塞/升级条件和风险。
-4. `review-contract.md` 是人类默认审阅面和唯一 Gate；人类只审意图、范围、验收、证明策略、Agent 自主边界、阻塞条件和高风险项。
-5. 所有计划执行 inline self-review，并确定 `plan_risk=low|medium|high`。
-6. `low` 直接交棒；`medium/high` 增加一个独立 `tech-plan-reviewer`，通过后直接交棒。
-7. 提供执行选项（推荐 `implement`）。
+- 初始化发现缺少稳定语义时，可以使用 `dev-docs`；
+- 语义写入需要结构检查或 verification ledger 时，可以使用 `dev-docs-maintain`；
+- 维护发现真正的知识缺口或需要实质重写时，可以使用 `dev-docs`。
 
-**产出：** `docs/exec-plans/active/YYYY-MM-DD-title/plan.md + review-contract.md`，按需 `context.md / tasks.md`；只用于开发工作。
+这不是固定链。只需要初始化、语义写入、扫描或 ledger 登记中的一个结果时，只执行对应工作。scanner、frontmatter、ledger 原子写入等机器协议保持精确。
 
-**交棒给：** `implement`（开发计划）
+## 何时停止
 
+达到用户可观察的目标，关键约束已保护，且证据足以支持实际声明时停止。不要为了“完整”追加计划、审查、文档、抽象或下一轮。
 
----
-
-### implement — 开发实施编排
-
-**触发：** writing-plans 的开发 exec-plan 交棒、用户提供的其他形式开发计划（手写计划、任务清单、spec），或手动恢复开发实施。
-
-**非开发转向：** 非开发计划、普通清单和内容/运营工作不进入执行流程，按本节上方的路由表处理。
-
-**主流程：** 准备 → 执行 → 审查 → 验证 → 收尾；异常：升级 / 取消；子代理异常结果：`UNKNOWN`
-
-**核心流程：**
-1. 准备：读取计划材料（exec-plan 必读 `plan.md` 与 `review-contract.md`，Gate 只看 contract；`context.md` / `tasks.md` 按需），需要隔离时用 git worktree；确认任务、依赖、Proof、阻塞条件可判定；contract Gate 未过不得执行；其他计划向用户复述理解后执行；改动极小时主代理直接处理
-2. 执行：拓扑排序 tasks，独立任务并行派发；单代理串行以 diff + 短证据交接；多 agent / 写冲突时才用 scratch artifacts 与按需双 verdict
-3. 审查 / 验证：是否 `code-review` / `verification-before-completion` 见 `AGENTS.md`
-4. 收尾：有归档或分支处置需要时调用 `finishing-a-development-branch`
-
-**产出：** 软件资产变更；跨会话时 Session Log；归档开发 exec-plan
-
-**调用链：** 见 `AGENTS.md`。`dev-docs-maintain` 按需，不是固定阶段。
-
----
-
-### proof-oriented-development — 证明导向实现
-
-**触发：** 由 implement 派发任务卡，或用户直接触发实现功能、编写代码、证据交付、最小有效验证；只有用户明确要求 TDD / 测试驱动 / 先写失败测试时才启用 strict TDD。
-
-**铁律：** 没有低成本、可复现、与任务强相关的短证据，就不能声称当前增量完成。
-
-**核心流程：** 先想清楚要证明什么 → 实现 → 跑最小相关验证 → 如实解读结果 → 输出短证据（命中条件时再读完整 Proof Block）
-
-**产出：** 实现代码 + 短证据（改了什么 / 命令 / 结果 / 未验证项）
-
-**交棒给：** 调用方；分层见 `AGENTS.md`
-
----
-
-### systematic-debugging — 探索式根因调查
-
-**触发：** bug、测试失败、性能退化、flaky 或意外行为。
-
-模型默认沿“确认信号 → 建立并收紧 loop → 复现/按需最小化 → 竞争解释 → 单个区分性探针 → 因果闭合”推进，也可依据证据偏离；不得越过系统、安全、授权和项目红线。反馈循环需对应精确症状并记录实际观察、重复性和局限，本地不可运行时可使用安全的 trace/log/artifact observation boundary。
-
-可修时最小交接：因果、证据、允许/禁止改的范围、怎么复验、这次请求能不能覆盖这次改动。状态表与可校验字段按需见 Skill reference。
-
-**路由：** 能修且已授权 → `proof-oriented-development`；否则问授权或 `discuss`。
-
----
-
-### code-review — 全量审查编排
-
-**触发：** L2 实现完成、合并主分支、高风险或用户要求时全量审查；创建 PR 按重要性分层（低/中常规，高才增强+终审）；仅用户明确要求可跳过并记录原因。L0/L1 局部改动不默认全量审查（ADR-0009）。
-
-**核心流程：**
-1. 评估变更重要性等级（低/中默认常规，高默认增强）
-2. 无 manifest 不扫描 `.power-agent`；有 manifest 时只读点名文件，失败只报 evidence gap
-3. 派一名主审；阻塞 finding 修复后优先原 reviewer 验证
-4. 常规主审收敛即通过；增强审查再派全新 reviewer 独立终审
-5. 并行双审仅用户或上游明确要求
-
-**输出：** `状态 + 阻塞问题 + 下一步`
-
-**交棒给：** 反馈评估 → 修复；完成证明见 `AGENTS.md`
-
----
-
-### verification-before-completion — 完成前验证
-
-**触发：** 合并/PR、对外宣称完成、L2 或高风险；分层见 `AGENTS.md`。
-
-**铁律：** 没有本轮可验证证据（命令/退出码/时间戳/摘要），不得声称完成。
-
-**核心流程：** 核对证据是否盖住声明 → 必要时补跑最小验证 → 输出 `verification_evidence`
-
-**输出：** `状态：DONE / PARTIAL / BLOCKED + commit_sha + passed + verified_at + evidence[]`
-
-**交棒给：** `finishing-a-development-branch`（仅 `DONE` 且 `passed=true`）
-
----
-
-### finishing-a-development-branch — 分支处置
-
-**触发：** 由 implement 在 dirty 工作区或仓库尚无 HEAD 的待提交前置阶段，或 verification 完成后调用。
-
-**待提交前置路径：** 工作区 dirty 或仓库尚无 HEAD 时先展示友好的未提交提示，不运行完成前验证；提交后重新检查，只有 clean 且 `has_head=true` 时才进入 verification 绑定新 HEAD，随后进入标准分支处置。
-
-**四类选项：**
-- Merge：直接合并到目标分支
-- PR：创建 Pull Request
-- 保留：保留 worktree 供后续使用
-- 丢弃：删除 worktree 和分支（破坏性操作，需明确确认）
-
-**输出：** `状态 + 模式 + 选择 + 阻塞项 + 下一步`（面向用户展示时按需附验证证据摘要、分支/环境状态与清理结果）
-
----
-
-### writing-skills — Skill 创建与维护
-
-**触发：** 新增、修改、审查或优化 Skill。
-
-**核心流程：** 诊断（行为缺口 + 五失败模式文本病灶）→ 改动 → 核对（直接 consumer、契约、frontmatter、路由索引与引用路径）→ 同步（契约、路由、frontmatter/docs）。判据 SSOT 为 `skills/writing-skills/references/criteria.md`。
-
-**交棒给：** `code-review`，再经工作区检查进入最终验证阶段。
-
----
-
-### dev-docs — 长期知识维护
-
-**触发：** 需要把实现后稳定系统事实回写到 `docs/`，或维护架构、领域、开发流程、集成参考与有依据的 ADR 时。
-
-**路由逻辑：** 软件资产变更的开发 exec-plan 才交给 `writing-plans`；长期项目知识使用 `dev-docs`，Bundle 健康、漂移和验证登记使用 `dev-docs-maintain`；普通 `docs/` Concept 使用具有非空 `type` 的 YAML frontmatter；ADR 使用 `type: Decision` 与 YAML `status`。验证运行状态仅由 `docs/.okf/verification.json` ledger 表示。
-
----
-
-### dev-docs-maintain — 文档维护
-
-**定位：** 按需触发的普通 Skill；不属于每次实现、审查或收尾的固定步骤。
-
-**触发：** `docs/` 健康检查、知识库体检、OKF Bundle 检查、文档漂移修复或 verification ledger 登记。
-
-**核心流程：** 扫描 docs/ → 对照实际代码状态 → 识别过期、缺失或失效内容 → 修复，并只在已完成验证时更新 verification ledger。
-
-**输出：** 稳定 Markdown：状态、范围、变更/修复、证据、剩余问题/风险、下一步。
-
----
-
-### setup-power-agent — 项目初始化
-
-**disable-model-invocation: true**（直接执行）
-
-**输出：** AGENTS.md（≤200 行）+ docs/architecture.md + docs/development.md + `CONTEXT.md` / `CONTEXT-MAP.md` 项目记忆骨架 + `docs/adr/` 目录
-
-**交棒给：** 无固定下游；需要长期文档维护时按需触发 `dev-docs-maintain`。
-
----
-
-### harness-engineering-review — 工作流审查
-
-**disable-model-invocation: true**（直接执行，不召唤新代理）
-
-**七个审查维度：**
-1. AGENTS.md 结构与质量
-2. Agent 可见性（知识库导航）
-3. 约束机制化程度
-4. 反馈循环完整性
-5. 知识库维护实践
-6. 技术债管理
-7. 代码模式一致性
-
-**输出：** P0/P1/P2 分级报告 + blocking_issues + advisories
-
----
+只有以下缺口真正阻止正确行动时才等待用户：意图存在实质分叉、授权不足、不可逆取舍未决定，或所需事实无法从当前环境和权威来源获得。等待前完成所有不依赖该决策的工作，并说明缺什么、为什么会改变结果。
 
 ## 反模式
 
-| 反模式 | 说明 |
-|--------|------|
-| 无证据声称完成 | 没有运行命令/退出码/时间戳，不得说"完成了" |
-| 猜测根因 | 没有假设验证证据前不能输出"根因是 X" |
-| 重用子代理 | 子代理是一次性的，不得跨任务复用 |
-| 跨层反向依赖 | 下层 Skill 不得调用上层 Skill |
-| 无 Proof Block 声称完成 | proof-oriented-development 铁律：没有低成本、可复现、与任务强相关的最小有效证明 = 没有完成 |
+| 反模式 | 问题 |
+|---|---|
+| 按 Skill 名称串成长链 | 把能力分类误当运行时依赖 |
+| 用模板完整度代替正确性 | 字段齐全不能证明目标达成 |
+| 为复杂任务自动建计划 | 复杂度不等于需要持久产物 |
+| 固定审查轮数或 reviewer 生命周期 | 无视当前风险、finding 和证据 |
+| 设置通用并发数字 | 平台能力与任务依赖被错误耦合 |
+| 为无 sub-agent 产品写 fallback | 稀释目标宿主的设计并增加双路径维护 |
+| 因为 dirty working tree 拒绝验证 | 把 commit 绑定与结果验证混为一谈 |
+| 用 Prompt 描述可机械检查的协议 | 增加 token 与解释歧义，仍缺稳定执行 |
+| 完成后继续添加“最佳实践” | 扩大用户未授权的范围 |

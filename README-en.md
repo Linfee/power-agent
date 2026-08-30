@@ -1,122 +1,95 @@
 # power-agent
 
-> **Early experimental project.** This is a personal experiment that integrates the [superpowers](https://github.com/obra/superpowers) skill system with OpenAI's [Harness Engineering](https://openai.com/index/harness-engineering/) methodology. It is still early: several core Harness Engineering practices, especially custom linters, application legibility, automated doc gardening, quality scoring, tech-debt tracking, and PR lifecycle automation, are not implemented yet.
+Power-Agent is a **Judgment + Verification + Domain Knowledge** pack for frontier coding models. It draws on [superpowers](https://github.com/obra/superpowers) and [OpenAI Harness Engineering](https://openai.com/index/harness-engineering/), without binding development work to a mandatory pipeline.
 
-An AI coding agent workflow system that combines two complementary methodologies:
+## Core ideas
 
-- **[superpowers](https://github.com/obra/superpowers)** — A complete software development skill system for AI agents
-- **[Harness Engineering](https://openai.com/index/harness-engineering/)** — OpenAI's methodology for leveraging AI agents in engineering workflows (Ryan Lopopolo, Feb 2026)
+Strong models need clear load-bearing judgments: the observable result the user needs, facts that change the solution, boundaries that must hold, and external evidence sufficient to accept the result.
 
-The result is a cohesive, opinionated workflow: structured design exploration → proof-oriented exec plans → compact exec-plan packages → agent-autonomous implementation loops → systematic debugging → doc gardening.
+- **Transferable judgment, verifiable results.** Execution may vary; completion claims must match fresh evidence.
+- **Independent capabilities first.** Ordinary skills do not require another named skill to produce input or take over completion.
+- **Choose tools from the situation.** The model selects tools, order, sub-agents, and parallelism from dependencies, risk, and write ownership.
+- **Mechanize deterministic work.** Schemas, scripts, tests, and hooks enforce repeatable rules; prompts preserve domain judgment.
+- **Authorization remains explicit.** External side effects, destructive actions, permissions, production, and sensitive data retain their real approval boundaries.
 
----
-
-## Core philosophy
-
-**Human steers, agent executes.** Humans design intent and own feedback loops; agents handle implementation closure. Every decision lives in the repo — agents can't see what isn't versioned.
-
-Three principles from Harness Engineering:
-
-1. **Repo as SSOT** — All knowledge must be versioned. What the agent can't see doesn't exist.
-2. **Context as map, not encyclopedia** — `AGENTS.md` is a navigation index (~200 lines), not a wiki.
-3. **Mechanical constraints over verbose prompts** — Linter/test rules outperform instruction walls.
-
----
+See [ADR-0010](docs/adr/0010-judgment-oriented-skills.md), [architecture](docs/architecture.md), and [working approach](docs/workflow.md) for the current design.
 
 ## Skills
 
-| Skill | Purpose |
-|-------|---------|
-| `discuss` | General discussion — any question worth thinking through before acting: clarify, align, and review at a depth matching the decision's weight |
-| `writing-plans` | Convert discussion conclusions, specs, or direct requirements into compact proof-oriented exec-plans, selecting self-review or independent review by risk |
-| `implement` | Execute or resume any development plan (exec-plan, handwritten plan, ticket list, or spec); prefer team mode, hand review inputs off as scratch artifacts, use one internal reviewer for separate spec and quality verdicts, then run full review, verification, and finishing |
-| `dev-docs` | Maintain durable engineering knowledge in `docs/` — stable system facts, boundaries, decision rationale, and integration references; hand execution, refactoring, migration, and task-breakdown plans to `writing-plans` |
-| `dev-docs-maintain` | On demand, assess an existing `docs/` OKF Bundle’s health, repair structural or knowledge drift, and record completed verification in its verification ledger |
-| `setup-power-agent` | Bootstrap a project's Harness Engineering knowledge base from scratch |
-| `writing-skills` | Create, modify, review, and pressure-test skills |
-| `systematic-debugging` | Exploratory root-cause investigation with evidence, safety, and risk-proportionate performance/stability proof governing fix handoff |
-| `proof-oriented-development` | Proof-oriented implementation loop with minimal relevant verification and Proof Block output |
-| `code-review` | Orchestrate code review via subagent and evaluate review feedback, with structured findings |
-| `verification-before-completion` | Evidence-first verification — no completion claims without fresh proof |
-| `harness-engineering-review` | Audit a project's agent workflow against Harness Engineering best practices |
-| `finishing-a-development-branch` | Prompt for a dirty worktree or missing HEAD first, then wrap up a clean verified branch (merge/PR/keep/discard) |
+| Skill | Independent judgment it provides |
+|---|---|
+| `discuss` | Whether goals, tradeoffs, and acceptance are clear enough to act |
+| `writing-plans` | Whether a durable plan is useful and what future executors need from it |
+| `codebase-design` | Whether module boundaries, interfaces, seams, and adapters reduce real complexity |
+| `implement` | How to organize ordinary sub-agents around a goal or any existing plan |
+| `proof-oriented-development` | How to make the smallest sufficient change and obtain matching evidence |
+| `systematic-debugging` | Which explanation fits the observations, and where the root cause and fix boundary lie |
+| `code-review` | Which findings would prevent safe, correct delivery |
+| `finish-development` | Whether evidence supports completion and how to safely handle branch disposition |
+| `writing-skills` | Whether a skill teaches transferable judgment |
+| `harness-engineering-review` | Which harness mechanisms are load-bearing and which can be removed |
+| `setup-power-agent` | What minimum agent knowledge a project lacks |
+| `dev-docs` | Which stable knowledge belongs in project documentation |
+| `dev-docs-maintain` | Whether that knowledge is healthy, current, and verifiable |
 
-### Workflow
+The documentation subsystem—`setup-power-agent`, `dev-docs`, and `dev-docs-maintain`—may collaborate when initialization, semantic writing, or mechanical maintenance creates a real knowledge gap. This is the only named collaboration exception, and it is not a fixed chain.
 
-```
-discuss skill          ← general discussion: any question worth thinking through before acting → inline discussion conclusion (spec doc only when needed)
-    ↓ (independent review passed; well-bounded work may skip writing-plans and go straight to implement)
-writing-plans skill    ← create a compact exec-plan for cross-module / multi-batch / high-risk work, and choose self-review or independent review by plan risk
-    ↓
-implement skill ← prepare (git worktree isolation when needed + exec-plan Gate) → lightweight start notice
-                     └── prefer team mode; without team tools, fall back to proof-oriented implementation subagents in parallel or serial flow → scratch artifacts + one reviewer with two verdicts → full code review → worktree gate (commit dirty changes or create HEAD first) → verification → branch finishing
+## Sub-agent support
 
-Bug / test failure → systematic-debugging skill
-                         └── → proof-oriented-development → full code review → worktree gate → verification-before-completion
-```
+Power-Agent assumes a host with ordinary sub-agents: it can send tasks and context, run independent work concurrently, and collect results. It does not use team mode, prescribe a concurrency number, or maintain a no-sub-agent fallback.
 
-`code-review` is mandatory before final verification by default. Merge/PR handoff must not skip unresolved review findings unless the user explicitly asks to skip and the reason is recorded. `dev-docs-maintain` remains an on-demand doc maintenance skill, not a mandatory step for every development run.
+Parallelize only genuinely independent work. Establish a single integrator or serialize shared files, interfaces, and state. A sub-agent result is evidence to verify, not an automatic completion claim.
 
----
+## Verification and branch disposition
+
+Completion claims require fresh system-external evidence that matches the current result. Verification may run against a dirty worktree; only commit-bound actions such as committing, creating a PR, or merging need evidence tied to a specific commit.
+
+When requested, `finish-development` assesses completion and helps safely handle a commit, PR, merge, retention, or discard. Every external or destructive action still requires explicit authorization at the point of action.
 
 ## Installation
 
-### As a Droid plugin (recommended)
+### Droid
 
 ```bash
-# Add this repo as a marketplace
 droid plugin marketplace add https://github.com/Linfee/power-agent
-
-# Install the plugin (user scope — available across all projects)
 droid plugin install power-agent@power-agent --scope user
-
-# Or project scope — shared with teammates via git
+# Or share with a project through git
 droid plugin install power-agent@power-agent --scope project
 ```
 
-Or via the interactive UI: `/plugins` → Browse tab.
+You can also install through `/plugins` → Browse.
 
-### As a Claude Code plugin
+### Claude Code
 
-Claude Code and Droid share a compatible plugin format. Install the same way via the Claude Code plugin manager, or copy the plugin directory and add it to your plugin path.
+```bash
+claude plugin marketplace add https://github.com/Linfee/power-agent
+claude plugin install power-agent@power-agent --scope user
+# Or share with a project through git
+claude plugin install power-agent@power-agent --scope project
+```
 
-### As a Cursor plugin
+The local plugin manifest is `.claude-plugin/plugin.json`.
 
-Use `.cursor-plugin/plugin.json` via Cursor's plugin manager, or copy the `skills/` directory into a project manually.
+### Cursor, Factory, and Gemini
 
-### As a Factory plugin
+- Cursor: use `.cursor-plugin/plugin.json`, or copy `skills/` into a project.
+- Factory: use `.factory-plugin/plugin.json`, or copy `skills/` into a project.
+- Gemini: use `gemini-extension.json`; it loads `AGENTS.md` through `GEMINI.md`.
 
-Use `.factory-plugin/plugin.json` via Factory's plugin manager, or copy the `skills/` directory into a project manually.
+## Development
 
-### As a Gemini extension
+Read [the skill and harness design guide](docs/skill-and-harness-design.md) before changing a Skill. Run checks that match the change:
 
-Use `gemini-extension.json`; it points Gemini at `GEMINI.md`, which in turn loads `AGENTS.md`.
+```bash
+python3 scripts/check-description-length.py
+bash scripts/check-invocation-consistency.sh
+bash scripts/check-shared-references.sh
+python3 -m unittest skills/dev-docs-maintain/scripts/test_bundle_status.py
+```
 
----
-
-## Current status and known gaps
-
-The repository currently provides the skill workflow, docs structure, ADRs, and local visual companion scripts. The following Harness Engineering capabilities are intentionally tracked as gaps rather than claimed as complete:
-
-- **Mechanical constraints:** no project-level lint, formatter, CI, or custom structural tests are provided yet.
-- **Application legibility:** no per-worktree app startup, log/metric query, browser-driving, or observability harness is provided.
-- **Automated maintenance:** `dev-docs-maintain` is an on-demand skill, not a scheduled background agent that opens PRs.
-- **Quality and debt tracking:** no `docs/quality.md`, golden-principles file, or tech-debt tracker exists yet.
-- **PR lifecycle:** implementation can finish a branch, but there is no end-to-end PR creation, review-response, CI-fix, and merge loop.
-
----
+The latter two apply only when the affected area needs them. See [development.md](docs/development.md) for maintenance conventions.
 
 ## Attribution
 
-This project is inspired by and builds on:
-
-- **superpowers** by [obra](https://github.com/obra/superpowers) — MIT License. The following skills are derived from or inspired by superpowers: `discuss` (from `brainstorming`), `writing-plans`, `implement` (merged with `subagent-driven-development`), `proof-oriented-development` (evolved from the original test-first implementation loop into proof-oriented implementation), `code-review`, `verification-before-completion`, `systematic-debugging`, `writing-skills`.
-
-- **Harness Engineering** — [Ryan Lopopolo, OpenAI, Feb 11, 2026](https://openai.com/index/harness-engineering/). The `harness-engineering-review`, `setup-power-agent`, `dev-docs`, `dev-docs-maintain` skills and the overall repo-as-SSOT philosophy are derived from this methodology.
-
-### Tracking upstream
-
-| Upstream | Source |
-|----------|--------|
-| superpowers | https://github.com/obra/superpowers |
-| Harness Engineering | https://openai.com/index/harness-engineering/ |
+- [superpowers](https://github.com/obra/superpowers) — Jesse Vincent (obra), MIT License
+- [Harness Engineering](https://openai.com/index/harness-engineering/) — Ryan Lopopolo, OpenAI

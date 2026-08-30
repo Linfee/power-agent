@@ -6,117 +6,59 @@ disable-model-invocation: true
 
 # 项目 Harness 初始化
 
-为当前项目构建 Agent 可读的知识体系：AGENTS.md 作为精简指南（~200行），具体知识下沉到结构化的 `docs/` 目录；领域语言与历史架构决策通过 `CONTEXT.md` / `CONTEXT-MAP.md` / `docs/adr/` 形成可持续维护的项目记忆。
+为当前项目构建 Agent 可读的最小知识体系：AGENTS.md 作为精简导航（~200行），具体知识下沉到结构化的 `docs/` 目录；领域语言与历史架构决策通过 `CONTEXT.md` / `CONTEXT-MAP.md` / `docs/adr/` 形成可持续维护的项目记忆。
 
 **核心理念：** 给 Agent 一张地图，而非一本百科全书。仓库知识即唯一记录系统。
 
-## 目标边界
+## 判断什么
 
-### 做什么
-- 初始化最小可用的 Harness 骨架：`AGENTS.md` 导航化 + `docs/` 基础结构。
-- 初始化项目记忆骨架：根据仓库形态创建 `CONTEXT.md` 或 `CONTEXT-MAP.md`，并准备 `docs/adr/`。
-- 在已有骨架上补齐缺失项并修复失效导航。
+### 最小骨架由什么构成
 
-### 不做什么
-- 不承担长期文档维护（交由 `dev-docs-maintain`）。
-- 不执行大范围目录重排或风格重构。
+- 导航入口：`AGENTS.md` 可读、可导航（建议 ≤ 200 行）。已有 `CLAUDE.md` 就只编辑它，已有 `AGENTS.md` 就只编辑它；两者都不存在时询问用户创建哪一个，不同时创建两个。
+- 基础结构：`docs/architecture.md` 与 `docs/development.md` 存在；`docs/` Knowledge Bundle 内的核心 Concept 使用具有非空 `type` 的 YAML frontmatter。
+- 项目记忆：单 context 用根目录 `CONTEXT.md` + `docs/adr/`；多 context 用根目录 `CONTEXT-MAP.md` + 各 context 的 `CONTEXT.md` + 根级 `docs/adr/`。
+- 验证状态：验证运行由 `docs/.okf/verification.json` ledger 维护，初始化不伪造验证历史。
 
-## 必须项与建议项
+### 哪些事实改变判断
 
-**必须项：**
-1. `AGENTS.md` 可读、可导航（建议 ≤ 200 行）。
-2. `docs/architecture.md` 与 `docs/development.md` 存在。
-3. `docs/` Knowledge Bundle 内的核心 Concept 使用具有非空 `type` 的 YAML frontmatter；验证运行状态由 `docs/.okf/verification.json` ledger 维护。
-4. 项目记忆布局已初始化并写入 AGENTS/CLAUDE 入口：
-   - 单 context：仓库根目录 `CONTEXT.md` + `docs/adr/`
-   - 多 context：仓库根目录 `CONTEXT-MAP.md` + 各 context 的 `CONTEXT.md` + 根级 `docs/adr/`
+- 仓库形态：是否多 context（monorepo、前后端分域、多服务）决定 CONTEXT 布局。
+- 已有骨架的完整度：是初始化还是只补缺口；切换单/多 context 布局或推倒重来时才重跑本 Skill，日常调整直接编辑对应文件。
 
-**建议项：**
-- `docs/adr/`
-- `docs/exec-plans/`
-- `docs/domain/`
-- `docs/references/`
-
-## 执行流程
-
-1. **最小扫描**：识别项目类型、构建/测试命令、现有 docs 缺口，以及仓库是单 context 还是多 context。已有 `CLAUDE.md` 就只编辑它，已有 `AGENTS.md` 就只编辑它；两者都不存在时询问用户创建哪一个，不同时创建两个。
-2. **呈现并确认**：汇总现状与缺口，逐项给出推荐答案并逐项确认——探索已确定的项直接跳过不问；用户可修改后再写入。
-3. **初始化/补齐**：先补必须项，再按需补建议项；已有 block 就地更新，不重复追加、不覆盖用户已有编辑。
-4. **初始化项目记忆**：
-   - 单 context：创建根目录 `CONTEXT.md`
-   - 多 context：创建根目录 `CONTEXT-MAP.md`，并为每个已确认的 context 创建对应 `CONTEXT.md`
-   - 创建 `docs/adr/` 目录
-   - 在 AGENTS/CLAUDE 入口中写明 `CONTEXT.md` / `CONTEXT-MAP.md` / `docs/adr/` 的用途与读取规则
-   - 只为 `docs/` Concept 创建 YAML frontmatter；Bundle 外的 `AGENTS.md`、`CONTEXT.md` 与 `CONTEXT-MAP.md` 不机械添加 frontmatter
-5. **导航校验**：确认 `AGENTS.md` 指针有效。
-6. **最小验证**：检查元信息、关键命令可执行性（如环境允许）。
+建议项（按项目真实需要决定，不为填满分类创建）：`docs/adr/`、`docs/domain/`、`docs/references/` 等目录，只有在有实际知识要放时创建。
 
 ## 项目记忆约定
 
-### CONTEXT.md
-- 用于记录项目或某个 context 的领域语言。
-- 只收录该项目特有的业务术语、关系和边界，不收录通用编程概念。
-- 术语定义保持简短、明确；存在同义词时，显式写出推荐词与避免词。
+### CONTEXT.md / CONTEXT-MAP.md / ADR
 
-### CONTEXT-MAP.md
-- 仅用于多 context 仓库，例如 monorepo、前后端分域仓库、多服务仓库。
-- 文件位于仓库根目录，列出每个 context 的位置、职责以及它们之间的关系。
-- 若仓库是单 context，不创建 `CONTEXT-MAP.md`。
+- `CONTEXT.md`：记录项目或某个 context 的领域语言——只收录该项目特有的业务术语、关系和边界，不收录通用编程概念；术语定义简短明确，存在同义词时显式写出推荐词与避免词。
+- `CONTEXT-MAP.md`：仅用于多 context 仓库（monorepo、前后端分域、多服务），位于仓库根目录，列出每个 context 的位置、职责及关系；单 context 不创建。
+- ADR：存放在 `docs/adr/`，`0001-slug.md` 命名；`type: Decision` + YAML `status`（`proposed` / `accepted` / `superseded`）。只记录难以逆转、无上下文会显得反直觉、且确实存在权衡的决策；保持最小：标题 + 1-3 句上下文、决策与原因。
+- `docs/adr/` 目录在初始化时创建；ADR **文件**仍只在真实决策出现时写入，不预造空决策。
 
-### ADR
-- ADR 存放在 `docs/adr/`，采用 `0001-slug.md` 命名。
-- `setup-power-agent` 初始化时创建 `docs/adr/` 目录；ADR 文件仍只在真实决策出现时写入。
-- ADR 使用 `type: Decision`，并以 YAML `status` 表示 `proposed`、`accepted` 或 `superseded` 等历史生命周期。
-- 只记录难以逆转、没有上下文会显得反直觉、且确实存在权衡的决策。
-- ADR 保持最小：标题 + 1 到 3 句上下文、决策与原因即可。
+初始化时，AGENTS/CLAUDE 入口必须包含一段简短的“项目记忆”说明，告诉后续 Agent：到哪里读领域术语（`CONTEXT.md` / `CONTEXT-MAP.md`）、到哪里读历史架构决策（`docs/adr/`）、这是单还是多 context 布局，以及消费纪律：
 
-### 初始化到项目记忆
-- 初始化时，AGENTS/CLAUDE 入口必须包含一段简短的“项目记忆”说明，明确告诉后续 Agent：
-  - 到哪里读领域术语（`CONTEXT.md` / `CONTEXT-MAP.md`）
-  - 到哪里读历史架构决策（`docs/adr/`）
-  - 这是单 context 还是多 context 布局
-  - 消费纪律：
-    - 产出物（提案、标题、测试名、诊断假设）命名领域概念时使用 `CONTEXT.md` 的原词，不漂移同义词；所需概念不在词汇表时视为信号——重新考虑表述，或记录缺口交 `dev-docs`
-    - 产出与既有 ADR 矛盾时显式声明（如“与 ADR-0007 冲突，但值得重开，因为…”），不静默覆盖
-    - `CONTEXT.md` / `docs/adr/` 缺失时静默继续，不建议预先创建，由真实术语与决策出现时惰性补齐
+- 产出物命名领域概念时使用 `CONTEXT.md` 的原词，不漂移同义词；所需概念不在词汇表时视为信号——重新考虑表述，或记录缺口交 `dev-docs`。
+- 产出与既有 ADR 矛盾时显式声明（如“与 ADR-0007 冲突，但值得重开，因为…”），不静默覆盖。
+- `CONTEXT.md` / `docs/adr/` 缺失时静默继续，不建议预先创建，由真实术语与决策出现时惰性补齐。
 
-参考模板：
-- [references/context-template.md](./references/context-template.md)
-- [references/context-map-template.md](./references/context-map-template.md)
-- [references/adr-format.md](./references/adr-format.md)
-- [references/domain-docs.md](./references/domain-docs.md)
+参考模板：[context-template](./references/context-template.md)、[context-map-template](./references/context-map-template.md)、[adr-format](./references/adr-format.md)、[domain-docs](./references/domain-docs.md)——按需取用，不是固定步骤。
 
-## 更新模式（收窄）
+## 要保护什么
 
-当项目已有骨架时，仅允许：
-1. 补齐缺失文件与最小结构。
-2. 修复失效导航指针。
-3. 为新增或实质修改的 `docs/` Concept 补齐有实际语义的 YAML frontmatter；需要验证时更新 ledger，而不迁移历史验证日期。
-4. 补充缺失的项目记忆文件或入口说明，不重写已有术语与 ADR 内容。
+- 不覆盖用户已有编辑：已有 block 就地更新，不重复追加、不重写已有术语与 ADR 内容。
+- Bundle 外的 `AGENTS.md`、`CONTEXT.md`、`CONTEXT-MAP.md` 不机械添加 YAML frontmatter。
+- 不为新 Concept 伪造验证状态：`timestamp` 表示语义变化时间；ledger 由维护 Skill 写。
+- 不做持续园艺、归档搬运与大范围内容改写；汇总现状与缺口时先呈现并确认，探索已确定的项直接做，用户可修改后再写入。
 
-不做持续园艺、归档搬运与大范围内容改写。
+## 与其他知识维护 Skill 的绑定
 
-**重跑语义：** 日常调整（改术语、补 ADR、修订 Concept）直接编辑对应文件，不需要重跑本 Skill；仅在切换单/多 context 布局或推倒重来时才重跑。
+初始化只负责建出最小骨架。后续出现实际缺口时按需使用其他两者，不形成每次必跑的链：
 
-## 输出格式
+- 需要持续语义写入/修订（ADR、领域表达、Reference）→ `dev-docs`
+- 既有 Bundle 需要结构健康检查、漂移修复或验证登记 → `dev-docs-maintain`
 
-完成任务后，用便于阅读的 Markdown 小节输出结果，不使用 YAML：
+初始化过程本身可独立完成，不需要调用其他 Skill；发现仓库已有 docs/ 结构或项目记忆时，沿用并只补缺口。
 
-```markdown
-## Harness 初始化结果
+## 完成声明
 
-状态：DONE / DONE_WITH_CONCERNS / BLOCKED
-
-### 证据
-- [file / diff / command] <path 或 command>
-
-### 阻塞项
-- INIT-xxx：<阻塞原因>
-
-### 非阻塞建议
-- <建议内容>
-
-### 下一步
-- 动作：proceed / handoff-to-docs-maintain / clarify
-- 负责人：user / orchestrator
-```
+以实际结果为准：列出创建/修改的文件与路径、完成的导航校验与最小验证（如环境允许）；未做的、跳过确认的项如实说明，不声称完成。合并/PR、对外宣称完成仍须与实际结果匹配的新鲜证据；涉及用户仓库写入的动作保持在用户目标与授权范围内。

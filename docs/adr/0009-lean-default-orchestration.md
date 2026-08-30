@@ -1,11 +1,12 @@
 ---
 type: Decision
-status: accepted
+status: superseded
+superseded_by: 0010-judgment-oriented-skills.md
 ---
 
 # ADR-0009: Lean Default 与可靠性边界编排
 
-**状态：** accepted（不 supersede 既有 ADR；与 0003 默认义务冲突时以本 ADR 为准）  
+**状态：** superseded by [ADR-0010](0010-judgment-oriented-skills.md)
 **日期：** 2026-08-28  
 **影响文件：** `AGENTS.md`, `docs/architecture.md`, `docs/workflow.md`, `docs/harness-engineering.md`
 
