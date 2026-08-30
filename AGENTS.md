@@ -43,7 +43,7 @@ Power-Agent 是面向前沿模型的 Constraint + Verification + Domain Knowledg
 ```
 L0/L1（多数任务）
   直做 + 短证据
-  合并/PR 或高风险时再升级审查 / VBC
+  合主或高风险时升级全量审查；创建 PR 按重要性分层。VBC 要新鲜证据
 
 L2（少数任务）
   discuss（按需）→ writing-plans → implement
@@ -54,7 +54,7 @@ L2（少数任务）
 
 **非开发路由：** 根因未知先 `systematic-debugging`；长期项目知识用 `dev-docs` / `dev-docs-maintain`；研究、运营等用宿主原生清单。按当前主要交付物选单一入口。
 
-**审查与完成证明:** 证据必须来自模型外且新鲜。短 Proof 为默认；全量 `code-review`、独立终审与完整 VBC 在合并/PR、高风险、L2 或用户要求时升级——不是每条 L0 实现的固定税。用户明确要求跳过审查时记录原因。`dev-docs-maintain` 仅按需，不是固定阶段。
+**审查与完成证明:** 证据必须来自模型外且新鲜。短 Proof 为默认。全量 `code-review` 与独立终审在合并主分支、高风险、L2 或用户要求时升级；创建 PR 按重要性分层（低/中一次常规审查，高才增强+终审）——不是每条 L0 实现的固定税。完整 VBC 在合并/PR、高风险、L2 或对外宣称完成时升级。用户明确要求跳过审查时记录原因。`dev-docs-maintain` 仅按需，不是固定阶段。
 
 ## Skill 速查
 
@@ -85,7 +85,6 @@ L2（少数任务）
 | 规划 Gate | 仅 L2 exec-plan：low self-review；medium/high 独立审查通过后方可执行（ADR-0006） |
 | 证据优先 | 没有运行验证不得声称完成；完成证明外置于模型 |
 | 根因优先 | 没有根本原因分析没有修复 |
-| 并发与变更边界 | 控制 mutation boundary；并行探索可以，写冲突要收敛；默认并发上限 3 |
 | Skill description 长度 | 硬上限约 110 token、目标 ~100；改动后运行 `scripts/check-description-length.py`（cl100k 近似估算，误差 ±10） |
 
 ## 文档规范

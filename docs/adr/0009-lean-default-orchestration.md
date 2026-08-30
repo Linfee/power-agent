@@ -46,7 +46,7 @@ Power-Agent 是面向前沿模型的 **Constraint + Verification + Domain Knowle
 | 仓库真相 | **工程 canonical store 仍是 repo**；运行时还可消费 CI/issue/观测/宿主 session 等权威源。权威源须 machine-legible；不是“宇宙唯一只认 git 里的 md” |
 | 产出物协调（ADR-0003） | **Durable artifact** 用于跨会话、跨 vendor、高风险、人审与恢复；同会话 L0/L1 以 git diff + 短证据即可，不作每个 hop 的 session 仪式 |
 | 上下文交接 | pull-based；scratch review artifacts / manifest **仅多 agent 或 L2 审查**启用，非默认 |
-| 审查 | 合并为**风险相称的一次审查**为默认目标；全量 `code-review` 与独立终审是合并/PR、高风险或用户要求时的升级，不是每条实现链的固定税 |
+| 审查 | 合并为**风险相称的一次审查**为默认目标；全量 `code-review` 与独立终审是合并主分支、高风险或用户要求时的升级，不是每条实现链的固定税。创建 PR 按重要性分层：低/中一次常规审查，高才增强+终审 |
 | 完成证明 | 短 Proof 默认；长 Proof / 完整 VBC 在 bugfix、性能、安全、数据、公共 API、对外宣称完成或 L2 时加码 |
 | 人类决策 | 人类保留意图、不可逆、授权边界与高风险取舍；不默认审批 decomposition、generic loop 与每次 handoff |
 | Ablation | 模型或宿主升级后，先问**可以删除哪些默认组件**，再考虑加编排 |
@@ -63,4 +63,5 @@ Power-Agent 是面向前沿模型的 **Constraint + Verification + Domain Knowle
 - `AGENTS.md` / `workflow.md` / `architecture.md` / `harness-engineering.md` 以 L0 为默认叙事，全链路标为 L2 升级
 - `code-review` / `verification-before-completion` / `implement` / `proof-oriented-development` / `writing-plans` / `discuss` 的触发与交接已按分层收紧。其余 Skill 若仍偏旧默认，以本 ADR + AGENTS 路由为准
 - 高风险与证据外置不因 lean default 放宽
+- 创建 PR 不再自动等于全量审查；VBC 在合并/PR 路径上的证据审计不变
 - 不引入新的运行时状态机或强制 feature_list primitive

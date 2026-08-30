@@ -80,7 +80,7 @@ Manifest 中每个资产条目至少包含：
 
 输入：
 
-- `task_brief_path`：当前任务的完整要求和边界。
+- `task_brief_path`：当前任务的完整要求、边界和 Agent 自主边界。
 - `report_path`：实现者写入完整 Proof Block 和实现报告的位置。
 
 返回消息只包含：

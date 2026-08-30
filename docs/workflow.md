@@ -27,7 +27,7 @@ scope:
 | 当前主要交付物 | 主入口 | 交棒 / 排除 |
 |---|---|---|
 | 根因未知的错误、测试失败、性能退化或异常行为 | `systematic-debugging` | 不直接进入 exec-plan；确认修复边界后按 L0/L1/L2 进入实施。 |
-| 软件资产变更（局部/边界清楚） | **L0/L1**：`proof-oriented-development` 或短卡直做 | 不写 exec-plan；合并/PR 或高风险再升级审查。 |
+| 软件资产变更（局部/边界清楚） | **L0/L1**：`proof-oriented-development` 或短卡直做 | 不写 exec-plan；合主或高风险再升级全量审查，创建 PR 按重要性分层。 |
 | 软件资产变更（跨模块/多会话/高风险） | **L2**：`writing-plans → implement` | 附带的长期知识更新在验证后按需 `dev-docs`。 |
 | 项目 `docs/` 的长期系统知识、ADR、Playbook 或 reference | `dev-docs` / `dev-docs-maintain` | 不创建 exec-plan。 |
 | 研究、运营、个人事务、信息整理或普通工作 | 宿主原生任务清单或直接推进 | 不进入 implement 执行流程。 |
@@ -170,7 +170,7 @@ scope:
 
 **核心流程：**
 1. 准备：读取计划材料（exec-plan 必读 `plan.md` 与 `review-contract.md`，Gate 只看 contract；`context.md` / `tasks.md` 按需），需要隔离时用 git worktree；确认任务、依赖、Proof、阻塞条件可判定；contract Gate 未过不得执行；其他计划向用户复述理解后执行；改动极小时主代理直接处理
-2. 执行：拓扑排序 tasks，优先 team 模式，缺失时回退并行或单子代理；单代理串行以 diff + 短证据交接；多 agent / 写冲突时才用 scratch artifacts 与按需双 verdict
+2. 执行：拓扑排序 tasks，独立任务并行派发；单代理串行以 diff + 短证据交接；多 agent / 写冲突时才用 scratch artifacts 与按需双 verdict
 3. 审查 / 验证：是否 `code-review` / `verification-before-completion` 见 `AGENTS.md`
 4. 收尾：有归档或分支处置需要时调用 `finishing-a-development-branch`
 
@@ -208,7 +208,7 @@ scope:
 
 ### code-review — 全量审查编排
 
-**触发：** L2 实现完成、合并/PR 前、高风险或用户要求时；仅用户明确要求可跳过并记录原因。L0/L1 局部改动不默认触发（ADR-0009）。
+**触发：** L2 实现完成、合并主分支、高风险或用户要求时全量审查；创建 PR 按重要性分层（低/中常规，高才增强+终审）；仅用户明确要求可跳过并记录原因。L0/L1 局部改动不默认全量审查（ADR-0009）。
 
 **核心流程：**
 1. 评估变更重要性等级（低/中默认常规，高默认增强）
@@ -318,5 +318,4 @@ scope:
 | 猜测根因 | 没有假设验证证据前不能输出"根因是 X" |
 | 重用子代理 | 子代理是一次性的，不得跨任务复用 |
 | 跨层反向依赖 | 下层 Skill 不得调用上层 Skill |
-| 超限并行 | 控制 mutation boundary；默认并发上限 3，超过则分批；并行探索可以，写冲突要收敛 |
 | 无 Proof Block 声称完成 | proof-oriented-development 铁律：没有低成本、可复现、与任务强相关的最小有效证明 = 没有完成 |

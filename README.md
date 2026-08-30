@@ -39,7 +39,7 @@
 | `writing-skills` | 创建、修改、审查和压力测试 Skill |
 | `systematic-debugging` | 探索式根因调查：以因果证据、安全边界及风险相称的性能/稳定性证据约束修复交接 |
 | `proof-oriented-development` | 证明导向开发闭环：小步实现、最小相关验证、默认短证据；L0/L1 默认入口 |
-| `code-review` | 合并/PR、L2、高风险或用户要求时编排全量审查，并评估审查反馈 |
+| `code-review` | 合并主分支、L2、高风险或用户要求时编排全量审查；创建 PR 按重要性分层，并评估审查反馈 |
 | `verification-before-completion` | 合并/PR、L2、高风险或对外宣称完成前审计证据；没有新鲜证据不得声称完成 |
 | `harness-engineering-review` | 对照 Harness Engineering 最佳实践审查项目 Agent 工作流 |
 | `finishing-a-development-branch` | dirty / 无 HEAD 待提交提示；clean 验证后的分支收尾（merge/PR/保留/丢弃） |
@@ -51,7 +51,7 @@
 
 L0/L1（多数）
   直做（POD / 主代理）→ 最小验证 → 短证据
-  合并/PR 或高风险再升级审查 / VBC
+  合主或高风险再升级全量审查；创建 PR 按重要性分层。VBC 要新鲜证据
 
 L2（跨模块 / 多批次 / 跨会话 / 高风险）
   discuss（按需）→ writing-plans → implement
@@ -63,7 +63,7 @@ Bug / 测试失败 → systematic-debugging
 
 非开发的路由不进入 exec-plan：根因未知的异常先用 `systematic-debugging`；长期项目知识用 `dev-docs` / `dev-docs-maintain`；面向读者的实质文档用 `doc-coauthoring`（范围或验收未定时先 `discuss`）；研究、运营和普通清单使用宿主原生任务清单或直接推进。重叠时以当前主要交付物为准：诊断优先于实施，软件资产变更优先于附带文档，长期项目知识优先于通用文档共创。
 
-`code-review` 在 L2、合并/PR 或高风险路径上于最终验证前执行；L0/L1 不默认全量审查。用户明确要求跳过时记录原因。
+`code-review` 在 L2、合并主分支或高风险路径上于最终验证前执行全量审查；创建 PR 按重要性分层。L0/L1 不默认全量审查。用户明确要求跳过时记录原因。
 `dev-docs-maintain` 是在 docs 健康检查、漂移修复或 verification ledger 登记需要时按需触发的普通 Skill，不是每次开发执行的固定主流程。
 
 详细的 Skill 协调机制见 [docs/workflow.md](docs/workflow.md)。

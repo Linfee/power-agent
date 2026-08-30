@@ -1,15 +1,15 @@
 ---
 name: code-review
 description: |-
-  代码审查 Skill。合并或 PR 前、高风险或用户要求时编排全量审查；评估内部 finding、外部 reviewer 或 PR 评论。
+  代码审查 Skill。合并主分支、高风险或用户要求时编排全量审查；创建 PR 按重要性分层；评估内部 finding、外部 reviewer 或 PR 评论。
   Triggers: 代码审查, code review, 审查反馈, 双重审查, 合并前审查, 全量审查.
 ---
 
 # 代码审查
 
-合并/PR 前、L2、高风险或用户要求时的全量审查编排器，同时评估审查反馈。不替代 `implement` 的按需批次内审，也不替代 `verification-before-completion`。分层见 `AGENTS.md`。
+合并主分支、L2、高风险或用户要求时的全量审查编排器，同时评估审查反馈。创建 PR 按重要性分层：低/中一次常规审查，高重要性才增强并终审。不替代 `implement` 的按需批次内审，也不替代 `verification-before-completion`。分层见 `AGENTS.md`。
 
-合并主分支或创建 PR 前必须执行；仅用户明确要求时可跳过，并记录原因。
+全量审查（增强 + 独立终审）在合并主分支、高重要性或用户明确要求时执行。创建 PR 不是全量触发。仅用户明确要求跳过审查时记录原因。
 
 ## 输入与范围
 

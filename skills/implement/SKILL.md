@@ -40,8 +40,8 @@ description: |-
 
 内部循环：`实现 →（按需）冲突检查 / 审查 → (修复 → 审查)*`
 
-- **调度**：优先 team 模式；team 能力缺失、创建失败或不支持共享上下文时记录降级原因并回退并行/单子代理；并发上限 3。
-- **实现**：子代理使用 `references/implementer-prompt.md` 并经 `proof-oriented-development` 完成；派发前分配清晰边界，单任务不得含糊到需要子代理自行拆范围。单代理串行以工作区 diff + Proof 交接，不默认创建 `.power-agent/review-runs`。多 agent、并行或启用批次审查时，task brief 与 report 按 `references/review-artifact-protocol.md`。子代理返回 `DONE | DONE_WITH_CONCERNS | BLOCKED | UNKNOWN`——UNKNOWN 是编排器对超时、输出不可解析、异常终止的归类，implementer 主动返回为前三枚举；`BLOCKED / UNKNOWN` 先检查工作树残留，再决定补上下文重试、拆分任务或升级。
+- **调度**：独立任务并行派发；存在写冲突时串行或分批。
+- **实现**：子代理使用 `references/implementer-prompt.md` 并经 `proof-oriented-development` 完成；派发前分配清晰边界，task brief 必须包含 Agent 自主边界（可自由决策 / 不可自行决策 / 不变量），缺则补齐后再派发。单任务不得含糊到需要子代理自行拆范围。单代理串行以工作区 diff + Proof 交接，不默认创建 `.power-agent/review-runs`。多 agent、并行或启用批次审查时，task brief 与 report 按 `references/review-artifact-protocol.md`。子代理返回 `DONE | DONE_WITH_CONCERNS | BLOCKED | UNKNOWN`——UNKNOWN 是编排器对超时、输出不可解析、异常终止的归类，implementer 主动返回为前三枚举；`BLOCKED / UNKNOWN` 先检查工作树残留，再决定补上下文重试、拆分任务或升级。
 - **冲突检查**：启用批次审查，或同批次可能写同一文件 / 共享出口文件时执行；单代理串行且无共享写冲突可跳过。文本冲突合并处理，语义冲突退化为串行重排。
 - **批次审查**：仅多 agent 并行、存在写冲突、或计划要求内审时启用。用 `scripts/review-package` 生成一次性 package（dirty worktree 含目标外改动时必须传显式 path scope）；一个只读 reviewer 按 `references/task-reviewer-prompt.md` 输出 Spec / Quality 双 verdict。Review Assets 只按 manifest 传入，校验与安全边界见 protocol；未提供 manifest 时不得扫描 `.power-agent`。单代理串行默认不做双 verdict。
 - **修复**：修复子代理一次性；修复验证优先原 reviewer，替代 reviewer 带完整修复上下文；修复验证必须产生新双 verdict，修复实质改变范围或风险边界时重新发起完整内部审查。收敛判据：同类 blocking 连续 ≥2 轮且无新证据，或单任务总轮次 >3 → 不收敛，升级。
