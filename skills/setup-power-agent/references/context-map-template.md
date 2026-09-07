@@ -12,8 +12,8 @@
 
 ## Usage
 
-- 仅在仓库存在多个清晰 context 时创建本文件。
-- 本文件位于仓库根目录，用来告诉 Agent 去哪里读各 context 的 `CONTEXT.md`。
-- 若某个决策只影响单一 context，在该 context 下维护自己的 `docs/adr/`；系统级决策保留在根目录 `docs/adr/`。
+- 仅在多个清晰 context 需要跨域导航、且既有文档尚未提供该导航时创建；只列真实存在的文档。
+- 沿用仓库既有导航位置；没有约定时可放在根目录，指向各 context 的领域文档，不要求每处都新建 `CONTEXT.md`。
+- 决策历史沿用既有 ADR 布局；有真实知识需要时再新增记录，不为每个 context 预建 ADR 目录。
 
-> 此模板生成仓库根目录的 `CONTEXT-MAP.md`，不属于 `docs/` Knowledge Bundle；不要机械添加 YAML frontmatter。
+> 保留有实际内容的章节。位于 `docs/` Knowledge Bundle 外的 `CONTEXT-MAP.md` 不机械添加 YAML frontmatter。

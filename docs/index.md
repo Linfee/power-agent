@@ -24,10 +24,12 @@ timestamp: 2026-07-10T00:00:00Z
 ## 决策与执行状态
 
 - [架构决策记录](adr/)：耐久决策及其历史状态。
+- [知识导航的初始化与演进](adr/0011-knowledge-navigation-lifecycle.md)：独立 Skill 的范围、讨论与历史反馈边界。
 - [执行计划](exec-plans/README.md)：当前与归档 exec-plan 的入口。
 
 ## 文档维护入口
 
+- 建立知识导航体系，或结合指定对话历史和反馈优化已有体系，显式使用 [`knowledge-navigation`](../skills/knowledge-navigation/SKILL.md)；它独立完成观察、讨论、实施和验证。
 - 新建或修订稳定系统事实、领域边界、Playbook、Reference 或 ADR，使用 [`dev-docs`](../skills/dev-docs/SKILL.md)。
 - 扫描 Bundle、验证 freshness、修复结构或漂移、登记验证，使用 [`dev-docs-maintain`](../skills/dev-docs-maintain/SKILL.md)。
 - 初始化发现语义缺口、语义写入需要机械验证、或维护发现知识缺口时，这三个知识维护能力可按需协作；它们不形成固定链。

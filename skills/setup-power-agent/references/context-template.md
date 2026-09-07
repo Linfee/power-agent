@@ -18,4 +18,4 @@ _Avoid_: {同义但不推荐的词}
 - 术语定义保持紧凑；出现多个叫法时，明确首选词与避免词。
 - 当自然形成聚类时，用小节分组；否则保持扁平列表。
 
-> 此模板生成仓库根目录的 `CONTEXT.md`，不属于 `docs/` Knowledge Bundle；不要机械添加 YAML frontmatter。
+> 仅在有真实领域知识且现有文档不能充分表达时使用；保留有内容的章节，沿用现有词汇表位置。新建时可放在仓库或 context 根目录的 `CONTEXT.md`；位于 `docs/` Knowledge Bundle 外时，不机械添加 YAML frontmatter。

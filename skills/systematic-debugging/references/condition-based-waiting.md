@@ -1,115 +1,64 @@
 # 基于条件的等待
 
-## 概述
+固定延迟只能表明时间经过，不能证明异步工作已经完成。需要结果就等待真实结果；需要验证时间契约，就控制或测量该时间契约。
 
-不稳定测试通常用任意延迟来猜测时序。这会产生竞态条件，导致测试在快速机器上通过，但在高负载或 CI 环境下失败。
+## 选择等待方式
 
-**核心原则：** 等待你真正关心的条件满足，而不是猜测需要多长时间。
+- 优先复用宿主或测试框架的等待断言、事件订阅和完成 promise；在触发动作前建立订阅，避免错过事件。
+- 防抖、节流、重试间隔等时间行为优先使用框架支持的可控时钟，并推进到契约规定的时点。测试真实调度时记录时钟、负载和允许误差。
+- 只有缺少合适的事件或等待能力时才轮询。按状态变化速度、查询成本、可接受延迟与总时间预算选择间隔，不使用统一频率。
+- 等待应有有界超时和明确失败信息；框架已有超时能力时直接复用。取消或超时后释放本次订阅、计时器等资源。
 
-## 使用时机
-
-```dot
-digraph when_to_use {
-    "测试使用了 setTimeout/sleep？" [shape=diamond];
-    "在测试时序行为？" [shape=diamond];
-    "记录为什么需要超时" [shape=box];
-    "使用基于条件的等待" [shape=box];
-
-    "测试使用了 setTimeout/sleep？" -> "在测试时序行为？" [label="是"];
-    "在测试时序行为？" -> "记录为什么需要超时" [label="是"];
-    "在测试时序行为？" -> "使用基于条件的等待" [label="否"];
-}
-```
-
-**适用场景：**
-- 测试有任意延迟（`setTimeout`、`sleep`、`time.sleep()`）
-- 测试不稳定（时而通过，高负载时失败）
-- 并行运行时测试超时
-- 等待异步操作完成
-
-**不适用场景：**
-- 测试实际的时序行为（防抖、节流间隔）
-- 若使用任意超时，必须注释说明原因
-
-## 核心模式
+## 等待真实条件
 
 ```typescript
-// ❌ 之前：猜测时序
-await new Promise(r => setTimeout(r, 50));
-const result = getResult();
-expect(result).toBeDefined();
+// 固定延迟无法证明结果已到达。
+await new Promise(resolve => setTimeout(resolve, 50));
+expect(getResult()).toBeDefined();
 
-// ✅ 之后：等待条件满足
-await waitFor(() => getResult() !== undefined);
-const result = getResult();
-expect(result).toBeDefined();
+// 优先使用项目测试框架已有的等待断言。
+// 以下 waitFor 示意缺少框架能力时的轮询，预算由调用场景提供。
+await waitFor(() => getResult(), '操作结果', { timeoutMs, pollIntervalMs });
 ```
 
-## 快速模式参考
+条件应对应当前操作的可观察结果，例如指定请求的完成事件、目标状态、所需条目数或已落盘的文件。每次检查读取新状态；事件历史中已有的同名事件不能证明本次操作完成，必要时按请求 ID 或序号关联。
 
-| 场景 | 模式 |
-|------|------|
-| 等待事件 | `waitFor(() => events.find(e => e.type === 'DONE'))` |
-| 等待状态 | `waitFor(() => machine.state === 'ready')` |
-| 等待数量 | `waitFor(() => items.length >= 5)` |
-| 等待文件 | `waitFor(() => fs.existsSync(path))` |
-| 复杂条件 | `waitFor(() => obj.ready && obj.value > 10)` |
+## 轮询示例
 
-## 实现
+下例针对同步、低成本的本地读取。`undefined` 表示尚未就绪；`0`、空字符串等可以是有效结果。超时约束等待调度，不能中断阻塞的 getter；网络查询应使用自身的超时或取消机制。
 
-通用轮询函数：
 ```typescript
 async function waitFor<T>(
-  condition: () => T | undefined | null | false,
+  condition: () => T | undefined,
   description: string,
-  timeoutMs = 5000
+  options: { timeoutMs: number; pollIntervalMs: number }
 ): Promise<T> {
-  const startTime = Date.now();
+  const { timeoutMs, pollIntervalMs } = options;
+  if (!Number.isFinite(timeoutMs) || timeoutMs < 0 ||
+      !Number.isFinite(pollIntervalMs) || pollIntervalMs <= 0) {
+    throw new RangeError('等待预算须为有限非负数，轮询间隔须为有限正数');
+  }
+  const deadline = performance.now() + timeoutMs;
 
   while (true) {
     const result = condition();
-    if (result) return result;
+    if (result !== undefined) return result;
 
-    if (Date.now() - startTime > timeoutMs) {
+    const remainingMs = deadline - performance.now();
+    if (remainingMs <= 0) {
       throw new Error(`等待 ${description} 超时（${timeoutMs}ms）`);
     }
-
-    await new Promise(r => setTimeout(r, 10)); // 每 10ms 轮询一次
+    await new Promise(resolve =>
+      setTimeout(resolve, Math.min(pollIntervalMs, remainingMs))
+    );
   }
 }
 ```
 
-完整实现（含领域专用辅助函数 `waitForEvent`、`waitForEventCount`、`waitForEventMatch`）见同目录 `condition-based-waiting-example.ts`。
+领域适配示例见同目录 `condition-based-waiting-example.ts`。其中事件类型和管理器 import 需要替换成项目已有类型，等待预算由调用者传入；这不是项目必须引入的通用库。
 
-## 常见错误
+## 核对结果
 
-**❌ 轮询过快：** `setTimeout(check, 1)` — 浪费 CPU  
-**✅ 修复：** 每 10ms 轮询一次
+等待通过只证明所观察条件出现。仍须断言用户关心的输出与副作用；不稳定性修复需要与风险相称的可比较样本，不能从一次通过推导“消除了所有竞态”。
 
-**❌ 无超时：** 条件永不满足时无限循环  
-**✅ 修复：** 始终包含超时并给出清晰错误信息
-
-**❌ 数据过期：** 在循环前缓存了状态  
-**✅ 修复：** 在循环内调用 getter 以获取最新数据
-
-## 任意超时合理的场景
-
-```typescript
-// 工具每 100ms 触发一次——需要 2 次触发才能验证部分输出
-await waitForEvent(manager, 'TOOL_STARTED'); // 先等条件满足
-await new Promise(r => setTimeout(r, 200));   // 再等时序行为
-// 200ms = 2 次触发（100ms 间隔）——有文档依据，合理
-```
-
-**要求：**
-1. 先等触发条件
-2. 基于已知时序（不是猜测）
-3. 注释说明原因
-
-## 真实案例效果
-
-来自某次调试会话（2025-10-03）：
-- 修复了 3 个文件中的 15 个不稳定测试
-- 通过率：60% → 100%
-- 执行时间：快了 40%
-- 消除了所有竞态条件
+当目标是等到两次事件发生时，应按事件数量等待。仅当目标确实是检查某段时间窗口内的行为，才等待或推进该窗口，并说明时间依据与预期观察。

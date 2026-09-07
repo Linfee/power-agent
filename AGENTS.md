@@ -6,7 +6,7 @@ Power-Agent 是面向前沿模型的判断、验证与项目知识包。它不�
 
 - **判断可迁移，结果可验证。** Skill 教模型如何判断，不要求复现固定过程。
 - **目标先于形式。** 根据用户需要的可观察结果选择行动；模板、状态和产出物只有真实消费者需要时才存在。
-- **过程由模型决定。** 工具、顺序、子代理、并发和表达方式由当前任务的证据、依赖与风险决定。
+- **过程由模型决定。** 在用户要求和既有契约内，按证据、依赖与风险选择工具、顺序、子代理和表达方式；必要的安全与兼容顺序不能省略。
 - **独立优先。** 除知识维护子系统外，一个 Skill 的正常完成路径不依赖另一个具名 Skill。
 - **证据外置。** 完成声明必须有与当前结果匹配的新鲜系统外证据；未验证面如实说明。
 - **复杂度需要理由。** 新依赖、边界、配置、共享状态和生命周期必须由当前目标、消费者、运行边界或风险证明，不按固定阶梯机械选型。
@@ -38,16 +38,17 @@ Power-Agent 是面向前沿模型的判断、验证与项目知识包。它不�
 | Skill | 帮助模型判断什么 |
 |---|---|
 | `discuss` | 问题是否真正明确，哪些取舍需要决定 |
-| `writing-plans` | 何时计划值得持久化，执行者需要哪些目标、约束与验收 |
+| `writing-plans` | 按用户规划需求锁定目标、必要依赖与验收，判断持久化方式 |
 | `codebase-design` | 模块是否消除了复杂度，接口和 seam 是否有真实消费者 |
-| `implement` | 如何利用 sub-agent 完成一个已有目标或任意形式的计划 |
-| `proof-oriented-development` | 如何以最小充分改动实现目标并取得匹配证据 |
+| `implement` | 如何利用 sub-agent 完成独立工作并处理集成 |
+| `proof-oriented-development` | 实现中如何选择验收证据、控制风险或执行 TDD |
 | `systematic-debugging` | 哪个解释最符合证据，根因与修复边界在哪里 |
 | `code-review` | 哪些问题会妨碍改动安全、正确地交付 |
 | `finish-development` | 当前工作是否足以完成，以及如何安全处置分支 |
 | `dev-docs` | 哪些知识值得长期保存，如何准确表达 |
 | `dev-docs-maintain` | 既有知识是否健康、新鲜并可验证 |
-| `setup-power-agent` | 项目缺少哪些最小 Agent 知识与导航（手动调用） |
+| `knowledge-navigation` | 如何结合项目观察、用户讨论和历史反馈建立或优化知识导航（手动调用） |
+| `setup-power-agent` | 如何补齐最小 Agent 入口与明确知识缺口（手动调用） |
 | `writing-skills` | Skill 是否真正教会了可迁移判断 |
 | `harness-engineering-review` | 当前 Harness 哪些机制承重、哪些可以删除（手动调用） |
 
@@ -56,6 +57,8 @@ Power-Agent 是面向前沿模型的判断、验证与项目知识包。它不�
 普通 Skill 可以读取用户提供的计划、代码、证据或文档，也可以按需使用 sub-agent，但不得要求这些材料由某个具名 Skill 产生。完成自己的用户目标后即可停止，不输出只为下一 Skill 服务的固定 schema。
 
 `setup-power-agent`、`dev-docs`、`dev-docs-maintain` 是唯一允许具名协作的子系统：初始化、语义写入、扫描和验证登记围绕同一个知识 Bundle，可以按实际缺口互相使用，但不形成每次必跑的固定链。
+
+`knowledge-navigation` 独立负责导航体系的设计与演进：观察项目、开展启发式讨论、按历史与反馈选择并实现结构改进；它不扩大上述具名依赖例外。最小入口补缺口仍可使用 `setup-power-agent`，单篇知识写入或纯扫描仍按相应目标选择能力。
 
 ## 文档约定
 
@@ -73,7 +76,8 @@ Power-Agent 是面向前沿模型的判断、验证与项目知识包。它不�
 - 修改 Skill 前先确认它填补的行为缺口；删除后默认模型仍会正确处理的文字。
 - 不为统一外观强加章节、模板、状态枚举或报告格式。
 - reference 只保存按需的专门知识或机器协议；确定性动作优先脚本化。
-- description 只服务触发。修改后运行 `scripts/check-description-length.py` 和 `scripts/check-invocation-consistency.sh`。
+- 修改入口、链接、标题或脚本指针后，运行 `python3 scripts/check-skill-references.py`；支持传路径只检查受影响内容，协议边界见脚本 `--help`。
+- description 只服务触发，尽可能短且保持可区分；110 token 是上限而非目标。修改后运行 `scripts/check-description-length.py` 和 `scripts/check-invocation-consistency.sh`。手动调用登记还须与 frontmatter 及 Codex `agents/openai.yaml` 的 `policy.allow_implicit_invocation: false` 一致。
 - 重大架构、Skill 名称或长期知识变化同步更新现有文档和 ADR；普通局部实现不增加仪式文档。
 - 没有运行与实际改动匹配的验证，不得声称完成。
 

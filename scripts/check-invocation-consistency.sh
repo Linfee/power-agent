@@ -1,47 +1,160 @@
 #!/usr/bin/env bash
-# 校验 skills/*/SKILL.md frontmatter 的 disable-model-invocation 标志
-# 与 AGENTS.md Skill 速查表的「手动调用」登记保持一致。
-# user-invoked Skill 必须在速查表标注「手动调用」；model-invoked 不得标注。
-# 调用方式（invocation mode）改动时必须运行本脚本，防止路由信息与 frontmatter 静默漂移。
+# 校验 skills/*/SKILL.md 的调用方式与 AGENTS.md 索引、Codex 元数据一致。
+# 兼容 frontmatter 的宿主用 disable-model-invocation: true 表示手动调用；
+# Codex 用 agents/openai.yaml 的 policy.allow_implicit_invocation: false。
+# 用法：scripts/check-invocation-consistency.sh [repo-root]
 set -euo pipefail
 
-cd "$(dirname "$0")/.."
+repo="${1:-$(cd "$(dirname "$0")/.." && pwd)}"
+cd "$repo"
 
 agents_md="AGENTS.md"
 failed=0
+section="$(awk '/^## Skill 速查/{f=1; next} /^## /{if(f) exit} f' "$agents_md")"
+
+frontmatter() {
+  awk '/^---$/{c++; next} c==1' "$1"
+}
+
+bool_value() {
+  local file="$1" key="$2" value count
+  value="$(awk -F ': *' -v key="$key" '{ field = $1; sub(/^[[:space:]]+/, "", field); if (field == key) { value = $2; sub(/[[:space:]]+#.*/, "", value); sub(/^[[:space:]]+/, "", value); sub(/[[:space:]]+$/, "", value); print value } }' "$file")"
+  count="$(wc -l <<<"$value" | tr -d ' ')"
+  if [[ "$count" -gt 1 ]]; then
+    echo "DRIFT: $file 的 $key 重复声明。" >&2
+    return 2
+  fi
+  case "$value" in
+    true|false) printf '%s\n' "$value" ;;
+    '') return 1 ;;
+    *) echo "DRIFT: $file 的 $key 必须是 true 或 false。" >&2; return 2 ;;
+  esac
+}
+
+codex_policy_bool() {
+  local file="$1" value count
+  value="$(awk '
+    function emit_policy_value(line) {
+      sub(/^[[:space:]]*allow_implicit_invocation:[[:space:]]*/, "", line)
+      sub(/[[:space:]]+#.*/, "", line)
+      sub(/[,}[:space:]].*$/, "", line)
+      print line
+      found = 1
+    }
+    /^[[:space:]]+policy:/ { invalid = 1; next }
+    /^policy:/ {
+      saw_policy = 1
+      line = $0
+      sub(/^[[:space:]]*policy:[[:space:]]*/, "", line)
+      sub(/[[:space:]]+#.*/, "", line)
+      if (line == "") { in_policy = 1; next }
+      if (line ~ /^\{.*\}$/) {
+        if (line ~ /allow_implicit_invocation:[[:space:]]*(true|false)/) {
+          sub(/^.*allow_implicit_invocation:[[:space:]]*/, "", line)
+          sub(/[,}[:space:]].*$/, "", line)
+          print line
+          found = 1
+        }
+        next
+      }
+      invalid = 1
+      next
+    }
+    in_policy && /^[^[:space:]#][^:]*:/ { in_policy = 0 }
+    in_policy {
+      line = $0
+      sub(/^[[:space:]]+/, "", line)
+      if (line ~ /^allow_implicit_invocation:[[:space:]]*(true|false)([[:space:]]|#|$)/) emit_policy_value(line)
+    }
+    END {
+      if (invalid || found > 1) exit 2
+      if (!found) exit 1
+    }
+  ' "$file")"
+  count="$(wc -l <<<"$value" | tr -d ' ')"
+  if [[ "$count" -gt 1 ]]; then
+    echo "DRIFT: $file 的 policy.allow_implicit_invocation 重复声明。" >&2
+    return 2
+  fi
+  case "$value" in
+    true|false) printf '%s\n' "$value" ;;
+    '') return 1 ;;
+    *) echo "DRIFT: $file 的 policy.allow_implicit_invocation 必须是 true 或 false。" >&2; return 2 ;;
+  esac
+}
 
 for f in skills/*/SKILL.md; do
   name="$(basename "$(dirname "$f")")"
-
-  # 只解析 frontmatter（第一个 --- 与第二个 --- 之间）；正文中的提及不算。
-  if awk '/^---$/{c++; next} c==1' "$f" | grep -q '^disable-model-invocation: true'; then
-    flag=yes
-  else
-  flag=no
-  fi
-
-  # 只解析「## Skill 速查」节（到下一个二级标题为止），按首列精确匹配技能行；
-  # 正文其他位置的反引号提及（如调试路径）不得被误当登记。
-  section="$(awk '/^## Skill 速查/{f=1; next} /^## /{if(f) exit} f' "$agents_md")"
-  row="$(grep -E "^\|[[:space:]]*\`${name}\`[[:space:]]*\|" <<<"$section" || true)"
+  printf -v pattern '^\\|[[:space:]]*`%s`[[:space:]]*\\|' "$name"
+  row="$(grep -E "$pattern" <<<"$section" || true)"
+  rows="$(wc -l <<<"$row" | tr -d ' ')"
   if [[ -z "$row" ]]; then
     echo "DRIFT: $name 未在 $agents_md 的 Skill 速查表登记。" >&2
     failed=1
     continue
   fi
-  if grep -q '手动调用' <<<"$row"; then
-    marked=yes
-  else
-    marked=no
+  if [[ "$rows" -ne 1 ]]; then
+    echo "DRIFT: $name 在 $agents_md 的 Skill 速查表重复登记。" >&2
+    failed=1
+    continue
   fi
 
-  if [[ "$flag" != "$marked" ]]; then
+  marked=no
+  grep -q '手动调用' <<<"$row" && marked=yes
+
+  fm_file="$(mktemp)"
+  frontmatter "$f" >"$fm_file"
+  if flag="$(bool_value "$fm_file" "disable-model-invocation")"; then
+    :
+  else
+    status=$?
+    rm -f "$fm_file"
+    if [[ "$status" -eq 1 ]]; then
+      flag=false
+    else
+      failed=1
+      continue
+    fi
+  fi
+  rm -f "$fm_file"
+
+  manual=no
+  [[ "$flag" == true ]] && manual=yes
+  expected_marked=no
+  [[ "$manual" == yes ]] && expected_marked=yes
+  if [[ "$marked" != "$expected_marked" ]]; then
     echo "DRIFT: ${name} frontmatter disable-model-invocation=${flag}，但速查表「手动调用」标注=${marked}。" >&2
+    failed=1
+  fi
+
+  codex="skills/$name/agents/openai.yaml"
+  if [[ -f "$codex" ]]; then
+    if codex_flag="$(codex_policy_bool "$codex")"; then
+      :
+    else
+      status=$?
+      if [[ "$status" -eq 1 ]]; then
+        codex_flag=true
+      else
+        echo "DRIFT: $codex 的 policy 必须是顶层 block 或 inline map，且 allow_implicit_invocation 必须是布尔值。" >&2
+        failed=1
+        continue
+      fi
+    fi
+  else
+    codex_flag=missing
+  fi
+
+  if [[ "$manual" == yes && "$codex_flag" != false ]]; then
+    echo "DRIFT: $name 是手动调用，但 Codex metadata 必须声明 policy.allow_implicit_invocation: false。" >&2
+    failed=1
+  elif [[ "$manual" == no && "$codex_flag" == false ]]; then
+    echo "DRIFT: $name 是自动调用，但 Codex metadata 禁用了隐式调用。" >&2
     failed=1
   fi
 done
 
 if [[ "$failed" -eq 0 ]]; then
-  echo "OK: 调用方式标志与速查表登记一致。"
+  echo "OK: 索引、frontmatter 与 Codex 调用方式一致。"
 fi
 exit "$failed"

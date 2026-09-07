@@ -23,8 +23,10 @@
 
 ## 启动会话
 
+从本次实际加载的 `SKILL.md` 所在目录解析脚本路径，将其绝对目录记为 `DISCUSS_SKILL_DIR`；不假设调用 cwd 或目标项目包含 `skills/discuss/`。
+
 ```bash
-skills/discuss/scripts/start-server.sh
+"$DISCUSS_SKILL_DIR/scripts/start-server.sh"
 ```
 
 返回示例：
@@ -39,36 +41,21 @@ skills/discuss/scripts/start-server.sh
 }
 ```
 
-保存 `screen_dir` 和 `state_dir`。告诉用户打开 `url`。
+保存 `screen_dir`、`state_dir` 及其共同父目录 `session_dir`。使用宿主可用的浏览器入口展示 `url`，或给用户可打开的链接。
 
-会话文件默认保存在 `/tmp/discuss-<session>/`，停止服务时会被清理；不要依赖仓库内持久目录。
+启动脚本从自身目录加载资源，会话文件保存在 `/tmp/discuss-<session>/`，停止服务时会被清理；`--project-dir` 仅是兼容参数，不会改变会话目录。目标项目由任务上下文独立确定，讨论内容如需持久化再按主 Skill 的条件写入该项目。
 
 服务只绑定 `127.0.0.1`。不要把 visual companion 暴露到非 loopback 网络；远程或容器环境应通过宿主提供的端口转发访问本机 loopback URL。
 
-## 讨论闭环
+## 视图与反馈
 
-1. 检查服务状态：
-   - `$STATE_DIR/server-info` 存在表示服务正在运行。
-   - `$STATE_DIR/server-stopped` 存在表示服务已停止，需要重启。
-   - 服务空闲 30 分钟会自动退出。
-2. 写入新 HTML 到 `screen_dir`：
-   - 每屏用新文件名，不复用旧文件名。
-   - 使用语义化文件名，如 `scope-options.html`、`layout-v1.html`、`flow-v2.html`。
-   - 默认写 HTML 片段，不写完整文档；服务会自动注入 frame、样式和交互脚本。
-3. 告诉用户：
-   - 当前 URL。
-   - 屏幕展示的主题。
-   - 请在浏览器查看/点击，并回到终端反馈。
-4. 下一轮读取 `$STATE_DIR/events`：
-   - HTML 点击/选择事件是辅助证据。
-   - 用户终端文字反馈是主反馈。
-   - 若两者冲突，以终端文字为准，并主动确认。
-5. 将确认结果沉淀进 spec：
-   - 用户流程。
-   - 方案取舍。
-   - 验收标准。
-   - Open Questions。
-6. 回到纯文字讨论时，推送等待页或明确说明当前不再看旧画面，避免过期视觉误导。
+`state_dir/server-info` 保存启动信息；`server-stopped` 表示服务已停止。状态不明时核实进程或 URL 是否仍可用，不能仅凭旧文件认定正在运行。服务空闲 30 分钟会自动退出。
+
+写入新 HTML 到 `screen_dir` 时使用新文件名，如 `scope-options.html`、`layout-v2.html`，以便区分当前画面与旧反馈。默认写 HTML 片段，服务会注入 frame、样式和交互脚本。向用户说明当前链接和主题，并使用当前宿主可用的反馈入口；无需为了本指南切换到终端。
+
+按需读取 `state_dir/events` 中的点击/选择事件，并结合当前画面与用户陈述判断。用户明确陈述优先于辅助点击；仍存在会影响决策的歧义时才澄清。
+
+结论默认在对话中表达。只有用户明确要求、流程要求或需要长期维护时才落盘，沿用主 Skill 的持久化条件与目标项目已有位置，不固定生成 spec。回到纯文字讨论或更换议题时，推送等待页或明确旧画面已不再适用，避免过期视觉误导。
 
 ## 内容片段示例
 
@@ -155,25 +142,27 @@ skills/discuss/scripts/start-server.sh
 
 ## 浏览器事件格式
 
-用户点击带 `data-choice` 的元素时，事件写入 `$STATE_DIR/events`，一行一个 JSON：
+用户点击带 `data-choice` 的元素时，事件写入 `state_dir/events`，一行一个 JSON：
 
 ```jsonl
 {"type":"click","choice":"a","text":"Option A - Core path","timestamp":1706000101}
 ```
 
-若 `$STATE_DIR/events` 不存在，表示用户未在浏览器中交互，只使用终端反馈。
+若 `state_dir/events` 不存在，说明当前没有可读取的浏览器事件；继续使用宿主可用的对话或结构化反馈，不据此推断用户是否看过画面。
 
 ## 停止服务
 
 ```bash
-skills/discuss/scripts/stop-server.sh <session_dir>
+"$DISCUSS_SKILL_DIR/scripts/stop-server.sh" "$SESSION_DIR"
 ```
-如果 session 在 `/tmp` 下，停止服务会删除临时文件。
+`SESSION_DIR` 使用本次启动返回的 `screen_dir` / `state_dir` 的共同父目录。脚本停止该会话，并清理匹配 `/tmp/discuss-*` 的会话目录。
 
 ## 文件索引
 
-- 启动：`skills/discuss/scripts/start-server.sh`
-- 停止：`skills/discuss/scripts/stop-server.sh`
-- 服务：`skills/discuss/scripts/server.cjs`
-- Frame 样式：`skills/discuss/scripts/frame-template.html`
-- 客户端事件：`skills/discuss/scripts/helper.js`
+以下路径均相对本 Skill 目录，执行时使用从实际加载位置解析的绝对路径：
+
+- 启动：`scripts/start-server.sh`
+- 停止：`scripts/stop-server.sh`
+- 服务：`scripts/server.cjs`
+- Frame 样式：`scripts/frame-template.html`
+- 客户端事件：`scripts/helper.js`

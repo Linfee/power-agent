@@ -2,9 +2,7 @@
 
 ## 1. OKF 与验证登记
 
-`docs/` 是 OKF Bundle：除 `index.md`、`log.md` 外，每个 Markdown 文件都是 Concept Document，必须具有顶部 YAML frontmatter 和非空 `type`。
-
-YAML frontmatter 是 Concept Document 元数据的唯一权威。每个 Concept 必须以可解析为 mapping 的顶部 YAML frontmatter 开始，并有非空 `type`；parser 必须完整消费支持的 YAML subset，任何裸 token、错误缩进、未消费内容或不完整语法都是 `invalid-frontmatter`，使该 Concept 在 scan 中 `blocked` 并拒绝 `record`。`scope`、`sources` 与 `status` 只在具有语义时声明。scanner 只将现存 scope 路径和显式 glob 纳入 source snapshot；路径形的概念范围不是 source。需要强制追踪或验证存在性的路径必须写入 `sources`。缺少 `verification` 时继承项目默认策略；显式 `verification: null` 是 `invalid-verification`，而 `verification: {}` 是有效 mapping，继承默认策略。运行时验证数据只属于 verification ledger。已弃用的 HTML header metadata（包括 `verified`、`scope` 与 `status`）不生产、不消费、不作为迁移输入；旧 `verified` 日期不写入验证登记。
+`docs/` 是 OKF Bundle：除 `index.md`、`log.md` 外，每个 Markdown 文件都是 Concept Document。其元数据以顶部 YAML frontmatter 为唯一权威，必须可解析为 mapping 并有非空 `type`；parser 必须完整消费支持的 YAML subset，任何裸 token、错误缩进、未消费内容或不完整语法都是 `invalid-frontmatter`，使该 Concept 在 scan 中 `blocked` 并拒绝 `record`。`scope`、`sources` 与 `status` 只在具有语义时声明。scanner 只将现存 scope 路径和显式 glob 纳入 source snapshot；路径形的概念范围不是 source。需要强制追踪或验证存在性的路径必须写入 `sources`。缺少 `verification` 时继承项目默认策略；显式 `verification: null` 是 `invalid-verification`，而 `verification: {}` 是有效 mapping，继承默认策略。运行时验证数据只属于 verification ledger。已弃用的 HTML header metadata（包括 `verified`、`scope` 与 `status`）不生产、不消费、不作为迁移输入；旧 `verified` 日期不写入验证登记。
 
 Concept frontmatter 保存稳定配置：
 
@@ -32,8 +30,6 @@ docs/.okf/verification.json
 ```
 
 该文件是机器维护的派生登记，不是 Concept Document。建议纳入 Git，以便不同 Agent 和定时任务共享验证基线。不要手工编辑；只能由本 Skill 随附的 `bundle_status.py record` 在完成验证后更新。
-
-scanner 会在读写前 canonical resolve registry。默认或 `--registry` 指定的 registry 实体必须同时位于 repository 与目标 Bundle 内；`.okf` 目录、registry 或 lock 的任一符号链接越界都会被拒绝。lock 以 canonical Bundle 为固定 advisory-lock 身份创建，因此 registry alias 或 hardlink 不会产生第二个写者。
 
 新建或修改 Concept 不自动表示已验证。没有可信登记时，scanner 将其视为 `unverified`；损坏或不完整的 Concept 登记会显式显示为 `blocked`。
 
@@ -76,7 +72,7 @@ scanner 支持 `PnD` 和 `PnW` 格式，例如 `P30D`、`P12W`。
 - `dirty`：文档变化，或 `source-change`、`source-change-and-periodic`、`generated` 策略所跟踪的来源快照变化。
 - `unverified`：没有可信登记。
 - `due`：完整可信登记存在且内容未变，且带周期策略达到 `target`。
-- `blocked`：声明来源不存在、策略无法建立快照或单个 Concept 的验证登记损坏/不完整；若整个 registry 结构无效（包括无法解析、根不是对象、`concepts` 缺失/不是对象、schema 不受支持，或必填顶层字段无效），必须同时报告 `invalid-verification-registry` bundle finding，并将每个已发现的 Concept 显式为 `blocked`，同时列出 `invalid-verification-registry` 与 `incomplete-verification-record`。
+- `blocked`：声明来源不存在、策略无法建立快照或验证登记损坏/不完整。整个 registry 无效时所有 Concept 都被阻止；恢复条件见下方「损坏登记」。
 
 状态与 P0/P1/P2 正交。只有 Agent 完成语义核对后才能判定实际问题等级。
 
@@ -92,11 +88,15 @@ scanner 支持 `PnD` 和 `PnW` 格式，例如 `P30D`、`P12W`。
 
 验证失败或只做格式修改时不更新登记。`record` 只能处理当前文档、metadata、链接与来源均有效的 Concept；缺失来源、broken link 或任一 document metadata 问题都会使其拒绝登记。
 
+登记与批次完成的操作边界见 [主文件](../SKILL.md#登记与完成)；命令和 evidence 参数见 [CLI](cli-operations.md#登记已验证的-concept)。
+
+### 损坏登记
+
 扫描必须把损坏或不完整的单个 Concept 登记显式标为 `blocked` / `incomplete-verification-record`。只有当前文档、链接、来源和 metadata 均完整，且本轮完成 `semantic` 或 `executable` 验证时，新的完整记录才可覆盖该条目；`continuity` 绝不能恢复或重置它。这一恢复不能掩盖任何其他 document metadata、link 或 source 问题。整个 registry 结构无效（包括无法解析、根不是对象、`concepts` 缺失/不是对象、schema 不受支持，或必填顶层字段无效）时，扫描必须报告 `invalid-verification-registry` bundle finding，并把每个已发现的 Concept 标为 `blocked`，同时报告 `invalid-verification-registry` 与 `incomplete-verification-record`；`record` 必须拒绝，不能以任何单个 Concept 覆盖根级损坏，也不得手工篡改 ledger。
 
-ledger 中的 evidence 只能是可公开、脱敏的受控枚举：`human-review`、`automated-test`、`external-audit`。CLI 与已有 ledger 记录均不接受任何其他值，尤其不得写入命令、URL、query、header、密钥、令牌、认证头、Cookie、私有 URL query、原始证据或受限资料。
+### Ledger 与写锁
 
-同一 Bundle 一次只能有一个 `record` 写者。脚本使用以 canonical Bundle 为固定身份的持久 `$BUNDLE_DIR/.okf/verification.json.lock` 文件和操作系统 advisory exclusive lock 协调写入；registry 在读写前 canonical resolve，默认或 `--registry` 指定的 registry 必须同时在 repo 与 Bundle 内，且 `.okf`、registry 或 lock 的任一越界符号链接都会被拒绝。登记者在锁内读取、批量更新并原子替换 ledger；registry alias 或 hardlink 不能产生第二个写锁。锁文件可在进程退出后保留，不能以文件是否存在判断有活跃写者；操作系统会在写者退出或被终止时释放 advisory lock。遇锁冲突不得手工删除锁文件、改写 ledger 或绕过锁；重新扫描后重试。
+同一 Bundle 一次只能有一个 `record` 写者。脚本使用以 canonical Bundle 为固定身份的持久 `$BUNDLE_DIR/.okf/verification.json.lock` 文件和操作系统 advisory exclusive lock 协调写入；Bundle 必须位于 repo 内；registry 在读写前 canonical resolve，默认或 `--registry` 指定的 registry 必须同时在 repo 与 Bundle 内。脚本拒绝 Bundle/registry 路径中的符号链接组件及 symlink lock。登记者在锁内读取、批量更新并原子替换 ledger；registry alias 或 hardlink 不能产生第二个写锁。锁文件可在进程退出后保留，不能以文件是否存在判断有活跃写者；操作系统会在写者退出或被终止时释放 advisory lock。遇锁冲突不得手工删除锁文件、改写 ledger 或绕过锁；重新扫描后重试。
 
 `record` 保存：
 
@@ -105,27 +105,10 @@ ledger 中的 evidence 只能是可公开、脱敏的受控枚举：`human-revie
 - `method`
 - `document_hash`
 - 所有策略的 `source_fingerprint` 和每个来源文件的内容 hash（用于快照/溯源和 ledger 完整性检查；只有 source-sensitive 策略把它们作为 freshness 输入）
-- 可选的受控 evidence 枚举（`human-review`、`automated-test`、`external-audit`）
+- 可选的受控 evidence 枚举（与 [CLI](cli-operations.md#登记已验证的-concept) 一致；已有 ledger 记录也拒绝枚举之外的值）
 
 因此即使 Git 被 rebase 或 squash，scanner 仍可通过内容指纹识别所有策略的文档变化，以及 source-sensitive 策略的来源变化。
 
-每次成功 `record` 后都要重新 `scan`，确认目标不再是 `dirty`、`unverified` 或 `due`，并确认没有新增 frontmatter、链接或来源问题。若未收敛，保留状态并报告，不以登记动作替代修复。
-
 ## 5. 维护边界
 
-修复深度由证据和授权决定，不由调用模式决定。可直接做的无争议修复：
-
-- 修复确定的当前事实、命令、链接和来源路径；
-- 补齐无争议的 OKF frontmatter；
-- 更新受影响的 index/log；
-- 登记已完成的验证。
-
-结构级操作（移动、重命名、拆分、合并或删除 Concept；大范围目录重构；改变 Bundle 边界）需要用户目标与授权，且结构性写入若同时改变知识语义，内容部分交 `dev-docs` 修订。
-
-禁止：
-
-- 因日期到期直接刷新登记；
-- 批量记录未验证 Concept；
-- 从当前代码反推一个新决策已经获批；
-- 重写 accepted ADR 的历史结论；
-- 用模型记忆替代不可访问的权威来源。
+当前事实修复、结构与语义写入的授权边界，以及逐篇核对和最终扫描要求，统一见 [主文件](../SKILL.md#范围与证据)。本参考只解释协议，不扩大维护范围。

@@ -19,20 +19,29 @@ See [ADR-0010](docs/adr/0010-judgment-oriented-skills.md), [architecture](docs/a
 | Skill | Independent judgment it provides |
 |---|---|
 | `discuss` | Whether goals, tradeoffs, and acceptance are clear enough to act |
-| `writing-plans` | Whether a durable plan is useful and what future executors need from it |
+| `writing-plans` | How to deliver a requested plan with necessary dependencies and acceptance criteria |
 | `codebase-design` | Whether module boundaries, interfaces, seams, and adapters reduce real complexity |
-| `implement` | How to organize ordinary sub-agents around a goal or any existing plan |
-| `proof-oriented-development` | How to make the smallest sufficient change and obtain matching evidence |
+| `implement` | How to coordinate sub-agents for independent work and integration |
+| `proof-oriented-development` | How to choose implementation evidence, control risk, or apply TDD |
 | `systematic-debugging` | Which explanation fits the observations, and where the root cause and fix boundary lie |
 | `code-review` | Which findings would prevent safe, correct delivery |
 | `finish-development` | Whether evidence supports completion and how to safely handle branch disposition |
 | `writing-skills` | Whether a skill teaches transferable judgment |
 | `harness-engineering-review` | Which harness mechanisms are load-bearing and which can be removed |
-| `setup-power-agent` | What minimum agent knowledge a project lacks |
+| `knowledge-navigation` | How to initialize or improve knowledge navigation using repository observations, guided discussion, history, and feedback (manual invocation) |
+| `setup-power-agent` | How to fill a minimum agent entrypoint or a specific project knowledge gap |
 | `dev-docs` | Which stable knowledge belongs in project documentation |
 | `dev-docs-maintain` | Whether that knowledge is healthy, current, and verifiable |
 
 The documentation subsystem—`setup-power-agent`, `dev-docs`, and `dev-docs-maintain`—may collaborate when initialization, semantic writing, or mechanical maintenance creates a real knowledge gap. This is the only named collaboration exception, and it is not a fixed chain.
+
+### Knowledge navigation
+
+Explicitly invoke [`knowledge-navigation`](skills/knowledge-navigation/SKILL.md) to initialize a repository's agent-facing knowledge navigation, or improve an existing system using an agreed range of conversation history and feedback. It observes the project, discusses consequential choices with the user, implements authorized changes, and validates the affected paths.
+
+For example: “Use knowledge-navigation to inspect this repository, discuss its main agent tasks and sources of truth with me, then initialize the navigation.” For maintenance: “Use knowledge-navigation to review this project's accessible conversations from the past two weeks and these feedback examples, then discuss and fix the supported navigation problems.”
+
+The skill reuses existing structures and reports history coverage and verification limits. It does not start background monitoring. See [ADR-0011](docs/adr/0011-knowledge-navigation-lifecycle.md) for its boundary with minimal setup, semantic writing, and bundle health checks.
 
 ## Sub-agent support
 
@@ -83,6 +92,7 @@ Read [the skill and harness design guide](docs/skill-and-harness-design.md) befo
 ```bash
 python3 scripts/check-description-length.py
 bash scripts/check-invocation-consistency.sh
+python3 scripts/check-skill-references.py
 bash scripts/check-shared-references.sh
 python3 -m unittest skills/dev-docs-maintain/scripts/test_bundle_status.py
 ```

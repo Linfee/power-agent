@@ -1,44 +1,19 @@
-# Domain Docs And Project Memory
+# 补充领域知识与导航
 
-初始化项目时，把以下约定写入项目记忆入口（通常是 `AGENTS.md` 或 `CLAUDE.md` 的相关段落）：
+用于实际出现领域术语或跨域定位缺口时。先检查现有词汇表、领域文档和导航是否已经承载该知识，再决定是否需要独立文件。
 
-- 领域术语存放在 `CONTEXT.md`；若仓库有多个 context，则由根目录 `CONTEXT-MAP.md` 指向各自的 `CONTEXT.md`。
-- 历史架构决策存放在 `docs/adr/`，采用 `0001-slug.md` 命名；目录由 `setup-power-agent` 初始化，ADR 文件只在真实决策出现时写入。
-- Agent 在处理架构、诊断、规划或大改动前，应先读取相关 context 文档与 ADR。
-- 消费纪律：产出物命名领域概念时使用 `CONTEXT.md` 原词，不漂移同义词；所需概念不在词汇表时视为缺口信号，记录后交 `dev-docs`；产出与既有 ADR 矛盾时显式声明冲突，不静默覆盖；`CONTEXT.md` / `docs/adr/` 缺失时静默继续，不建议预先创建。
+| 缺口 | 可选表达 |
+|---|---|
+| 项目特有术语、关系或不变量没有可靠说明 | 更新现有领域文档；确需独立词汇表时使用 [CONTEXT 模板](context-template.md) |
+| 多个清晰 context 的位置、职责与关系难以定位 | 补现有跨域导航；缺少合适入口时使用 [Context Map 模板](context-map-template.md) |
+| 未来需要知道无法从代码恢复的决策理由 | 按 [ADR 格式](adr-format.md) 记录，目录随真实决策创建 |
 
-推荐写入的一段简述：
+词汇表只收录该项目特有概念；定义紧凑，存在多个叫法时注明首选词与避免词。Context 数量由领域边界和消费任务决定，不能从目录或服务数量直接推导。
 
-```md
-### 项目记忆
-
-领域语言记录在 `CONTEXT.md`；多 context 仓库使用根目录 `CONTEXT-MAP.md` 指向各 context 的 `CONTEXT.md`。历史架构决策记录在 `docs/adr/`。处理架构、诊断和大范围改动前，优先读取这些文件。产出物命名领域概念时使用 `CONTEXT.md` 原词；产出与既有 ADR 矛盾时显式声明；这些文件缺失时静默继续，不建议预先创建。
-```
-
-`docs/domain/project-memory.md` 可采用以下结构：
+入口只需告诉读者知识在哪里、何时读取，以及与当前任务相关的消费约定。例如已有下列路径的仓库可以使用：
 
 ```md
----
-type: Domain
-scope:
-  - project-memory
----
-
-# Domain Docs
-
-## Layout
-
-- Single-context: root `CONTEXT.md` + root `docs/adr/`
-- Multi-context: root `CONTEXT-MAP.md` + per-context `CONTEXT.md` + root `docs/adr/`
-
-## Consumer rules
-
-- 先判断当前工作涉及哪个 context。
-- 有 `CONTEXT-MAP.md` 时，先读它，再读相关 context 的 `CONTEXT.md`。
-- 做架构判断前，先读相关 ADR。
-- 产出物命名领域概念时使用 `CONTEXT.md` 原词；所需概念不在词汇表时记录缺口，交 `dev-docs`。
-- 产出与既有 ADR 矛盾时显式声明，不静默覆盖。
-- `CONTEXT.md` 或 ADR 不存在时静默继续，不建议预先创建。
+领域语言见 `CONTEXT.md`，决策理由见 `docs/adr/`。涉及命名或架构取舍时读取相关内容，沿用词汇表原词，与既有决定冲突时显式说明。
 ```
 
-`AGENTS.md`、`CONTEXT.md` 与 `CONTEXT-MAP.md` 位于 Bundle 外；不要仅为了元数据而给它们添加 YAML frontmatter。
+按实际布局调整示例，只引用真实目标。入口已足够时不另建重复的项目记忆说明；需要独立 Concept 时按目标 Bundle 的元数据契约写入。
