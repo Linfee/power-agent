@@ -11,7 +11,7 @@ status: active
 
 **用户已确认按本设计推进本地实施。** 可修改目标 Skill、相关脚本、分发及现行文档，并按设计退出旧资产；不执行 commit、branch/worktree、push、远端 PR/tracker、用户安装目录或秘密/生产配置操作。下述验收入口不代表已运行。
 
-本次使用 exec-plan，是因为用户需要跨会话、人可审的迁移参照。唯一持久执行状态为本地 `.scratch/matt-power-agent-fusion/` 的 `spec.md` 与 `01.md`–`09.md`；该目录为本次忽略的执行 scratch，不是产品运行依赖。session todo 是派生视图；本文件只保留设计、依赖、授权和状态源指针，不另记逐任务进度，也不写远端副本。
+本次使用 exec-plan，是因为用户需要跨会话、人可审的迁移参照。唯一持久执行状态为本地 `.scratch/matt-power-agent-fusion/` 的 `spec.md` 与 `01.md`–`15.md`；该目录为本次忽略的执行 scratch，不是产品运行依赖。session todo 是派生视图；本文件只保留设计、依赖、授权和状态源指针，不另记逐任务进度，也不写远端副本。
 
 ## 1. 目标、范围与完成条件
 
@@ -55,6 +55,10 @@ status: active
 
 恢复时只核对与迁移有关的新变化，不重做一遍全仓审计。用户的后续改动是新事实；不能 reset、覆盖或通过复制旧快照把它们抹掉。源版本变化须明确评估差异，不把 `main` 的最新内容静默混进已审设计。
 
+本轮按用户最新要求恢复原版内容深度：除已逐字恢复的 S05/S06 外，其余 20 个有 Matt 对应来源的入口以固定原文为底稿，补回方法、理由、示例、反例与模板；三个 Power 独有知识入口不为凑篇幅改写。已确认的自动推进、POD、工程判断、唯一 tracker 与授权差异继续保留。
+
+任务 10–13 分别拥有工程内核、规划执行、探索交付、领域协作与环境的 Skill 子树；任务 14 集成共享设计与消费者，任务 15 统一检查和针对性行为验证。对照实际阅读路径的来源覆盖，不用行数代替验收；本文不另记这些任务的状态。
+
 开始实施还需核对以下实际条件：
 
 - 当前宿主的 Skill 发现、具名读取、普通 sub-agent、真实 UI 和脚本能力；不凭 manifest 名称宣布跨宿主兼容。
@@ -82,7 +86,7 @@ status: active
 |单元|独占写入范围|完成内容|不能顺带做的事|
 |---|---|---|---|
 |M1-K 工程内核|S01 POD、S02 code-review、S03 diagnosing-bugs、S04 codebase-design 及各自 references/诊断脚本|融合四项判断、测试知识和证据边界；提供可被其他 Skill 消费的短指针|改根级目录/manifest；新增平行 tdd；提前删除其他单元仍读的旧来源|
-|M1-D 讨论与建模|S05 grilling、S06 grill-with-docs、S07 domain-modeling 及 glossary/ADR references|最少必要提问、讨论与知识联动、统一术语/决定语义|同时维护 CONTEXT/glossary；重写知识扫描器；把建议直接变实现|
+|M1-D 讨论与建模|S05 grilling、S06 grill-with-docs、S07 domain-modeling 及 glossary/ADR references|S05/S06 按用户后续要求恢复 Matt 原文及调用元数据；逐轮问题树、共同理解确认与领域知识联动|同时维护 CONTEXT/glossary；重写知识扫描器；确认共同理解前实施|
 |M1-E 执行与 tracker|S08 to-spec、S09 to-tickets、S10 implement、S11 implement-spec、S12 triage、S13 wayfinder；现有 implement 审查工具|单目标与任务图自动推进、真实依赖、dirty-tree 审查输入、授权下的状态回写|擅自建 Git 分支/commit/merge；编辑 setup-owned 模板；新增第二状态账本|
 |M1-X 探索与交付|S14 improve-codebase-architecture、S15 research、S16 prototype、S17 pr、S18 wizard 及 support files|具体未知的解决、可选可视化、证据化 PR 和必要 HITL；保留来源署名|复活 discuss server 协议；猜 UI；把一次引导当无限授权|
 |M1-H 协作与环境|S19 handoff、S20 writing-for-agents、S21 retro 及 references|可移植恢复、Skill 写作分支、会话复盘与主动环境评估|创建 ask-power-agent；保留旧入口 shim；加固定长流程|
@@ -101,7 +105,7 @@ M2 依赖 M1 六个单元完成。根级文件和跨单元冲突只有一个集�
 1. 核对完整目标集合和具名依赖：旧 `tdd` 调用改到 POD；旧 Matt setup 改到 setup-power-agent；不引入 ask-matt。安装路径解析与业务 cwd 分开。
 2. 在目标能力与资产都已消费后删除六个退役目录：`discuss`、`writing-plans`、`systematic-debugging`、`finish-development`、`writing-skills`、`harness-engineering-review`。不加 aliases、re-export 或 deprecated 入口。
 3. 删除被替代的规则/资产，而非只取消索引。manifest 会自动装入整个 `skills/`，留下旧目录就仍然分发。
-4. 同步名称、frontmatter `name`、description、调用开关、AGENTS 目录和 Codex metadata。目标允许模型调用；原 manual-only 三个入口及 Matt 的手动执行入口不能残留相反 policy。
+4. 同步名称、frontmatter `name`、description、调用开关、AGENTS 目录和 Codex metadata。`grill-with-docs` 按用户后续要求保留 Matt 原版手动调用，其余目标允许模型调用；索引与各宿主元数据一致。
 5. 更新 description 校验器对旧 `writing-skills` 的错误指针；按知识协议裁剪结果移除只为独立安装复制服务的共享引用检查，不留下没有消费者的命令。
 6. 在现有 AGENTS、两个 README、`docs/architecture.md`、`docs/workflow.md`、`docs/development.md`、`docs/skill-and-harness-design.md`、`docs/harness-engineering.md` 和知识入口中同步新默认。说明具名依赖允许但没有必跑长链、tracker 与长期知识分工。
 7. 新增一份取代旧独立性/默认工作方式的 ADR，按真正被替代的条款与旧决定建立关系。保留仍有效的证据、安全、复杂度判断及历史，不把旧 ADR 全部一键标废。本计划不预占 ADR 编号。

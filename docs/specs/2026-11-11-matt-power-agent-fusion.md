@@ -7,20 +7,20 @@ status: accepted
 
 ## 状态与适用范围
 
-方向与实施已获用户确认；本文是 25 个目标 Skill 的融合契约。当前实现与验证按[迁移计划](../exec-plans/active/2026-11-11-matt-power-agent-fusion/plan.md)推进，完成证据以实际验收记录为准，不以设计描述代替运行结果。
+方向与实施已获用户确认；本文是 25 个目标 Skill 的融合契约。S05/S06 已按用户后续要求恢复 Matt 固定版本原文与调用元数据，不再使用初次融合的简化讨论行为。用户进一步要求按 Matt 原版的篇幅设计，迁入内容以原版方法和 references 的完整度为底稿，不再以缩短为目标。当前实现与验证按[迁移计划](../exec-plans/active/2026-11-11-matt-power-agent-fusion/plan.md)推进，完成证据以实际验收记录为准，不以设计描述代替运行结果。
 
 目标不是并排安装两套规则，而是：**以 Matt 的轻量工程能力为主干，用 Power-Agent 的少量判断、证明和自动推进能力补足。** 不以旧 ADR 限制新设计；被改变的旧决定在实施切换时通过新 ADR 明确取代，不提前宣称已废止。
 
 ## 1. 已确认的产品决定
 
-1. Matt 是默认来源。Power-Agent 的内容只有在改变行动、判断、授权边界或验收时保留，不拼接两份完整正文。
-2. 用户确认目标和必要取舍后，Agent 在授权范围内连续完成实现、验证、适用审查与修复，不把每个 Skill 的结束变成人工启动下一步的关卡。
+1. Matt 是默认来源，以固定原版正文及 references 为内容底稿，保留方法、理由、反例、示例和模板。Power-Agent 的内容只有在改变行动、判断、授权边界或验收时保留，并在确认的差异处局部融合，不拼接两份重复正文。
+2. 用户确认目标和必要取舍后，Agent 在授权范围内连续完成实现、验证、适用审查与修复，不把每个 Skill 的结束变成人工启动下一步的关卡。进入 `grilling` 时保留原版用户共同理解确认，确认前不实施。
 3. 保留 `proof-oriented-development`（下文简称 POD），吸收 Matt 的 TDD 知识，不再提供一份平行的 `tdd`。可自动化验证的行为变更默认 Red/Green/Refactor；UI、文档和机械变更采用匹配结果的证据。
 4. 沿用 Matt 的主要分工与命名。`systematic-debugging` 改为 `diagnosing-bugs`；讨论、计划、收尾、Skill 写作和环境评估的旧入口分别融合，不留兼容别名。
 5. 采用 tracker 中的 spec、tickets 和依赖关系。tracker 保存执行状态；仓库文档保存术语、决定和仍然成立的知识，不双写进度。
 6. 小而明确的任务直接进入 POD。只有跨会话、任务依赖或并行协作需要时才展开 spec/tickets；已有 issue 可以直接实现，不必为了形式再建 ticket。
 7. 保留知识写入、维护和导航能力；OKF 字段、账本、扫描器按真实消费者裁剪，不整体照搬，也不整体删掉。
-8. 默认分发整套能力，允许具名 Skill 调用；不再承诺每个 Skill 单独安装也完整运行。宿主仍需支持普通 sub-agent，不引入 team mode、无 sub-agent fallback 或固定并发上限。
+8. 默认分发整套能力，允许具名 Skill 调用；`grill-with-docs` 按 Matt 原版手动调用，其余入口允许模型调用。不再承诺每个 Skill 单独安装也完整运行。宿主仍需支持普通 sub-agent，不引入 team mode、无 sub-agent fallback 或固定并发上限。
 9. 审查保留“需求符合性”和“工程正确性与质量”两维。维度不等于固定两个 reviewer；独立性和投入由影响、复杂度及不确定性决定。
 10. 诊断优先建立反馈，但没有可运行的红色命令不妨碍提出、检验假设。日志、trace、成功/失败差分可以提供区分性证据；读代码不能单独证明失败运行的根因。
 11. 自动推进不扩大授权。commit、push、PR、合并、issue 修改、敏感配置和破坏性动作，均核对已有授权是否覆盖具体对象与操作；覆盖时不重复询问，未覆盖时只暂停相关动作。
@@ -56,7 +56,7 @@ Matt 本地存在未跟踪扩展，例如 `writing-great-skills`、`resolving-me
 ### 3.2 默认自动推进
 
 - **目标清楚、范围小**：POD 完成实现和对应证明；需要时调用设计、诊断、审查。无需先建 spec、ticket 或完成报告文件。
-- **影响结果的取舍未定**：`grilling` 只解决这些决定；事实由工具查。决定足够后回到原任务，不因“讨论阶段结束”而停下。
+- **影响结果的取舍未定**：`grilling` 按 Matt 原版的问题树和 frontier 分轮访谈，事实由新上下文子代理查证；问题树收敛且用户确认共同理解后，才可继续已授权行动。需要边讨论边记录领域知识时，由用户选择 `grill-with-docs`。
 - **目标已知但需持久协作**：`to-spec` 表达目标；`to-tickets` 仅在拆分有收益时建立可交付切片与依赖；`implement` 执行单个目标，`implement-spec` 协调整张任务图。
 - **目标尚在探索**：`wayfinder` 维护低分辨率地图和当前待解问题，可调用研究、原型或讨论；信息足够后转入交付，不强制每个决定占一个会话。
 - **完成**：交付当前请求需要的结果及证据。若发布已获授权，可继续 `pr` 等动作；否则说明完成的本地结果和未执行的发布动作，不把缺少发布授权误报成实现未完成。
@@ -65,11 +65,22 @@ Matt 本地存在未跟踪扩展，例如 `writing-great-skills`、`resolving-me
 
 ### 3.3 具名调用与加载方式
 
-目标 Skill 允许模型根据任务调用；依赖链上的入口不得保留阻断调用的 manual-only 元数据。发现性、调用开关和副作用权限是三件事：能自动调用 `pr`，不代表可以自动发布。
+除 `grill-with-docs` 按原版保留手动调用外，其余目标 Skill 允许模型根据任务调用。`grill-with-docs` 的 frontmatter 保留 `disable-model-invocation: true`，Codex metadata 保留 `policy.allow_implicit_invocation: false`。发现性、调用开关和副作用权限是三件事：能自动调用 `pr`，不代表可以自动发布。
 
 共享工程判断只保留一个权威来源：POD 负责行为证明，`codebase-design` 负责模块与接口判断，`code-review` 负责审查判断，`domain-modeling` 负责术语和决定的语义。调用方给出触发条件和上下文，不复制整份规则。宿主无名为 Skill 的工具时，可以按安装后的可靠指针读取正文；这不是无 sub-agent fallback。
 
 sub-agent 使用新的上下文，不把父会话全文当任务 brief。交付目标、范围、写所有权、必要事实和验收；需要保持原始讨论理由时给原始来源指针，不把无依据的摘要当事实。并行取决于真正独立的工作和写所有权，不规定固定 reviewer 数或设计候选数。
+
+### 3.4 原版内容深度与删改判据
+
+用户选择的是 Matt 的轻量组织与稳定方法，不是将原版改写为更短的原则摘要。22 个有 Matt 对应来源的入口以固定原版为底稿；S05/S06 已恢复原文，其余 20 个按当前融合差异适配。三个 Power 独有知识入口不以 Matt 篇幅为配额。
+
+- **默认保留方法。** 原版的操作步骤、判断理由、反例、示例、模板及支持文件应有去处；不能仅以“现代模型默认会做”为由删掉，也不能把整段实操压成几个性质词。
+- **只改明确差异。** 名称、调用方式、自动推进、POD、工程边界、tracker/知识协议和副作用授权按已确认决定局部改写；恢复内容不等于恢复所有旧政策。
+- **reference 保持完整。** 专门分支可移入 reference，但保留实际操作粒度，并给出明确读取时机。移动不是删除的替代说法，也不要求每个任务加载全部材料。
+- **不设等长指标。** 原版篇幅用于警惕信息损失，不要求相同行数、字数或字节。中文表述、消除重复和宿主中立改写可以改变长度；有用的 Power 增益也不因较长而删除。
+- **覆盖可追踪。** 逐项核对源方法和示例在当前阅读路径的位置，删除或替换必须能对应当前目标的真实冲突；结构可达性、内容覆盖和实际模型行为分别记录，不互相冒充。
+
 
 ## 4. 状态、知识、证据与授权
 
@@ -149,16 +160,16 @@ setup 不再维护第二套 glossary/CONTEXT、ADR 格式：词汇格式归 doma
 
 - **来源**：P POD 及 `references/testing-guide.md`、`testing-anti-patterns.md`；M engineering/tdd 及 `tests.md`、`mocking.md`。
 - **保留判断**：目标行为先行；证明覆盖真实契约与故障机制；测试的独立期望；隔离不能替代真实协作；证据随变化补验；复杂度须有消费者或边界理由。
-- **融合方式**：POD 保持身份，Matt 的行为测试、垂直反馈和 Red/Green 与 Power 的 Green 后重构合成一份 Red/Green/Refactor 知识。主文件只留选择与完成判断，测试/替身细节各归一个按需 reference。执行 Skill 调用 POD，不再重复 TDD 规则。
+- **融合方式**：POD 保持身份，Matt 的行为测试、垂直反馈和 Red/Green 与 Power 的 Green 后重构合成一份 Red/Green/Refactor 知识。保留可执行反馈方法、横向切片的反例与理由，完整测试/替身知识及实例归可达 reference。执行 Skill 调用 POD，不再重复 TDD 规则。
 - **删除项**：独立 `tdd`；P 的“仅用户明确要求才 strict TDD”默认；M 的逐 seam 人工确认、每轮恰好一个测试、把所有重构推迟到 review、对内部观测/替身的一刀切禁令；重复的测试知识副本。
 - **验收方式**：完成一个新增行为和一个已有失败的修复，分别观察合理的 Red/Green/Refactor 与失败复用；实现与契约未变的重构不使行为测试失效。再做文档/UI任务，采用匹配证据而非制造红色测试；用户只授权本地修改时不 commit。
 
 ### S02 `code-review`
 
 - **来源**：M engineering/code-review；P code-review 与三个 references；P implement 的 review package 工具提供可选输入。
-- **保留判断**：需求与工程两维；需求和实际运行证据优先于实现自述；安全、性能、生命周期、兼容与复杂度；影响和实现不确定性分开；不因只有一个实现就否定有效边界；反馈先核验后修。
+- **保留判断**：需求与工程两维；需求和实际运行证据优先于实现自述；diff 范围内、项目可覆盖、只作启发而非硬违规的 Fowler smell 基线；安全、性能、生命周期、兼容与复杂度；影响和实现不确定性分开；不因只有一个实现就否定有效边界；反馈先核验后修。
 - **融合方式**：以 Matt 的两维视角组织，Power 补足工程判断和脏工作树范围。人数由风险决定；审查者获得明确范围并独立判断。Review Assets 的敏感性、freshness、路径与 symlink 限制只在实际提供 manifest 时加载。
-- **删除项**：无条件固定两位 reviewer、固定报告字数、只能看三点提交 diff、没有 spec 就强迫补 spec、无依据的全仓 smell 清单、为审查强迫先 commit；重复 reviewer 准则压成单一来源。
+- **删除项**：无条件固定两位 reviewer、固定报告字数、只能看三点提交 diff、没有 spec 就强迫补 spec、为审查强迫先 commit；不把 diff 外的全仓 smell 当自动违规。重复 reviewer 准则保留单一权威，不删除原版已经限定范围与适用性的 smell 方法。
 - **验收方式**：在同时存在 staged、unstaged 与新文件的变更中，识别一项需求遗漏和一项真实工程问题，不漏掉新文件，也不把被工具覆盖的风格问题当 blocker；一个合理的单实现生命周期边界不被误判为过度设计。小改动不强制双人，高风险改动有独立证据。
 
 ### S03 `diagnosing-bugs`
@@ -179,19 +190,19 @@ setup 不再维护第二套 glossary/CONTEXT、ADR 格式：词汇格式归 doma
 
 ### S05 `grilling`
 
-- **来源**：M productivity/grilling；P discuss 的问题选择、事实/假设区分和行动边界。
-- **保留判断**：追问会改变结果的决定；先解决前置取舍；给推荐及理由；工具可查的事实不问用户；不替用户决定偏好或扩大授权。
-- **融合方式**：采用 Matt 的问题树与当前独立问题组；对已确认的目标直接继续原任务。仅讨论请求仍只讨论，明确要求计划时产出计划而非实现。
-- **删除项**：`discuss` 旧入口；默认穷尽所有分支、重复询问已锁定选择、每轮/阶段结束必须人工启动下一技能；讨论专用 server 协议从本入口移除。
-- **验收方式**：对含一个产品取舍和一个仓库可查事实的请求，只询问前者并自行查后者；收到答案后完成已授权目标；用户说“先讨论，不修改”时不动实现。
+- **来源**：M productivity/grilling；恢复固定版本的 `SKILL.md` 与 `agents/openai.yaml` 原文，不继续融合 P discuss 的最少提问与自动结束规则。
+- **保留判断**：以完整 design tree 表达决定依赖；每轮询问整个已就绪 frontier，编号并给推荐，“yes”接受推荐；新上下文子代理查事实，用户作决定；调查只阻塞其下游问题。
+- **融合方式**：原样保留 Matt 的访谈目标、轮次、问题示例和完成条件。所有分支已访问、无静默假设后，仍须用户确认共同理解，确认前不行动。
+- **删除项**：初次融合的“仅解决当前最少选择”、限定单一问题的补丁和确认前自动继续原任务；不恢复旧 `discuss` 入口或专用 server。
+- **验收方式**：原文及调用元数据与固定 M 一致；实际访谈按前置条件分轮、每问给推荐，事实由工具调查，不提前问依赖答案的分支；用户确认共同理解前不实施。
 
 ### S06 `grill-with-docs`
 
-- **来源**：M engineering/grill-with-docs；具名使用目标 `grilling`、`domain-modeling`，需要写入时使用 `dev-docs`。
-- **保留判断**：讨论中发现的领域词义和重要理由不能只留在聊天里；持久化要有未来消费者。
-- **融合方式**：保留薄组合入口，把对齐与知识捕获联动；知识写入跟随已有结构，而不是预建文档树。
-- **删除项**：重复一份 grilling/ADR 规则；为每个回答写 ADR；以“with docs”为由修改用户未授权的实现或外部 tracker。
-- **验收方式**：一次领域讨论确认术语和一项耐久取舍，生成或更新正确的知识位置；普通界面文案偏好不变成 ADR，结束后无两套术语定义。
+- **来源**：M engineering/grill-with-docs；恢复固定版本的 `SKILL.md` 与 `agents/openai.yaml` 原文。
+- **保留判断**：以薄组合入口同时消费 `grilling` 与 `domain-modeling`，在访谈中澄清并记录词汇与决定。
+- **融合方式**：正文原样保留对两个 Skill 的具名调用；恢复 `disable-model-invocation: true` 与 `policy.allow_implicit_invocation: false`，由用户显式选择。领域语义和目标项目文档协议仍由现有被调用能力负责，不复制到包装入口。
+- **删除项**：初次融合的自动调用、额外包装规则和自主转入实施的说明；不新增品牌 router 或旧入口别名。
+- **验收方式**：原文与调用元数据和固定 M 一致，索引正确标记手动调用；显式使用后实际消费两个能力，在获授权位置保存已确认领域知识，而不实施业务代码。
 
 ### S07 `domain-modeling`
 
@@ -303,7 +314,7 @@ setup 不再维护第二套 glossary/CONTEXT、ADR 格式：词汇格式归 doma
 - **保留判断**：指针的触发和读取时机；渐进披露；上下文与认知负担；目标/完成条件可检查；删除不改变行动的文字；确定工作机械化；行为比较不能用复述规则代替。
 - **融合方式**：通用写作与 Skill 分支共用入口。Skill 分支写清行为缺口、真实依赖、发现性和按需 reference；支持具名调用，不再为独立安装复制整份知识。批评默认行为时用当前模型/宿主上的证据，不写未经验证的心理学结论。
 - **删除项**：`writing-skills` 旧入口；可预测固定过程优先于结果的默认、独立安装硬保证、重复机械格式说明、对特定 leading word 的未经验证因果承诺、每次文字修订必跑评测平台。
-- **验收方式**：精简一份有冗余的 Skill，保留安全和完成边界，合适场景能发现并实际消费 reference；一个自然请求可正确路由，不靠显式点名答案。结构校验与行为观察分开报告。
+- **验收方式**：改写一份有实际行为缺口的 Skill，保留有用方法、示例、安全和完成边界，合适场景能发现并实际消费 reference；一个自然请求可正确路由，不靠显式点名答案。不要求产物更短；结构校验、内容覆盖与行为观察分开报告。
 
 ### S21 `retro`
 
@@ -469,22 +480,22 @@ misc、in-progress、deprecated、personal 以及本地未跟踪扩展都不在�
 
 |来源|目标处置|
 |---|---|
-|engineering/tdd 的 `tests.md`、`mocking.md`|融合进 POD 的既有两份测试 reference，不另复制第三套 TDD 文档|
+|engineering/tdd 的 `tests.md`、`mocking.md`|完整融合进 POD 的既有测试 references，保留行为/内部形状对照、替身边界、独立期望和接口实例，不另复制第三套 TDD 文档|
 |engineering/codebase-design 的 `DEEPENING.md`、`DESIGN-IT-TWICE.md`|融合进 codebase-design 既有两个 reference；采用 §S04 修正后的判断|
 |engineering/domain-modeling 的 `GLOSSARY-FORMAT.md`|迁入 `domain-modeling/references/glossary-format.md`；包含单/多上下文规则，读取既有 CONTEXT|
-|engineering/domain-modeling 的 `ADR-FORMAT.md`|迁入 `domain-modeling/references/adr-format.md`，只保留简短内容/价值判断；Bundle 格式调用 dev-docs，不保留相反的 status 模板|
+|engineering/domain-modeling 的 `ADR-FORMAT.md`|迁入 `domain-modeling/references/adr-format.md`，保留理由、内容模板与具体示例；Bundle 格式调用 dev-docs，不保留相反的 status 模板或机械三条件门槛|
 |productivity/writing-for-agents 的 `SKILL-MECHANICS.md`|迁入其 references，改为整包/具名调用政策；保留发现性与调用方式的必要区分，不引入 router|
 |`engineering/diagnosing-bugs/scripts/hitl-loop.template.sh`|作为需要人工触发反馈时的可选模板迁入；不设为诊断入口前提，核对输入/输出、秘密、超时与临时运行处置|
-|engineering/prototype 的 `UI.md`、`LOGIC.md`|迁入 prototype references；保留问题驱动、实际状态/画面和产物捕获，去掉固定 variant 数、强制分支/commit 与特定框架假设|
-|engineering/improve-codebase-architecture 的 `HTML-REPORT.md`|收缩迁为可选图示参考，不保留必须 HTML/CDN/固定措辞的输出协议|
+|engineering/prototype 的 `UI.md`、`LOGIC.md`|完整迁入 prototype references，保留 URL 稳定变体切换/键盘焦点/生产门禁、可移植模型、真实状态、自由探索及逐步走查；去掉固定 variant 数、强制分支/commit 与特定框架假设|
+|engineering/improve-codebase-architecture 的 `HTML-REPORT.md`|迁为可选图示参考，保留候选展示、图示选择和比较方法及实例，不保留必须 HTML/CDN/固定措辞的输出协议|
 |engineering/pr 的 `CREDITS.md` 与 frontmatter credits|保留，不能因精简丢失 HumanLayer/show-me 来源；Matt 原始 pr 是正文能力，目标的授权发布编排来自 Power 收尾能力|
 |engineering/wizard 的 `template.sh`|迁到目标 `wizard/scripts/template.sh`，更新消费者指针；保持可选、沙盒可验与秘密不回显，生成不等于获准执行|
-|engineering/triage 的 `AGENT-BRIEF.md`|迁为短的按需 brief reference，保留当前/期望行为、约束、验收、非目标；删重复长模板，不再和 spec/ticket 各写一套相反要求|
+|engineering/triage 的 `AGENT-BRIEF.md`|迁为按需 brief reference，保留方法、模板及 bug/功能/PR 示例；不与 spec/ticket 另写相反要求，不以短为目标|
 |engineering/triage 的 `OUT-OF-SCOPE.md`|迁为按需历史拒绝理由模式；复用已有知识位置，不默认创建第二知识库或记录普通已实现请求|
 |engineering/setup-matt-pocock-skills 的 `issue-tracker-github.md`、`issue-tracker-gitlab.md`、`issue-tracker-local.md`|迁为 setup 的三种可选 seed；只生成项目实际选用的一种，按 §4.6 修正命令、权限、关系与本地状态|
 |engineering/setup-matt-pocock-skills 的 `triage-labels.md`、`domain.md`|迁为按需 seed；配置真实角色/词汇位置，适配 Bundle metadata，避免品牌和固定标签泄漏|
-|to-spec、to-tickets、wayfinder 正文中的内联模板|随对应主文件重写，不伪造独立源文件；保留可交付目标/依赖/决定，删固定长篇幅和人工关卡|
-|选定 M Skill 的 `agents/openai.yaml`|保留有用的界面信息并改成目标名称；删除阻断自动调用的 policy；不照搬所有源 Skill 的调用方式|
+|to-spec、to-tickets、wayfinder 正文中的内联模板|随对应主文件完整适配，不伪造独立源文件；保留目标、验收、范围、依赖、决定及示例，删除固定长度/数量和人工关卡的硬要求而非模板内容|
+|选定 M Skill 的 `agents/openai.yaml`|保留有用的界面信息并改成目标名称；除 S05/S06 原文恢复外，按 §3.3 的整包调用政策适配，不照搬所有源 Skill 的调用方式|
 
 ### 8.3 仓库维护与分发资产
 

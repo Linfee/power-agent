@@ -13,7 +13,7 @@ Power-Agent 是以 Matt 轻量工程能力为主干的整包 Skill。目标、�
 |范围|入口|承重判断|
 |---|---|---|
 |工程内核|`proof-oriented-development`、`code-review`、`diagnosing-bugs`、`codebase-design`|红绿重构、需求与工程双维审查、因果证据、模块深度与真实责任|
-|目标与知识对齐|`grilling`、`grill-with-docs`、`domain-modeling`|只问真正取舍、复用术语真源、记录值得保留的决定|
+|目标与知识对齐|`grilling`、`grill-with-docs`、`domain-modeling`|问题树逐轮追问、确认共同理解、复用术语真源、记录值得保留的决定|
 |任务与调度|`to-spec`、`to-tickets`、`implement`、`implement-spec`、`triage`、`wayfinder`|小任务直接做；必要时创建可验收结果和真实依赖，由单一协调者推进|
 |探索与交付|`improve-codebase-architecture`、`research`、`prototype`、`pr`、`wizard`|从证据回答未知、实际运行或展示、草稿与发布分开、必要人工批准|
 |协作与环境|`handoff`、`writing-for-agents`、`retro`|携带权威指针、按需可达指令、改进环境而非堆禁令|
@@ -23,7 +23,7 @@ Power-Agent 是以 Matt 轻量工程能力为主干的整包 Skill。目标、�
 
 ## 整包组合
 
-25 个目录平铺在 `skills/`，均允许模型调用。主文可具名调用同包能力，将每种承重判断保留在一个权威位置；支持文件从实际安装位置解析，不假定业务 cwd 有源码目录。
+25 个目录平铺在 `skills/`；`grill-with-docs` 保留 Matt 原版手动调用，其余允许模型调用。`grilling` 保留原版问题树、逐轮 frontier 和用户共同理解确认，确认前不实施。主文可具名调用同包能力，将每种承重判断保留在一个权威位置；支持文件从实际安装位置解析，不假定业务 cwd 有源码目录。
 
 不承诺单 Skill 独立安装，也不设置品牌 router。主文足以决定何时使用专门知识；references 只按当前问题加载。具名调用是模型内部协作，不是向用户交回“下一步请调用另一个 Skill”。已有普通材料可以直接消费，不要求重新通过某个上游生成。
 

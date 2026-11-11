@@ -8,7 +8,7 @@ Describe the result. A clear small task or existing issue goes straight to imple
 
 Automated behavioral changes default to red/green/refactor. Continue through relevant verification, review, and repairs, but a request for advice, discussion, or a draft does not authorize implementation or publication. Commits, pushes, PRs, merges, secrets, permissions, and production changes retain their explicit authorization boundaries.
 
-All 25 skills are **model-invocable and distributed together**. Named dependencies are intentional; standalone skill installation is not supported. The host needs ordinary sub-agents with fresh contexts. Parallelism follows dependencies and write ownership. One tracker owns execution state; documentation and handoffs do not duplicate progress.
+All 25 skills are **distributed together**: 24 are model-invocable; `grill-with-docs` retains Matt's manual invocation policy. `grilling` retains the original question-tree rounds and requires the user to confirm shared understanding before action. Named dependencies are intentional; standalone skill installation is not supported. The host needs ordinary sub-agents with fresh contexts. Parallelism follows dependencies and write ownership. One tracker owns execution state; documentation and handoffs do not duplicate progress.
 
 ## Skills
 
@@ -18,8 +18,8 @@ All 25 skills are **model-invocable and distributed together**. Named dependenci
 | [`code-review`](skills/code-review/SKILL.md) | Review requirements and engineering quality with actionable evidence |
 | [`diagnosing-bugs`](skills/diagnosing-bugs/SKILL.md) | Find causes using discriminating evidence, not plausible patches |
 | [`codebase-design`](skills/codebase-design/SKILL.md) | Judge module depth, resource ownership, and useful interfaces |
-| [`grilling`](skills/grilling/SKILL.md) | Resolve facts and ask only consequential preference questions |
-| [`grill-with-docs`](skills/grill-with-docs/SKILL.md) | Preserve agreed discussion outcomes in the right knowledge source |
+| [`grilling`](skills/grilling/SKILL.md) | Work the question tree in rounds until the user confirms shared understanding |
+| [`grill-with-docs`](skills/grill-with-docs/SKILL.md) | Manually invoke the original grilling and domain-modeling composition |
 | [`domain-modeling`](skills/domain-modeling/SKILL.md) | Reuse domain terminology and record consequential decisions |
 | [`to-spec`](skills/to-spec/SKILL.md) | Turn a goal into an actionable, verifiable spec |
 | [`to-tickets`](skills/to-tickets/SKILL.md) | Slice work by observable outcomes and real dependencies |

@@ -1,14 +1,30 @@
 ---
 name: grilling
-description: 讨论或追问未定需求、方案取舍与计划；用户要求 grill、压力测试想法或关键决定尚未对齐时使用，问题清楚可直接行动时不必使用。
+description: Grill the user relentlessly about a plan, decision, or idea. Use when the user wants to stress-test their thinking, or uses any 'grill' trigger phrases.
 ---
 
-# 追问关键决定
+Interview the user relentlessly until you reach a shared understanding. Map this as a **design tree**: every decision branches into the decisions that hang off it.
 
-目标是解决会改变当前结果的未知，而不是穷尽所有可能的设计分支。先从用户要求和已有上下文区分已确认事实、假设与真正待定的选择；用工具查仓库、环境或其他可查事实，不把调查工作转交给用户。
+Work the tree in **rounds**. The **frontier** is every decision whose prerequisites are already settled: the questions you can ask _now_ without guessing at answers you haven't heard yet. Ask the whole frontier in one round: number each question and give your recommended answer. Then wait for the user's answers before the next round.
 
-把决定看作问题树：先问会影响本轮目标的最上游决定；依赖该决定的分支及可自行确定的细节不提前展开成问题清单。用户已明确限定唯一待定选择时，先处理该选择；只有证据表明确有更前置的未决问题阻碍选择，才增加提问。前置条件已满足且确实需要用户选择的问题可以合问。只问无法自行确定、会影响目标或授权的选择；给出推荐及其理由、重要代价和必要备选，不替用户决定偏好。推断出的冲突说明成立条件，不把一种可能的实现路径当作既定事实。事实调查未完成时，继续处理与其无关的问题或工作。
+Format a round like so:
 
-收到回答后更新事实、假设与未决问题；有矛盾时明确指出并核对。讨论深度与影响、风险及可逆性相称，已有决定不重复追问。目标和必要取舍足以支持原任务时，概括关键结论，在已有授权内继续完成原任务，不等待用户手动启动下一阶段；不能推断新的外部写入、发布或其他敏感动作授权。
+```
+❓ **Q1** - **<question title>**: <question body, might be multiple paragraphs, including multiple choices>
 
-若用户只要求讨论、建议或压力测试，就只给结论与未决问题，不实施；只要求计划时交付计划，不擅自实现。确实缺少用户偏好或具体授权时，只暂停受影响的动作。
+➡️ <your recommended answer>
+
+---
+
+❓ **Q2** - **<question title>**: <question body, might be multiple paragraphs, including multiple choices>
+
+➡️ <your recommended answer>
+```
+
+Word each question so "yes" accepts your recommended answer.
+
+Each round the user answers reshapes the tree: settled decisions push the frontier outward and unblock questions that depended on them. Recompute the frontier and ask the next round. A question whose answer depends on another question still open in this round belongs to a _later_ round, not this one.
+
+Finding _facts_ is your job, never the user's. When a frontier question needs a fact from the environment (filesystem, tools, etc.), dispatch a sub-agent with a fresh context window to find it; don't ask the user for anything you could look up yourself. Don't block on it: a running exploration is an unsettled prerequisite, so only the questions downstream of it wait for the sub-agent to report; ask the rest of the frontier now. The _decisions_ are the user's: put each to them and wait.
+
+The session is done when the frontier is empty: every branch of the design tree visited, nothing left silently assumed. Do not act on it until the user confirms you have reached a shared understanding.

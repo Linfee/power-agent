@@ -8,7 +8,7 @@
 
 可自动验证的行为变更默认红绿重构。完成实现后继续取得匹配证据、处理适用审查和修复；只请求讨论、建议、草稿时不越界实施或发布。commit、push、PR、merge、秘密/权限与生产变更仍由具体授权控制。
 
-25 个 Skill **整包分发、均可模型调用**，内部允许具名依赖，不承诺单独安装。宿主必须支持普通 sub-agent；独立工作可以使用新上下文并行，共享写入由唯一协调者处理。执行状态只存选定 tracker，知识和交接不另建进度副本。
+25 个 Skill **整包分发**：24 个可由模型调用，`grill-with-docs` 按 Matt 原版手动调用。`grilling` 保留原版逐轮问题树与共同理解确认，确认前不实施。内部允许具名依赖，不承诺单独安装。宿主必须支持普通 sub-agent；独立工作可以使用新上下文并行，共享写入由唯一协调者处理。执行状态只存选定 tracker，知识和交接不另建进度副本。
 
 ## Skills
 
@@ -18,8 +18,8 @@
 | [`code-review`](skills/code-review/SKILL.md) | 对照需求与工程质量，找出有证据的交付问题 |
 | [`diagnosing-bugs`](skills/diagnosing-bugs/SKILL.md) | 用区分性证据定位根因，而非猜补丁 |
 | [`codebase-design`](skills/codebase-design/SKILL.md) | 判断模块深度、资源责任与接口是否降低复杂度 |
-| [`grilling`](skills/grilling/SKILL.md) | 查清事实，只询问会改变方案的取舍 |
-| [`grill-with-docs`](skills/grill-with-docs/SKILL.md) | 将已确认的讨论结论保存到正确知识位置 |
+| [`grilling`](skills/grilling/SKILL.md) | 按问题树逐轮追问，直到用户确认共同理解 |
+| [`grill-with-docs`](skills/grill-with-docs/SKILL.md) | 手动调用；组合原版 grilling 与 domain-modeling |
 | [`domain-modeling`](skills/domain-modeling/SKILL.md) | 复用术语真源，维护领域边界与值得记录的决定 |
 | [`to-spec`](skills/to-spec/SKILL.md) | 将目标整理成可交付、可验收的 spec |
 | [`to-tickets`](skills/to-tickets/SKILL.md) | 按垂直结果与真实依赖拆分可执行工作 |

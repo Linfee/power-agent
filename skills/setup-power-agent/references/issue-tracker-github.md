@@ -2,6 +2,19 @@
 
 供 setup 按项目实际情况生成 tracker 配置，不是可直接复制的通用命令保证。填写实际仓库 owner/name、仓库定位方式和已核对的 `gh` 版本；在项目配置中记录用于查阅、列出、创建、评论、更新、关闭 issue 的实际支持操作及状态含义。核对当前仓库目标，尤其 fork 的上游与自身仓库；不得向未授权仓库写入。GitHub issue 与 PR 共用编号，按实际对象类型解析；默认不把 PR 当外来请求，只有项目明确采用时才分诊 PR。
 
+项目配置可按已核实版本写出可直接使用的操作，例如以下命令的形状；先替换并核对目标仓库，再核对当前 `gh --help` 支持的参数：
+
+```sh
+gh issue view <number> --repo <owner/repo> --json number,title,body,labels,comments
+gh issue list --repo <owner/repo> --state open
+gh issue create --repo <owner/repo> --title "<title>" --body "<body>"
+gh issue comment <number> --repo <owner/repo> --body "<comment>"
+gh issue edit <number> --repo <owner/repo> --add-label "<existing-label>"
+gh issue close <number> --repo <owner/repo>
+```
+
+读取只收集所需字段；相关评论可能含 Agent Brief、验收修订和分诊答复，不要只读最初正文。多行正文可使用文件或 heredoc。写入操作、标签修改和关闭必须分别有明确授权。要保留关闭说明时先按授权发表评论、再关闭；不要依赖已经关闭的 issue 会接受关闭时附带的评论。需要分诊 PR 时分别配置读取正文、评论和 diff 的方法，不把 `#number` 自动当作 issue。
+
 父子和阻塞关系优先选择本项目/CLI 实际支持的 native 关系。先核对本机 `gh` 帮助及官方文档，不假定上游 seed 里的命令或版本适用；native 不可用时在子 issue 正文固定位置分别写 `Part of: #<parent>`、`Blocked by: #<number>, ...`。每种关系只选择 native 或正文一种可更新真源；读取调度时查询所选真源并判定 blocker 是否关闭，不维护双份可编辑关系。
 
 配置现有 triage、ready、wayfinder map/对象类型的实际角色与查询方式；没有对应标签时用项目约定的无标签表示，不擅自创建。候选必须 open、无未完成 blocker 且没有其他活跃 owner 才可认领；assignee 不是原子锁，竞争时重核并协调。完成范围及证据充分后，按已有授权更新子项，未完成目标不能自动关闭父项。创建、评论、认领、标签、关闭等远端写入都需具体授权。
