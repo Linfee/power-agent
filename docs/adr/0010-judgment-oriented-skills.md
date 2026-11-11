@@ -1,12 +1,13 @@
 ---
 type: Decision
-status: accepted
+status: superseded
+superseded_by: 0012-matt-led-skill-fusion.md
 supersedes: 0009-lean-default-orchestration.md
 ---
 
 # ADR-0010: 判断导向的独立 Skill
 
-**状态：** accepted（supersedes [ADR-0009](0009-lean-default-orchestration.md)）  
+**状态：** superseded（由 [ADR-0012](0012-matt-led-skill-fusion.md) 取代；下文保留当时决定。原 supersedes [ADR-0009](0009-lean-default-orchestration.md)）
 **日期：** 2026-08-30  
 **影响文件：** `AGENTS.md`, `skills/`, `docs/architecture.md`, `docs/workflow.md`, `docs/harness-engineering.md`, `docs/skill-and-harness-design.md`
 

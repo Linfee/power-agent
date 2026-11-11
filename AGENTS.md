@@ -1,89 +1,79 @@
 # Power-Agent — Agent 指南
 
-Power-Agent 是面向前沿模型的判断、验证与项目知识包。它不为模型规定标准开发流水线，而是帮助模型理解一类任务中真正承重的目标、约束、证据和验收。
+Power-Agent 以 Matt Pocock 的轻量工程能力为主干，融合 Power 的证明、因果诊断、工程判断、项目知识和授权内自动推进。当前决定见 [ADR-0012](docs/adr/0012-matt-led-skill-fusion.md)。
 
 ## 核心原则
 
-- **判断可迁移，结果可验证。** Skill 教模型如何判断，不要求复现固定过程。
-- **目标先于形式。** 根据用户需要的可观察结果选择行动；模板、状态和产出物只有真实消费者需要时才存在。
-- **过程由模型决定。** 在用户要求和既有契约内，按证据、依赖与风险选择工具、顺序、子代理和表达方式；必要的安全与兼容顺序不能省略。
-- **独立优先。** 除知识维护子系统外，一个 Skill 的正常完成路径不依赖另一个具名 Skill。
-- **证据外置。** 完成声明必须有与当前结果匹配的新鲜系统外证据；未验证面如实说明。
-- **复杂度需要理由。** 新依赖、边界、配置、共享状态和生命周期必须由当前目标、消费者、运行边界或风险证明，不按固定阶梯机械选型。
-- **机械化胜过提示。** 确定、重复、机器可裁决的工作用脚本、测试或 schema；Prompt 只保留模型需要理解的判断。
+- **目标先于流程。** 用户确认目标和必要取舍后，在授权内连续实现、验证、适用审查和修复；不等用户逐个启动 Skill。
+- **小任务直接做。** 明确的现成 issue 可直接实现。spec、tickets 和地图只在依赖、恢复或协作需要时存在。
+- **轻内核，真实证据。** 可自动验证的行为变更默认红绿重构；已有失败可以复用，纯重构、UI、文档和机械变更选择匹配证据，不制造无意义的红灯。
+- **复杂度需要理由。** 新依赖、公开接口、共享状态、配置和生命周期由当前消费者或真实运行边界证明，不按 adapter 数或固定阶梯裁决。
+- **整包组合，单一判断来源。** 25 个 Skill 都允许模型调用；可以具名调用互补能力，但不预绑所有任务的固定长链。不承诺单 Skill 独立安装。
+- **状态与知识分开。** 执行状态只在选定 tracker；仓库保存仍成立的知识。交接和计划只引用状态源，不另记进度。
+- **机械化胜过提示。** 确定、重复、机器可裁决的工作交给脚本、测试或 schema。
+- **自治不扩张授权。** 讨论、建议、草稿不等于实施或发布；外部副作用、破坏性操作、秘密、权限和生产边界按具体已有授权处理。
 
 ## 支持边界
 
-- 宿主必须支持普通 sub-agent：能传入任务和上下文、并行运行独立工作并返回结果。
-- 不提供无 sub-agent fallback，不使用 team mode，不规定子代理并发上限。
-- 并行度由真实依赖和写所有权决定；平台配额由宿主管理。
-- 外部副作用、破坏性操作、权限、数据和生产边界仍遵守明确授权。
+宿主须支持普通 sub-agent：任务与上下文传入、独立执行及结果收集。子代理使用新上下文；并行由真实依赖和写所有权决定，共享文件和状态有唯一协调者。不使用 team mode，不维护无 sub-agent fallback，不规定平台并发数字。
 
 ## 知识库导航
 
-| 主题 | 位置 | 说明 |
-|---|---|---|
-| 系统架构 | [docs/architecture.md](docs/architecture.md) | Skill 边界、独立性与知识子系统 |
-| 开发指南 | [docs/development.md](docs/development.md) | 环境、文件命名与验证入口 |
-| 工作方式 | [docs/workflow.md](docs/workflow.md) | 判断导向协作与反模式 |
-| Harness 体系 | [docs/harness-engineering.md](docs/harness-engineering.md) | 环境、证据和知识设计 |
-| Skill 设计 | [docs/skill-and-harness-design.md](docs/skill-and-harness-design.md) | 判断导向 Skill 的维护原则 |
-| ADR | [docs/adr/](docs/adr/) | 历史架构决策；当前默认见 [ADR-0010](docs/adr/0010-judgment-oriented-skills.md) |
-| 执行计划 | [docs/exec-plans/](docs/exec-plans/) | 仅在计划需要跨会话或供人审时使用 |
+|主题|位置|
+|---|---|
+|架构与能力边界|[docs/architecture.md](docs/architecture.md)|
+|开发与验证入口|[docs/development.md](docs/development.md)|
+|自动推进与授权|[docs/workflow.md](docs/workflow.md)|
+|环境与证据|[docs/harness-engineering.md](docs/harness-engineering.md)|
+|Skill 维护|[docs/skill-and-harness-design.md](docs/skill-and-harness-design.md)|
+|融合契约与来源|[正式设计](docs/specs/2026-11-11-matt-power-agent-fusion.md)|
+|历史决定|[docs/adr/](docs/adr/)|
 
-项目术语优先沿用 `CONTEXT.md`；与既有 ADR 冲突时显式指出，不静默覆盖。`CONTEXT.md` 或 ADR 缺失时根据当前证据继续，不为形式预建文件。
+项目术语优先沿用已有 CONTEXT 或 glossary；没有真实内容不预建文件。tracker 配置复用项目现有约定，缺省位置为 `docs/agents/issue-tracker.md`；只配置需要的后端，不同时维护本地和远程副本。
 
 ## Skill 速查
 
-| Skill | 帮助模型判断什么 |
+|Skill|帮助模型判断什么|
 |---|---|
-| `discuss` | 问题是否真正明确，哪些取舍需要决定 |
-| `writing-plans` | 按用户规划需求锁定目标、必要依赖与验收，判断持久化方式 |
-| `codebase-design` | 模块是否消除了复杂度，接口和 seam 是否有真实消费者 |
-| `implement` | 如何利用 sub-agent 完成独立工作并处理集成 |
-| `proof-oriented-development` | 实现中如何选择验收证据、控制风险或执行 TDD |
-| `systematic-debugging` | 哪个解释最符合证据，根因与修复边界在哪里 |
-| `code-review` | 哪些问题会妨碍改动安全、正确地交付 |
-| `finish-development` | 当前工作是否足以完成，以及如何安全处置分支 |
-| `dev-docs` | 哪些知识值得长期保存，如何准确表达 |
-| `dev-docs-maintain` | 既有知识是否健康、新鲜并可验证 |
-| `knowledge-navigation` | 如何结合项目观察、用户讨论和历史反馈建立或优化知识导航（手动调用） |
-| `setup-power-agent` | 如何补齐最小 Agent 入口与明确知识缺口（手动调用） |
-| `writing-skills` | Skill 是否真正教会了可迁移判断 |
-| `harness-engineering-review` | 当前 Harness 哪些机制承重、哪些可以删除（手动调用） |
+|`proof-oriented-development`|以红绿重构默认实现行为，并选择覆盖真实风险的证据|
+|`code-review`|对照需求与工程质量，找出有证据的交付问题|
+|`diagnosing-bugs`|用区分性证据定位根因，而非猜补丁|
+|`codebase-design`|判断模块深度、资源责任与接口是否降低复杂度|
+|`grilling`|查清事实，只询问会改变方案的取舍|
+|`grill-with-docs`|将已确认的讨论结论保存到正确知识位置|
+|`domain-modeling`|复用术语真源，维护领域边界与值得记录的决定|
+|`to-spec`|将目标整理成可交付、可验收的 spec|
+|`to-tickets`|按垂直结果与真实依赖拆分可执行工作|
+|`implement`|从明确任务或现成 issue 连续完成实现、验证和修复|
+|`implement-spec`|从唯一 tracker 调度任务图并验收组合结果|
+|`triage`|识别请求的范围、重复、信息缺口与可执行性|
+|`wayfinder`|把复杂目标中的决定与可执行工作分开推进|
+|`improve-codebase-architecture`|从实际摩擦找到值得深化的模块边界|
+|`research`|用匹配版本的一手来源解决技术未知|
+|`prototype`|用可运行逻辑或真实画面回答设计问题|
+|`pr`|根据真实 diff 与证据起草 PR，按明确授权发布|
+|`wizard`|为确需人工输入或批准的配置生成安全脚本|
+|`handoff`|携带目标、证据与状态真源指针，不复制进度|
+|`writing-for-agents`|编写能改变 Agent 判断、按需可达的指令与 Skill|
+|`retro`|从会话或项目材料改进环境，而非堆叠禁令|
+|`dev-docs`|按项目协议保存稳定知识，不强制引入 Bundle|
+|`dev-docs-maintain`|扫描、核对知识并安全登记实际验证|
+|`knowledge-navigation`|按真实任务建立或改善知识检索路径|
+|`setup-power-agent`|最小补齐 Agent 入口与选定的 tracker/领域指针|
 
-## Skill 独立性
+## 知识协议
 
-普通 Skill 可以读取用户提供的计划、代码、证据或文档，也可以按需使用 sub-agent，但不得要求这些材料由某个具名 Skill 产生。完成自己的用户目标后即可停止，不输出只为下一 Skill 服务的固定 schema。
+普通文档不强制成为 Knowledge Bundle。本仓库已使用 Bundle：`docs/` 中除 `index.md`、`log.md` 外的 Concept 有非空 `type`；ADR 为 `type: Decision`，被取代时保留历史和双向 `supersedes` / `superseded_by`。`scope`、`sources`、验证策略按真实含义声明，运行时验证在 `docs/.okf/verification.json`，不把未检查事实记成 fresh。
 
-`setup-power-agent`、`dev-docs`、`dev-docs-maintain` 是唯一允许具名协作的子系统：初始化、语义写入、扫描和验证登记围绕同一个知识 Bundle，可以按实际缺口互相使用，但不形成每次必跑的固定链。
-
-`knowledge-navigation` 独立负责导航体系的设计与演进：观察项目、开展启发式讨论、按历史与反馈选择并实现结构改进；它不扩大上述具名依赖例外。最小入口补缺口仍可使用 `setup-power-agent`，单篇知识写入或纯扫描仍按相应目标选择能力。
-
-## 文档约定
-
-`docs/` 中除 `index.md`、`log.md` 外的 Concept 使用带非空 `type` 的 YAML frontmatter。`scope`、`sources`、`status` 和验证策略只在有实际语义时声明；运行时验证状态由 `docs/.okf/verification.json` 维护。ADR 使用 `type: Decision`，过期决定通过新 ADR 和双向 `supersedes` / `superseded_by` 关系保留历史。
-
-命名：
-
-- Skill 主文件：`SKILL.md`
-- ADR：`NNNN-slug.md`
-- Spec：`YYYY-MM-DD-topic.md`
-- 跨会话执行计划：`YYYY-MM-DD-title/`
+命名沿用 `SKILL.md`、`NNNN-slug.md`、`YYYY-MM-DD-topic.md`；持久计划只在恢复或人审需要时使用。
 
 ## 开发与验证
 
-- 修改 Skill 前先确认它填补的行为缺口；删除后默认模型仍会正确处理的文字。
-- 不为统一外观强加章节、模板、状态枚举或报告格式。
-- reference 只保存按需的专门知识或机器协议；确定性动作优先脚本化。
-- 修改入口、链接、标题或脚本指针后，运行 `python3 scripts/check-skill-references.py`；支持传路径只检查受影响内容，协议边界见脚本 `--help`。
-- description 只服务触发，尽可能短且保持可区分；110 token 是上限而非目标。修改后运行 `scripts/check-description-length.py` 和 `scripts/check-invocation-consistency.sh`。手动调用登记还须与 frontmatter 及 Codex `agents/openai.yaml` 的 `policy.allow_implicit_invocation: false` 一致。
-- 重大架构、Skill 名称或长期知识变化同步更新现有文档和 ADR；普通局部实现不增加仪式文档。
-- 没有运行与实际改动匹配的验证，不得声称完成。
+修改 Skill 前说明实际行为缺口，删除对默认模型行为的无效复述。reference 留给按需知识，工具入口相对安装位置解析，不能假定业务 cwd 含有 `skills/`。
 
-## 上游追踪
+- description 改动：`python3 scripts/check-description-length.py`。
+- 调用方式、名称或目录改动：`bash scripts/check-invocation-consistency.sh`。
+- 入口、链接、标题或脚本指针改动：`python3 scripts/check-skill-references.py`；可传受影响路径。
+- 工具行为改动：运行直接覆盖该行为及风险边界的检查，详见开发指南。
 
-| 项目 | 来源 |
-|---|---|
-| superpowers | github.com/obra/superpowers |
-| Harness Engineering | openai.com/index/harness-engineering |
+重大分工和协议变化同步现行文档、分发与来源署名。结构通过不证明行为正确；完成声明只报告实际运行的验证和未覆盖面。

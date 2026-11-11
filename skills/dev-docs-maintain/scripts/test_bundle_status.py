@@ -617,10 +617,49 @@ Current structure.
         self.assertEqual(concept["freshness"], "unverified")
         self.assertNotIn("invalid-frontmatter", concept["metadata_issues"])
 
+    def test_plain_index_has_no_default_policy_and_supports_recording(self) -> None:
+        index = self.repo / "docs" / "index.md"
+        index.write_text("# Knowledge Bundle\n\n[Architecture](architecture.md)\n", encoding="utf-8")
+        document = self.repo / "docs" / "architecture.md"
+        document.write_text(
+            document.read_text(encoding="utf-8").replace(
+                "verification:\n  strategy: source-change-and-periodic\n  target: P90D\n", ""
+            ),
+            encoding="utf-8",
+        )
+
+        report = self.scan("--include-fresh")
+        self.assertEqual(report["bundle_issues"], [])
+        self.assertEqual(report["policy"], {"default_strategy": None, "default_target": None, "rules": []})
+        self.assertIsNone(self.report_concept(report, "docs/architecture.md")["strategy"])
+        self.assertFalse(self.registry.exists())
+
+        self.record()
+        self.assertEqual(self.report_concept(self.scan("--include-fresh"), "docs/architecture.md")["freshness"], "fresh")
+        index.write_text("# Knowledge Bundle\n\n[Missing](missing.md)\n", encoding="utf-8")
+        self.assertIn("broken-index-link", {issue["code"] for issue in self.scan()["bundle_issues"]})
+
+    def test_plain_index_scan_and_record_preserve_unknown_and_orphan_ledger_data(self) -> None:
+        (self.repo / "docs" / "index.md").write_text("# Knowledge\n", encoding="utf-8")
+        self.record()
+        ledger = json.loads(self.registry.read_text(encoding="utf-8"))
+        ledger["custom"] = {"retained": True}
+        ledger["concepts"]["orphan"] = dict(ledger["concepts"]["architecture"])
+        self.registry.write_text(json.dumps(ledger), encoding="utf-8")
+        before = self.registry.read_bytes()
+
+        report = self.scan("--include-fresh")
+        self.assertEqual(self.registry.read_bytes(), before)
+        self.assertIn("orphan-verification-record", {issue["code"] for issue in report["bundle_issues"]})
+        self.record()
+        updated = json.loads(self.registry.read_text(encoding="utf-8"))
+        self.assertEqual(updated["custom"], ledger["custom"])
+        self.assertEqual(updated["concepts"]["orphan"], ledger["concepts"]["orphan"])
+
     def test_invalid_index_frontmatter_is_bundle_issue_and_blocks_record(self) -> None:
         index = self.repo / "docs" / "index.md"
         cases = {
-            "missing": ("# Knowledge Bundle\n", "missing-index-frontmatter"),
+            "unclosed": ("---\nfreshness:\n  default_strategy: periodic\n", "invalid-index-frontmatter"),
             "parse-error": (
                 "---\nfreshness:\n  default_strategy: source-change-and-periodic\nbare-token\n---\n",
                 "invalid-index-frontmatter",
@@ -633,6 +672,31 @@ Current structure.
                 report = self.scan("--include-fresh")
                 self.assertIn(expected, {issue["code"] for issue in report["bundle_issues"]})
                 self.assert_record_rejected(expected)
+
+    def test_malformed_index_policy_cannot_hide_source_changes_or_update_ledger(self) -> None:
+        document = self.repo / "docs" / "architecture.md"
+        document.write_text(
+            document.read_text(encoding="utf-8").replace(
+                "verification:\n  strategy: source-change-and-periodic\n  target: P90D\n", ""
+            ),
+            encoding="utf-8",
+        )
+        self.record()
+        before = self.registry.read_bytes()
+        (self.repo / "src" / "app.py").write_text("VALUE = 2\n", encoding="utf-8")
+        (self.repo / "docs" / "index.md").write_text(
+            "---\nfreshness: {\n---\n# Knowledge\n", encoding="utf-8"
+        )
+
+        report = self.scan("--include-fresh")
+        self.assertIn(
+            "invalid-index-frontmatter", {issue["code"] for issue in report["bundle_issues"]}
+        )
+        self.assertEqual(self.run_json("scan", "--strict", check=False)["returncode"], 1)
+        rejected = self.record(check=False)
+        self.assertEqual(rejected["returncode"], 2)
+        self.assertIn("invalid-index-frontmatter", rejected["stderr"])
+        self.assertEqual(self.registry.read_bytes(), before)
 
     def test_index_symlinks_are_rejected_for_scan_and_record(self) -> None:
         index = self.repo / "docs" / "index.md"

@@ -1,14 +1,14 @@
 {
   "name": "power-agent",
   "displayName": "Power Agent",
-  "description": "AI coding agent workflow system combining superpowers and Harness Engineering: structured feature development, proof-oriented exec plans, subagent orchestration, systematic debugging, and doc gardening.",
-  "version": "0.1.0",
+  "description": "Matt-led engineering skills with proof-oriented development, project knowledge, and continuous execution within explicit authorization.",
+  "version": "0.2.0",
   "author": {
     "name": "linfee"
   },
   "homepage": "https://github.com/linfee/power-agent",
   "repository": "https://github.com/linfee/power-agent",
   "license": "MIT",
-  "keywords": ["skills", "proof-oriented", "proof-block", "verification", "debugging", "harness-engineering", "subagent", "workflow"],
+  "keywords": ["skills", "matt-pocock", "tdd", "proof-oriented", "verification", "debugging", "subagent", "project-knowledge"],
   "skills": "./skills/"
 }

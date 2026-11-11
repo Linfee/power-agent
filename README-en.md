@@ -1,105 +1,93 @@
 # power-agent
 
-Power-Agent is a **Judgment + Verification + Domain Knowledge** pack for frontier coding models. It draws on [superpowers](https://github.com/obra/superpowers) and [OpenAI Harness Engineering](https://openai.com/index/harness-engineering/), without binding development work to a mandatory pipeline.
+A Matt-led engineering skill bundle, combining [Matt Pocock’s skills](https://github.com/mattpocock/skills) with Power-Agent’s proof-oriented development (POD), causal diagnosis, engineering judgment, project knowledge, and **continuous execution within authorization**.
 
-## Core ideas
+## Usage
 
-Strong models need clear load-bearing judgments: the observable result the user needs, facts that change the solution, boundaries that must hold, and external evidence sufficient to accept the result.
+Describe the result. A clear small task or existing issue goes straight to implementation; discuss genuine uncertainty and create specs/tickets only when dependencies, coordination, or recovery need them. The user does not manually relay every skill transition.
 
-- **Transferable judgment, verifiable results.** Execution may vary; completion claims must match fresh evidence.
-- **Independent capabilities first.** Ordinary skills do not require another named skill to produce input or take over completion.
-- **Choose tools from the situation.** The model selects tools, order, sub-agents, and parallelism from dependencies, risk, and write ownership.
-- **Mechanize deterministic work.** Schemas, scripts, tests, and hooks enforce repeatable rules; prompts preserve domain judgment.
-- **Authorization remains explicit.** External side effects, destructive actions, permissions, production, and sensitive data retain their real approval boundaries.
+Automated behavioral changes default to red/green/refactor. Continue through relevant verification, review, and repairs, but a request for advice, discussion, or a draft does not authorize implementation or publication. Commits, pushes, PRs, merges, secrets, permissions, and production changes retain their explicit authorization boundaries.
 
-See [ADR-0010](docs/adr/0010-judgment-oriented-skills.md), [architecture](docs/architecture.md), and [working approach](docs/workflow.md) for the current design.
+All 25 skills are **model-invocable and distributed together**. Named dependencies are intentional; standalone skill installation is not supported. The host needs ordinary sub-agents with fresh contexts. Parallelism follows dependencies and write ownership. One tracker owns execution state; documentation and handoffs do not duplicate progress.
 
 ## Skills
 
-| Skill | Independent judgment it provides |
+| Skill | Result |
 |---|---|
-| `discuss` | Whether goals, tradeoffs, and acceptance are clear enough to act |
-| `writing-plans` | How to deliver a requested plan with necessary dependencies and acceptance criteria |
-| `codebase-design` | Whether module boundaries, interfaces, seams, and adapters reduce real complexity |
-| `implement` | How to coordinate sub-agents for independent work and integration |
-| `proof-oriented-development` | How to choose implementation evidence, control risk, or apply TDD |
-| `systematic-debugging` | Which explanation fits the observations, and where the root cause and fix boundary lie |
-| `code-review` | Which findings would prevent safe, correct delivery |
-| `finish-development` | Whether evidence supports completion and how to safely handle branch disposition |
-| `writing-skills` | Whether a skill teaches transferable judgment |
-| `harness-engineering-review` | Which harness mechanisms are load-bearing and which can be removed |
-| `knowledge-navigation` | How to initialize or improve knowledge navigation using repository observations, guided discussion, history, and feedback (manual invocation) |
-| `setup-power-agent` | How to fill a minimum agent entrypoint or a specific project knowledge gap |
-| `dev-docs` | Which stable knowledge belongs in project documentation |
-| `dev-docs-maintain` | Whether that knowledge is healthy, current, and verifiable |
-
-The documentation subsystem—`setup-power-agent`, `dev-docs`, and `dev-docs-maintain`—may collaborate when initialization, semantic writing, or mechanical maintenance creates a real knowledge gap. This is the only named collaboration exception, and it is not a fixed chain.
-
-### Knowledge navigation
-
-Explicitly invoke [`knowledge-navigation`](skills/knowledge-navigation/SKILL.md) to initialize a repository's agent-facing knowledge navigation, or improve an existing system using an agreed range of conversation history and feedback. It observes the project, discusses consequential choices with the user, implements authorized changes, and validates the affected paths.
-
-For example: “Use knowledge-navigation to inspect this repository, discuss its main agent tasks and sources of truth with me, then initialize the navigation.” For maintenance: “Use knowledge-navigation to review this project's accessible conversations from the past two weeks and these feedback examples, then discuss and fix the supported navigation problems.”
-
-The skill reuses existing structures and reports history coverage and verification limits. It does not start background monitoring. See [ADR-0011](docs/adr/0011-knowledge-navigation-lifecycle.md) for its boundary with minimal setup, semantic writing, and bundle health checks.
-
-## Sub-agent support
-
-Power-Agent assumes a host with ordinary sub-agents: it can send tasks and context, run independent work concurrently, and collect results. It does not use team mode, prescribe a concurrency number, or maintain a no-sub-agent fallback.
-
-Parallelize only genuinely independent work. Establish a single integrator or serialize shared files, interfaces, and state. A sub-agent result is evidence to verify, not an automatic completion claim.
-
-## Verification and branch disposition
-
-Completion claims require fresh system-external evidence that matches the current result. Verification may run against a dirty worktree; only commit-bound actions such as committing, creating a PR, or merging need evidence tied to a specific commit.
-
-When requested, `finish-development` assesses completion and helps safely handle a commit, PR, merge, retention, or discard. Every external or destructive action still requires explicit authorization at the point of action.
+| [`proof-oriented-development`](skills/proof-oriented-development/SKILL.md) | Implement behavior with red/green/refactor and evidence for the real risk |
+| [`code-review`](skills/code-review/SKILL.md) | Review requirements and engineering quality with actionable evidence |
+| [`diagnosing-bugs`](skills/diagnosing-bugs/SKILL.md) | Find causes using discriminating evidence, not plausible patches |
+| [`codebase-design`](skills/codebase-design/SKILL.md) | Judge module depth, resource ownership, and useful interfaces |
+| [`grilling`](skills/grilling/SKILL.md) | Resolve facts and ask only consequential preference questions |
+| [`grill-with-docs`](skills/grill-with-docs/SKILL.md) | Preserve agreed discussion outcomes in the right knowledge source |
+| [`domain-modeling`](skills/domain-modeling/SKILL.md) | Reuse domain terminology and record consequential decisions |
+| [`to-spec`](skills/to-spec/SKILL.md) | Turn a goal into an actionable, verifiable spec |
+| [`to-tickets`](skills/to-tickets/SKILL.md) | Slice work by observable outcomes and real dependencies |
+| [`implement`](skills/implement/SKILL.md) | Complete a clear task or existing issue with implementation and proof |
+| [`implement-spec`](skills/implement-spec/SKILL.md) | Execute a task graph from one tracker and verify the integrated result |
+| [`triage`](skills/triage/SKILL.md) | Triage scope, duplicates, missing information, and readiness |
+| [`wayfinder`](skills/wayfinder/SKILL.md) | Separate decisions from implementation in complex work |
+| [`improve-codebase-architecture`](skills/improve-codebase-architecture/SKILL.md) | Find architectural improvements grounded in actual friction |
+| [`research`](skills/research/SKILL.md) | Resolve technical unknowns with version-matched primary sources |
+| [`prototype`](skills/prototype/SKILL.md) | Answer a design question with running logic or actual UI |
+| [`pr`](skills/pr/SKILL.md) | Draft a PR from the actual diff and evidence; publish only when authorized |
+| [`wizard`](skills/wizard/SKILL.md) | Generate safe scripts for setup that genuinely needs human input |
+| [`handoff`](skills/handoff/SKILL.md) | Carry intent, evidence, and the authoritative state pointer |
+| [`writing-for-agents`](skills/writing-for-agents/SKILL.md) | Write agent instructions and skills that change useful decisions |
+| [`retro`](skills/retro/SKILL.md) | Improve the harness from session or project evidence |
+| [`dev-docs`](skills/dev-docs/SKILL.md) | Preserve durable knowledge using the project’s documentation conventions |
+| [`dev-docs-maintain`](skills/dev-docs-maintain/SKILL.md) | Scan knowledge and safely record verification that actually occurred |
+| [`knowledge-navigation`](skills/knowledge-navigation/SKILL.md) | Build or improve knowledge retrieval paths for actual tasks |
+| [`setup-power-agent`](skills/setup-power-agent/SKILL.md) | Fill the minimum agent entrypoint and selected tracker/domain pointers |
 
 ## Installation
-
-### Droid
-
-```bash
-droid plugin marketplace add https://github.com/Linfee/power-agent
-droid plugin install power-agent@power-agent --scope user
-# Or share with a project through git
-droid plugin install power-agent@power-agent --scope project
-```
-
-You can also install through `/plugins` → Browse.
 
 ### Claude Code
 
 ```bash
 claude plugin marketplace add https://github.com/Linfee/power-agent
 claude plugin install power-agent@power-agent --scope user
-# Or share with a project through git
+# Or share configuration with a project
 claude plugin install power-agent@power-agent --scope project
 ```
 
-The local plugin manifest is `.claude-plugin/plugin.json`.
+For a local checkout: `claude --plugin-dir /absolute/path/to/power-agent`. A marketplace catalog and `.claude-plugin/plugin.json` are included. Manifest validation is not runtime validation of every host.
 
-### Cursor, Factory, and Gemini
+### Droid
 
-- Cursor: use `.cursor-plugin/plugin.json`, or copy `skills/` into a project.
-- Factory: use `.factory-plugin/plugin.json`, or copy `skills/` into a project.
-- Gemini: use `gemini-extension.json`; it loads `AGENTS.md` through `GEMINI.md`.
+```bash
+droid plugin marketplace add https://github.com/Linfee/power-agent
+droid plugin install power-agent@power-agent --scope user
+# Or share configuration with a project
+droid plugin install power-agent@power-agent --scope project
+```
+
+### Other hosts
+
+Cursor and Factory manifests are `.cursor-plugin/plugin.json` and `.factory-plugin/plugin.json`. Alternatively install the complete `skills/` contents in the host’s supported skill location, preserving sibling directories. Confirm the host’s loading behavior and ordinary sub-agent support.
+
+`gemini-extension.json` references the project entrypoint through `GEMINI.md`; this does not establish installation or discovery of the 25 skills. Configure whole-bundle discovery separately and verify the host capabilities.
 
 ## Development
 
-Read [the skill and harness design guide](docs/skill-and-harness-design.md) before changing a Skill. Run checks that match the change:
+See [development.md](docs/development.md) and [the skill design guide](docs/skill-and-harness-design.md). Common checks:
 
 ```bash
 python3 scripts/check-description-length.py
 bash scripts/check-invocation-consistency.sh
 python3 scripts/check-skill-references.py
-bash scripts/check-shared-references.sh
 python3 -m unittest skills/dev-docs-maintain/scripts/test_bundle_status.py
 ```
 
-The latter two apply only when the affected area needs them. See [development.md](docs/development.md) for maintenance conventions.
+Run the last command when the knowledge tooling changes. Script and behavioral changes also need evidence exercising their actual contract; reachable references alone do not prove execution.
 
-## Attribution
+## Design and attribution
 
-- [superpowers](https://github.com/obra/superpowers) — Jesse Vincent (obra), MIT License
-- [Harness Engineering](https://openai.com/index/harness-engineering/) — Ryan Lopopolo, OpenAI
+See [architecture](docs/architecture.md), [workflow](docs/workflow.md), and [ADR-0012](docs/adr/0012-matt-led-skill-fusion.md). The [fusion design](docs/specs/2026-11-11-matt-power-agent-fusion.md) records per-skill sources, retained judgment, integration, deletions, and acceptance.
+
+- Matt Pocock Skills, MIT; pinned source `4ae2317ddb22b046e26455e4f9c9b3aaaf62212d`.
+- [superpowers](https://github.com/obra/superpowers), Jesse Vincent, MIT.
+- PR visual guidance retains Dex Horthy / HumanLayer `show-me` credits and its MIT notice.
+- [Harness Engineering](https://openai.com/index/harness-engineering/) is a methodological reference, not MIT-licensed software copied into this bundle.
+
+See [LICENSE](LICENSE) and [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for permission terms and third-party attribution.

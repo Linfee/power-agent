@@ -6,32 +6,33 @@ freshness:
   rules:
     - type: Decision
       strategy: historical
-timestamp: 2026-07-10T00:00:00Z
+timestamp: 2026-11-11T09:00:51Z
 ---
 
 # Power-Agent Knowledge Bundle
 
-按任务读取最小必要文档；`docs/` 中除 `index.md` 与 `log.md` 外的 Markdown 均为带 YAML frontmatter 的 Concept Document。
+按当前任务读取最少必要知识。本仓库采用 Bundle；除 `index.md` 与 `log.md` 外的 Concept 有非空 `type`，普通业务项目不因此必须迁移成 Bundle。
 
-## 系统与工作流
+## 当前架构与开发
 
-- [系统架构](architecture.md)：Skill 边界、独立性与知识子系统。
-- [开发指南](development.md)：Skill 结构、文档元数据和验证入口。
-- [工作方式](workflow.md)：判断导向协作、证据与反模式。
-- [Harness Engineering](harness-engineering.md)：环境、知识与验证设计。
-- [Skill 与 Harness 设计](skill-and-harness-design.md)：如何维护可迁移判断。
+- [系统架构](architecture.md)：Matt 主干的 25 项能力、整包具名组合与状态边界。
+- [工作方式](workflow.md)：授权内连续推进、任务图、真实证据与必要人工决定。
+- [开发指南](development.md)：安装路径、元数据、脚本与验证入口。
+- [Skill 设计](skill-and-harness-design.md)：行为缺口、渐进披露和有效对照。
+- [Harness Engineering](harness-engineering.md)：环境、知识与机械化。
+- [ADR-0012](adr/0012-matt-led-skill-fusion.md)：当前融合决定；被取代的 ADR 保留历史，不作为相反的现行指令。
 
-## 决策与执行状态
+## 融合契约与历史
 
-- [架构决策记录](adr/)：耐久决策及其历史状态。
-- [知识导航的初始化与演进](adr/0011-knowledge-navigation-lifecycle.md)：独立 Skill 的范围、讨论与历史反馈边界。
-- [执行计划](exec-plans/README.md)：当前与归档 exec-plan 的入口。
+- [融合设计](specs/2026-11-11-matt-power-agent-fusion.md)：每个 Skill 的来源、保留判断、融合、删除和验收。
+- [迁移计划](exec-plans/active/2026-11-11-matt-power-agent-fusion/plan.md)：依赖、切换、授权与验收；本次实施状态只在计划指向的本地 tracker。
+- [ADR 历史](adr/)与[执行计划导航](exec-plans/README.md)：保留历史决定、计划和证据，不反向改写旧名称。
 
-## 文档维护入口
+## 知识维护入口
 
-- 建立知识导航体系，或结合指定对话历史和反馈优化已有体系，显式使用 [`knowledge-navigation`](../skills/knowledge-navigation/SKILL.md)；它独立完成观察、讨论、实施和验证。
-- 新建或修订稳定系统事实、领域边界、Playbook、Reference 或 ADR，使用 [`dev-docs`](../skills/dev-docs/SKILL.md)。
-- 扫描 Bundle、验证 freshness、修复结构或漂移、登记验证，使用 [`dev-docs-maintain`](../skills/dev-docs-maintain/SKILL.md)。
-- 初始化发现语义缺口、语义写入需要机械验证、或维护发现知识缺口时，这三个知识维护能力可按需协作；它们不形成固定链。
-- 软件资产变更、研究、运营或普通清单各自从当前目标选择适当 Skill 或直接行动；没有固定的“必须交给”路由。
-- 验证运行状态由 `docs/.okf/verification.json` 维护；Git diff 或文档年龄不能单独证明 `fresh`，也不使用 HTML `verified` / `scope` 注释。
+- 最小 Agent 入口、选定 tracker 和领域指针：[`setup-power-agent`](../skills/setup-power-agent/SKILL.md)。
+- 体系初始化或真实检索路径优化：[`knowledge-navigation`](../skills/knowledge-navigation/SKILL.md)。
+- 稳定事实、术语、决定的语义写入：[`dev-docs`](../skills/dev-docs/SKILL.md)，领域意义按需消费 `domain-modeling`。
+- 扫描、漂移核对和安全验证登记：[`dev-docs-maintain`](../skills/dev-docs-maintain/SKILL.md)。
+
+能力可按需具名组合，不是固定全跑。执行状态只在选定 tracker；仓库保存知识，handoff 引用权威指针。Bundle 的验证运行状态在 `docs/.okf/verification.json`，文档年龄、Git diff 或模型自报不能证明 fresh。

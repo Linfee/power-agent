@@ -63,4 +63,18 @@ if "$checker" "$fixture"; then
   exit 1
 fi
 
+write_index '| `automatic` | 自动调用 |' '| `manual` | 手动调用 |'
+printf '%s\n' '---' 'name: renamed-but-not-moved' 'description: test' '---' '# test' >"$fixture/skills/automatic/SKILL.md"
+if "$checker" "$fixture"; then
+  echo 'expected directory/frontmatter name mismatch to fail' >&2
+  exit 1
+fi
+
+make_skill automatic '' interface-only
+write_index '| `automatic` | 自动调用 |' '| `manual` | 手动调用 |' '| `retired` | 自动调用 |'
+if "$checker" "$fixture"; then
+  echo 'expected retired index entry to fail' >&2
+  exit 1
+fi
+
 echo 'OK: invocation consistency regressions covered.'

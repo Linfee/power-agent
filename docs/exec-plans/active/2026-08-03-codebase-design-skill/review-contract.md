@@ -8,7 +8,7 @@ scope:
 # 引入 codebase-design Skill — Review Contract
 ## Current applicability
 
-本文档是旧计划的审阅快照，不定义当前运行时 Gate、固定审阅路径或 Skill 依赖。恢复相关工作前，依 [ADR-0010](../../../adr/0010-judgment-oriented-skills.md) 重新判断当前范围和证据。
+本文档是旧计划的审阅快照，不定义当前运行时 Gate、固定审阅路径或 Skill 依赖。相关旧收尾由 [ADR-0012](../../../adr/0012-matt-led-skill-fusion.md) 取代，不重新触发本文的 commit 或评审步骤。
 
 
 ## Intent

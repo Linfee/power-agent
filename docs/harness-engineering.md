@@ -6,7 +6,7 @@ scope:
 
 # Harness Engineering 体系设计
 
-Power-Agent 的 Harness 目标是让环境、约束、知识和验证对 Agent 清晰可用，同时避免用固定流程替代模型判断。当前产品身份是 **Judgment + Verification + Domain Knowledge pack**，见 [ADR-0010](adr/0010-judgment-oriented-skills.md)。
+Power-Agent 的 Harness 让环境、知识和验证对 Agent 清晰可用，并以 Matt 的轻量能力组织支持授权内连续推进，不用固定流程替代判断。当前整包组合与状态规则见 [ADR-0012](adr/0012-matt-led-skill-fusion.md)。
 
 ## 参考来源
 
@@ -93,7 +93,7 @@ docs/
 
 `setup-power-agent`、`dev-docs`、`dev-docs-maintain` 共同维护这个系统：分别拥有初始化、语义和机械完整性。它们可以按实际知识缺口互相使用；scanner、frontmatter 和 verification ledger 继续保持机器可验证的精确协议。
 
-需要设计或演进知识导航时，显式使用独立的 `knowledge-navigation`：从任务反推知识单元，区分导航、前置依赖与来源引用，通过项目观察、用户讨论及指定范围的历史反馈选择改动。结构检查、任务走查和真实 Agent 消费验证分别提供不同证据，不用目录层数或文档数量证明效果。该能力遵循目标仓库协议，不引入新的具名 Skill 链；边界见 [ADR-0011](adr/0011-knowledge-navigation-lifecycle.md)。
+需要设计或演进知识导航时，按需使用 `knowledge-navigation`：从任务反推知识单元，区分导航、前置依赖与来源引用，通过项目观察、必要讨论及指定历史反馈选择改动。结构检查、任务走查和真实消费是不同证据，不用目录数量证明效果。它遵循目标仓库协议，允许具名消费文档与维护能力，但不形成固定链；当前边界见 [架构](architecture.md)，历史理由见 [ADR-0011](adr/0011-knowledge-navigation-lifecycle.md)。
 
 ## 熵与 ablation
 

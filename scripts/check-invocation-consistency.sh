@@ -104,6 +104,11 @@ for f in skills/*/SKILL.md; do
 
   fm_file="$(mktemp)"
   frontmatter "$f" >"$fm_file"
+  declared_name="$(awk '/^name:[[:space:]]*/ { sub(/^name:[[:space:]]*/, ""); sub(/[[:space:]]+#.*/, ""); sub(/[[:space:]]+$/, ""); if (($0 ~ /^".*"$/) || ($0 ~ /^\047.*\047$/)) $0 = substr($0, 2, length($0) - 2); print }' "$fm_file")"
+  if [[ "$declared_name" != "$name" ]]; then
+    echo "DRIFT: $f 的 frontmatter name 必须与目录 $name 一致。" >&2
+    failed=1
+  fi
   if flag="$(bool_value "$fm_file" "disable-model-invocation")"; then
     :
   else
@@ -153,6 +158,14 @@ for f in skills/*/SKILL.md; do
     failed=1
   fi
 done
+
+while IFS= read -r indexed_name; do
+  [[ -n "$indexed_name" ]] || continue
+  if [[ ! -f "skills/$indexed_name/SKILL.md" ]]; then
+    echo "DRIFT: $agents_md 登记了不存在的 Skill $indexed_name。" >&2
+    failed=1
+  fi
+done < <(awk -F '`' '/^\|[[:space:]]*`[^`]+`[[:space:]]*\|/ { print $2 }' <<<"$section")
 
 if [[ "$failed" -eq 0 ]]; then
   echo "OK: 索引、frontmatter 与 Codex 调用方式一致。"

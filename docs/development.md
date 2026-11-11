@@ -6,96 +6,43 @@ scope:
 
 # 开发指南
 
-## 项目概述
+Power-Agent 是 Matt 主干的整包工程 Skill，辅以项目知识与确定性脚本。宿主必须支持普通 sub-agent；插件声明、结构通过与真实宿主行为是不同证据。
 
-Power-Agent 是以 Markdown Skill、项目知识和确定性脚本构成的 Agent harness pack。它支持 Codex、Claude Code、Cursor、Factory、Droid、Gemini 与具备普通 sub-agent 能力的同类宿主。
+## 结构与约定
 
-## 项目结构
+`skills/<name>/SKILL.md` 为 25 个平铺入口，`references/` 放按需知识，`scripts/` 放确定性操作，`agents/openai.yaml` 是可选界面/调用元数据。所有入口允许模型调用；具名依赖随整包分发，不承诺单独安装。`AGENTS.md` 为能力地图，`CLAUDE.md` 与 `GEMINI.md` 只转引入口。
 
-```text
-power-agent/
-├── skills/                   # 独立能力与知识维护子系统
-│   └── <skill-name>/
-│       ├── SKILL.md
-│       ├── agents/openai.yaml # Codex 调用策略等可选元数据
-│       ├── references/       # 低频专门知识或机器协议（按需）
-│       └── scripts/          # 确定性操作（按需）
-├── docs/                     # 长期工程与知识系统
-│   ├── adr/                  # 历史决策
-│   ├── exec-plans/           # 仅需要持久计划时使用
-│   └── .okf/                 # scanner / verification ledger
-├── scripts/                  # 仓库级结构检查
-├── AGENTS.md                 # 快速地图
-├── CLAUDE.md / GEMINI.md     # 宿主入口
-└── *-plugin/                 # 插件清单
-```
+Skill 名称用小写连字符且与目录一致；description 只负责可区分触发，正文教承重判断。格式无需统一章节；确有外部消费者的 schema、授权顺序和安全协议保持准确。修改先确认行为缺口并复用现有模式，避免复述默认能力。
 
-## 修改 Skill
+支持文件相对实际安装位置解析，业务项目可能没有 `skills/`；脚本收到明确业务目录后必须安全切换，切换失败不能回落旧 cwd。整包改名须迁移所有当前消费者和 manifest，不留旧 alias。
 
-先确认改动填补了可观察的行为缺口。Skill 应说明什么值得判断、哪些事实改变决策、要保护什么边界、什么证据足以验收；不要把工具顺序、子代理数量、固定章节或状态枚举写成无消费者的流程。
+## 选择检查
 
-最小 `SKILL.md` 形式：
-
-```markdown
----
-name: [skill-name]
-description: |-
-  [该 Skill 的独特判断能力。]
-  Triggers: [实际触发词]
----
-
-# [Skill 标题]
-
-[以领域自然组织的判断指南、边界与验收。]
-```
-
-`description` 只服务触发，主体承担判断。新增 reference 前确认其是低频且不可由通用模型稳定恢复的专门知识；可机械执行的检查、转换、扫描或原子写入优先实现为脚本。
-
-除 `setup-power-agent`、`dev-docs`、`dev-docs-maintain` 外，Skill 不应要求另一个具名 Skill 生成输入或接管完成。知识子系统可以按实际缺口互相使用，但同样不形成固定链。
-
-修改后检查受影响的 trigger、仓库索引、references、脚本和文档。按改动选择验证：
-
-- 所有 description 改动：`python3 scripts/check-description-length.py`
-- 调用方式、Skill 目录或名称改动：`bash scripts/check-invocation-consistency.sh`（核对速查表、frontmatter 与 Codex `agents/openai.yaml`；手动调用在 Codex 中须为 `policy.allow_implicit_invocation: false`）
-- 入口、Markdown 链接/标题或 Skill 脚本指针改动：`python3 scripts/check-skill-references.py`；可传文件或目录限定范围，改检查器时运行 `python3 scripts/test-check-skill-references.py`。
-- 共享 Knowledge Bundle reference 改动：`bash scripts/check-shared-references.sh`
-- 文档 scanner/ledger 改动：`python3 -m unittest skills/dev-docs-maintain/scripts/test_bundle_status.py`
-- 任意脚本：运行直接覆盖其行为的测试或场景
-
-精简或路由变化需要行为对照时，选能暴露已知失败的任务，在相同模型、工具、授权和验收下比较基础 harness、当前版与候选版。保存输入、版本、执行轨迹和结果；以实际行为和安全边界验收，记录实际加载范围，不能把目录匹配或显式读取称为宿主自动触发验证。方法见 [writing-skills 的行为对照](../skills/writing-skills/references/criteria.md#行为对照)，无需为普通文字修改固定运行整套实验。
-
-引用检查器只读核对本地链接、Markdown 锚点和明确的 Skill 脚本指针；远程 URL、示例和模板占位不联网或执行。默认略过归档与 superseded 文档的正文，显式路径可检查历史；内部软链接可用，仓库外目标拒绝读取。支持范围与参数见 [检查器](../scripts/check-skill-references.py) 的 `--help`，结构通过不代表语义正确。
-
-## Sub-agent 协作
-
-宿主提供普通 sub-agent 的任务传入、上下文传递和结果收集。并行取决于依赖与写所有权：独立的工作可以并行，竞争同一文件、接口或状态时指定唯一整合者或串行。不要添加 team mode、固定并发数字或无 sub-agent fallback。
-
-子代理报告是待核验证据。整合者必须检查其是否覆盖任务、是否与当前工作树一致，以及最终行为是否已通过实际验证。
-
-## 文档规范
-
-`docs/` 中除 `index.md`、`log.md` 外的 Concept 应包含非空 `type`：
-
-```yaml
----
-type: Concept
-scope:
-  - src/area/**
-status: active # 仅有生命周期语义时添加
----
-```
-
-运行时验证状态保存在 `docs/.okf/verification.json`，不迁入 Concept。ADR 使用 `type: Decision` 与 `accepted`、`proposed`、`superseded` 等状态；被替代的 ADR 必须有可解析的 `superseded_by`，新 ADR 用 `supersedes` 反向指向它。
-
-| 类型 | 格式 |
+|改动|直接检查|
 |---|---|
-| Skill 主文件 | `SKILL.md` |
-| ADR | `NNNN-slug.md` |
-| Spec | `YYYY-MM-DD-topic.md` |
-| Exec-plan 目录 | `YYYY-MM-DD-title/` |
+|description|`python3 scripts/check-description-length.py`|
+|名称、目录、调用方式、速查表|`bash scripts/check-invocation-consistency.sh`；修改检查器时运行 `bash scripts/test-check-invocation-consistency.sh`|
+|入口、链接、锚点或明确脚本指针|`python3 scripts/check-skill-references.py`，可传路径限定；修改检查器时运行 `python3 scripts/test-check-skill-references.py`|
+|scanner、freshness、ledger|`python3 -m unittest skills/dev-docs-maintain/scripts/test_bundle_status.py`|
+|可选审查 package/workspace CLI|`bash skills/implement/scripts/test-review-package.sh`|
+|wizard 输入、确认与中断清理|`python3 skills/wizard/scripts/test-template.py`；`bash -n skills/wizard/scripts/template.sh`|
+|plugin 或 marketplace|`claude plugin validate . --strict`，另做本地隔离加载消费|
+|其他脚本或行为|最窄真实入口、沙盒、语法或风险边界场景|
 
-## 验证与授权
+引用检查器只读验证本地 Markdown 链接、锚点和明确脚本指针，不执行脚本、不保证远程 URL，不证明自然触发。默认略过 completed/archive 及 superseded Decision 正文；历史材料可显式检查。仓库内软链接可用，仓库外引用拒绝读取，参数见检查器 `--help`。
 
-完成声明必须有新鲜、可复现、与改动风险匹配的证据。可在 dirty working tree 验证；只有 commit、PR、merge 等 commit-bound 动作才需要绑定提交。
+路由或精简需要行为对照时，保持输入、模型、工具、授权和验收一致，记录实际读取和执行轨迹。显式读取只能证明消费，不能称自然发现；目录匹配和模型自评不算行为证据。见 [`writing-for-agents` 判据](../skills/writing-for-agents/references/criteria.md)。
 
-提交、push、PR、merge、discard、删除、生产或权限修改均须遵守明确授权。测试通过不授权外部副作用，也不替代安全、数据或兼容性边界的专门验证。
+## 文档与状态
+
+执行状态只在项目选定的 tracker；持久计划用于人审或恢复，handoff 引用权威状态，不复制进度。项目文档保存稳定事实、词汇和决定；优先复用现有 CONTEXT/glossary 与 ADR。
+
+普通项目不强制引入 Bundle。本仓库已采用 Bundle：`docs/` 中除 `index.md`、`log.md` 的 Concept 有非空 `type`，ADR 为 `type: Decision`；`scope`、`sources`、策略有真实含义才声明。ledger 运行状态不写进 Concept，也不把未检查事实标 fresh。根 index 可为普通 Markdown；显式 YAML 仍须合法。
+
+ADR 被取代时保持历史并双向链接 `supersedes` / `superseded_by`。命名使用 `NNNN-slug.md`、`YYYY-MM-DD-topic.md`、`YYYY-MM-DD-title/`。重大分工或长期知识变化同步现行文档与来源，不为普通修改新建仪式材料。
+
+## 协作、授权与交付
+
+子代理使用新上下文；依赖和写所有权决定并行，同一共享文件/状态只有一个整合者。结果是待核验证据，协调者负责组合行为与最终声明。不用 team mode、数字并发上限或无 sub-agent fallback。
+
+完成授权内的本地实现、验证、适用审查与修复；明确建议、讨论、计划或草稿请求不扩张成实施。Git、发布、删除、秘密、权限和生产动作按具体授权执行。dirty working tree 可验证；commit-bound 动作另绑定被测内容和提交。报告只列真实运行结果、限制与未覆盖面。

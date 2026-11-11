@@ -1,0 +1,3 @@
+interface:
+  display_name: "Implement Spec"
+  short_description: "Implement and integrate a task graph"

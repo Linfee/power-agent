@@ -6,7 +6,8 @@ scope:
   - scripts/**
   - docs/**
   - .gitignore
-status: active
+status: superseded
+superseded_by: ../../../adr/0012-matt-led-skill-fusion.md
 runner:
   state: AWAITING_COMMIT
   batch: 2/2
@@ -18,7 +19,7 @@ runner:
 # 移除 Skill 评测机制实现计划
 ## Current applicability
 
-本文档记录移除 eval 时的旧执行方案，不能作为当前 Skill 路由、Gate 或具名依赖的执行契约。若恢复，先依 [ADR-0010](../../../adr/0010-judgment-oriented-skills.md) 重新判断目标、约束与验收，只复用仍与当前仓库一致的事实。
+本文档记录移除 eval 时的旧执行方案，不能作为当前 Skill 路由、Gate 或具名依赖的执行契约。旧收尾动作由 [ADR-0012](../../../adr/0012-matt-led-skill-fusion.md) 及本次融合取代，不再等待旧 commit Gate；下文 runner 和当前状态为历史。无持续消费者的永久评测平台仍不恢复，本次允许隔离的行为验收。
 
 
 ## 讨论结论 / 产品结论

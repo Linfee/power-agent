@@ -2,7 +2,7 @@
 
 ## 1. OKF 与验证登记
 
-`docs/` 是 OKF Bundle：除 `index.md`、`log.md` 外，每个 Markdown 文件都是 Concept Document。其元数据以顶部 YAML frontmatter 为唯一权威，必须可解析为 mapping 并有非空 `type`；parser 必须完整消费支持的 YAML subset，任何裸 token、错误缩进、未消费内容或不完整语法都是 `invalid-frontmatter`，使该 Concept 在 scan 中 `blocked` 并拒绝 `record`。`scope`、`sources` 与 `status` 只在具有语义时声明。scanner 只将现存 scope 路径和显式 glob 纳入 source snapshot；路径形的概念范围不是 source。需要强制追踪或验证存在性的路径必须写入 `sources`。缺少 `verification` 时继承项目默认策略；显式 `verification: null` 是 `invalid-verification`，而 `verification: {}` 是有效 mapping，继承默认策略。运行时验证数据只属于 verification ledger。已弃用的 HTML header metadata（包括 `verified`、`scope` 与 `status`）不生产、不消费、不作为迁移输入；旧 `verified` 日期不写入验证登记。
+仅对采用 Power Bundle 的项目适用：除 `index.md`、`log.md` 外，每个 Markdown 文件都是 Concept。Concept 的元数据以顶部 YAML frontmatter 为唯一权威，必须可解析为 mapping 并有非空 `type`；parser 必须完整消费支持的 YAML subset，任何裸 token、错误缩进、未消费内容或不完整语法都是 `invalid-frontmatter`，使该 Concept 在 scan 中 `blocked` 并拒绝 `record`。`scope`、`sources` 与 `status` 只在具有语义时声明。scanner 只将现存 scope 路径和显式 glob 纳入 source snapshot；路径形的概念范围不是 source。需要强制追踪或验证存在性的路径必须写入 `sources`。缺少 `verification` 时继承项目默认策略；显式 `verification: null` 是 `invalid-verification`，而 `verification: {}` 是有效 mapping，继承默认策略。运行时验证数据只属于 verification ledger。已弃用的 HTML header metadata（包括 `verified`、`scope` 与 `status`）不生产、不消费、不作为迁移输入；旧 `verified` 日期不写入验证登记。
 
 Concept frontmatter 保存稳定配置：
 
@@ -29,13 +29,14 @@ verification:
 docs/.okf/verification.json
 ```
 
-该文件是机器维护的派生登记，不是 Concept Document。建议纳入 Git，以便不同 Agent 和定时任务共享验证基线。不要手工编辑；只能由本 Skill 随附的 `bundle_status.py record` 在完成验证后更新。
+该文件是可选的机器维护派生登记，不是 Concept Document。仅需要跨会话共享已完成验证时采用；不要手工编辑，只能由本 Skill 随附的 `bundle_status.py record` 在完成验证且获得授权后更新。`scan` 只读且不要求 ledger 存在。
 
 新建或修改 Concept 不自动表示已验证。没有可信登记时，scanner 将其视为 `unverified`；损坏或不完整的 Concept 登记会显式显示为 `blocked`。
 
 ## 2. 项目级默认策略
 
-根 `docs/index.md` 可定义默认策略：
+根 `docs/index.md` 可以是普通 Markdown，此时没有项目默认策略；只有声明策略才需要 YAML frontmatter。显式 frontmatter 不完整、无法解析或根不是 mapping 仍报错，index 符号链接仍拒绝。
+
 `freshness` 是 lifecycle gate：scanner 在判定状态和 `record` 资格前为每个 Concept 解析 effective strategy，并据此启用相应的 metadata 校验。规则可以只按类型声明；只有未匹配的 Concept 共享确定性的 source-tracking 需求时才设置 source-sensitive 全局默认，否则应省略默认或使用局部配置。该 gate 只认 YAML frontmatter，不能由 HTML header metadata 取代或绕过。
 
 ```yaml

@@ -1,108 +1,93 @@
 # power-agent
 
-Power-Agent 是面向前沿编码模型的 **Judgment + Verification + Domain Knowledge** pack。它融合 [superpowers](https://github.com/obra/superpowers) 的 Skill 思路与 [OpenAI Harness Engineering](https://openai.com/index/harness-engineering/) 的环境设计方法，但不把开发工作预绑为标准流水线。
+以 [Matt Pocock 的工程 Skills](https://github.com/mattpocock/skills) 为主干，融合 Power-Agent 的 POD、因果诊断、工程判断、项目知识与**授权内连续推进**。目标是少一点流程负担，不是少一点正确性和证据。
 
-## 核心理念
+## 怎么用
 
-强模型不需要更多仪式，需要更清楚的承重判断：用户要得到什么、哪些事实会改变方案、哪些边界不能破坏，以及什么系统外证据足以验收。
+直接描述结果即可：明确的小任务或已有 issue 直接实现；目标不清才讨论；存在任务依赖或恢复需求才使用 spec/tickets。模型按需组合能力，不需要用户每一步手工接力。
 
-Power-Agent 的 Skill 因此遵循：
+可自动验证的行为变更默认红绿重构。完成实现后继续取得匹配证据、处理适用审查和修复；只请求讨论、建议、草稿时不越界实施或发布。commit、push、PR、merge、秘密/权限与生产变更仍由具体授权控制。
 
-- **判断可迁移，结果可验证**：过程可以不同，完成声明必须匹配新鲜证据。
-- **独立能力优先**：普通 Skill 不要求另一个具名 Skill 先产生输入或后续接管。
-- **工具与步骤由现场决定**：模型根据依赖、风险和写所有权选择工具、顺序、sub-agent 与并行度。
-- **机械化优先**：schema、脚本、测试与 hook 处理确定性规则；Prompt 保留领域判断。
-- **授权边界不弱化**：外部副作用、破坏性操作、权限、生产和敏感数据仍需要明确授权。
-
-完整设计见 [ADR-0010](docs/adr/0010-judgment-oriented-skills.md)、[架构](docs/architecture.md) 与 [工作方式](docs/workflow.md)。
+25 个 Skill **整包分发、均可模型调用**，内部允许具名依赖，不承诺单独安装。宿主必须支持普通 sub-agent；独立工作可以使用新上下文并行，共享写入由唯一协调者处理。执行状态只存选定 tracker，知识和交接不另建进度副本。
 
 ## Skills
 
-| Skill | 独立解决的判断 |
+| Skill | 负责的结果 |
 |---|---|
-| `discuss` | 需求、取舍和验收是否已经清楚 |
-| `writing-plans` | 如何交付用户需要的计划，锁定必要依赖与验收 |
-| `codebase-design` | 模块边界、接口、seam 和 adapter 是否真实降低复杂度 |
-| `implement` | 如何组织 sub-agent 完成独立工作与集成 |
-| `proof-oriented-development` | 实现中如何选择验收证据、控制风险或执行 TDD |
-| `systematic-debugging` | 什么解释最符合观察，根因和修复边界在哪里 |
-| `code-review` | 哪些问题会妨碍安全、正确交付 |
-| `finish-development` | 证据是否足以完成，以及如何安全处置分支 |
-| `writing-skills` | Skill 是否教会了可迁移判断 |
-| `harness-engineering-review` | Harness 哪些机制承重，哪些可以删除 |
-| `knowledge-navigation` | 如何结合项目观察、启发式讨论及历史反馈建立或优化知识导航（手动调用） |
-| `setup-power-agent` | 如何补齐最小 Agent 入口与明确知识缺口 |
-| `dev-docs` | 哪些稳定知识应写入项目文档 |
-| `dev-docs-maintain` | 文档知识是否健康、新鲜且可验证 |
-
-除 `setup-power-agent`、`dev-docs`、`dev-docs-maintain` 组成的知识维护子系统外，Skill 不存在强制命名依赖。知识子系统可在初始化、语义写入与机械维护之间按实际缺口协作，但也不形成固定链。
-
-### 建立与优化知识导航
-
-显式调用 [`knowledge-navigation`](skills/knowledge-navigation/SKILL.md)，可以从项目观察与启发式讨论开始初始化，也可以分析指定范围的对话历史和用户反馈，优化已有入口、索引、知识边界与来源关系。例如：
-
-- “使用 knowledge-navigation，为当前仓库建立 Agent 知识导航。先观察项目，再和我讨论主要任务、权威知识位置和维护成本，随后完成初始化。”
-- “使用 knowledge-navigation，结合本项目过去两周的可访问会话和这些反馈，找出重复阅读、知识过期或入口误导的原因，讨论必要取舍后修复。”
-
-它复用仓库已有布局，按需读取参考材料，并明确历史覆盖与验证限度；不自动创建后台维护任务。与最小初始化、语义写入和健康扫描的边界见 [ADR-0011](docs/adr/0011-knowledge-navigation-lifecycle.md)。
-
-## Sub-agent 支持
-
-Power-Agent 假设宿主支持普通 sub-agent：能传入任务与上下文、并行处理独立工作并返回结果。它不使用 team mode、不规定并发数字，也不提供无 sub-agent fallback。
-
-并行依据真实依赖与写所有权：独立调查可并行，共享接口和共享文件先明确契约或由单一整合者处理。子代理结果是待核验证据，不自动构成完成声明。
-
-## 验证与分支处置
-
-完成声明需要与当前结果匹配的新鲜系统外证据。验证可以在 dirty working tree 上运行；只有提交、PR、合并等 commit-bound 行为才需将证据绑定到具体提交。
-
-`finish-development` 在用户要求时判断完成并协助安全处理 commit、PR、merge、保留或 discard。任何外部副作用或破坏性动作均在执行点遵守明确授权。
+| [`proof-oriented-development`](skills/proof-oriented-development/SKILL.md) | 以红绿重构默认实现行为，并选择覆盖真实风险的证据 |
+| [`code-review`](skills/code-review/SKILL.md) | 对照需求与工程质量，找出有证据的交付问题 |
+| [`diagnosing-bugs`](skills/diagnosing-bugs/SKILL.md) | 用区分性证据定位根因，而非猜补丁 |
+| [`codebase-design`](skills/codebase-design/SKILL.md) | 判断模块深度、资源责任与接口是否降低复杂度 |
+| [`grilling`](skills/grilling/SKILL.md) | 查清事实，只询问会改变方案的取舍 |
+| [`grill-with-docs`](skills/grill-with-docs/SKILL.md) | 将已确认的讨论结论保存到正确知识位置 |
+| [`domain-modeling`](skills/domain-modeling/SKILL.md) | 复用术语真源，维护领域边界与值得记录的决定 |
+| [`to-spec`](skills/to-spec/SKILL.md) | 将目标整理成可交付、可验收的 spec |
+| [`to-tickets`](skills/to-tickets/SKILL.md) | 按垂直结果与真实依赖拆分可执行工作 |
+| [`implement`](skills/implement/SKILL.md) | 从明确任务或现成 issue 连续完成实现、验证和修复 |
+| [`implement-spec`](skills/implement-spec/SKILL.md) | 从唯一 tracker 调度任务图并验收组合结果 |
+| [`triage`](skills/triage/SKILL.md) | 识别请求的范围、重复、信息缺口与可执行性 |
+| [`wayfinder`](skills/wayfinder/SKILL.md) | 把复杂目标中的决定与可执行工作分开推进 |
+| [`improve-codebase-architecture`](skills/improve-codebase-architecture/SKILL.md) | 从实际摩擦找到值得深化的模块边界 |
+| [`research`](skills/research/SKILL.md) | 用匹配版本的一手来源解决技术未知 |
+| [`prototype`](skills/prototype/SKILL.md) | 用可运行逻辑或真实画面回答设计问题 |
+| [`pr`](skills/pr/SKILL.md) | 根据真实 diff 与证据起草 PR，按明确授权发布 |
+| [`wizard`](skills/wizard/SKILL.md) | 为确需人工输入或批准的配置生成安全脚本 |
+| [`handoff`](skills/handoff/SKILL.md) | 携带目标、证据与状态真源指针，不复制进度 |
+| [`writing-for-agents`](skills/writing-for-agents/SKILL.md) | 编写能改变 Agent 判断、按需可达的指令与 Skill |
+| [`retro`](skills/retro/SKILL.md) | 从会话或项目材料改进环境，而非堆叠禁令 |
+| [`dev-docs`](skills/dev-docs/SKILL.md) | 按项目协议保存稳定知识，不强制引入 Bundle |
+| [`dev-docs-maintain`](skills/dev-docs-maintain/SKILL.md) | 扫描、核对知识并安全登记实际验证 |
+| [`knowledge-navigation`](skills/knowledge-navigation/SKILL.md) | 按真实任务建立或改善知识检索路径 |
+| [`setup-power-agent`](skills/setup-power-agent/SKILL.md) | 最小补齐 Agent 入口与选定的 tracker/领域指针 |
 
 ## 安装
-
-### Droid
-
-```bash
-droid plugin marketplace add https://github.com/Linfee/power-agent
-droid plugin install power-agent@power-agent --scope user
-# 或通过 git 与项目共享
-droid plugin install power-agent@power-agent --scope project
-```
-
-也可以在 `/plugins` 的 Browse 标签页安装。
 
 ### Claude Code
 
 ```bash
 claude plugin marketplace add https://github.com/Linfee/power-agent
 claude plugin install power-agent@power-agent --scope user
-# 或通过 git 与项目共享
+# 或作为项目共享配置
 claude plugin install power-agent@power-agent --scope project
 ```
 
-也可通过 `.claude-plugin/plugin.json` 从本地路径加载。
+本地加载使用 `claude --plugin-dir /absolute/path/to/power-agent`。本仓库包含 marketplace catalog 与 `.claude-plugin/plugin.json`；catalog 校验不等于所有宿主的运行验收。
 
-### Cursor、Factory 与 Gemini
+### Droid
 
-- Cursor：使用 `.cursor-plugin/plugin.json`，或复制 `skills/` 内容。
-- Factory：使用 `.factory-plugin/plugin.json`，或复制 `skills/` 内容。
-- Gemini：使用 `gemini-extension.json`；它通过 `GEMINI.md` 加载 `AGENTS.md`。
+```bash
+droid plugin marketplace add https://github.com/Linfee/power-agent
+droid plugin install power-agent@power-agent --scope user
+# 或作为项目共享配置
+droid plugin install power-agent@power-agent --scope project
+```
+
+### 其他宿主
+
+Cursor、Factory 分别提供 `.cursor-plugin/plugin.json`、`.factory-plugin/plugin.json`。也可把整个 `skills/` 内容放入宿主支持的技能加载位置，保持各目录相邻，不能只复制一个入口。具体加载方式和 sub-agent 能力以目标宿主为准。
+
+`gemini-extension.json` 仅通过 `GEMINI.md` 引用项目入口；它本身不证明 25 个 Skill 已安装或具名调用可用。需单独配置整包发现并验证宿主能力。
 
 ## 开发与验证
 
-修改 Skill 时先看 [Skill 与 Harness 设计指南](docs/skill-and-harness-design.md)，并以实际改动选择验证：
+见 [开发指南](docs/development.md) 与 [Skill 设计指南](docs/skill-and-harness-design.md)。常用入口：
 
 ```bash
 python3 scripts/check-description-length.py
 bash scripts/check-invocation-consistency.sh
 python3 scripts/check-skill-references.py
-bash scripts/check-shared-references.sh
 python3 -m unittest skills/dev-docs-maintain/scripts/test_bundle_status.py
 ```
 
-最后两项仅在受影响时运行。更多维护约定见 [开发指南](docs/development.md)。
+最后一项在知识工具受影响时运行；脚本与行为改动另选直接验证，不把引用可达当作运行成功。
 
-## 来源
+## 设计与来源
 
-- [superpowers](https://github.com/obra/superpowers) — Jesse Vincent (obra), MIT License
-- [Harness Engineering](https://openai.com/index/harness-engineering/) — Ryan Lopopolo, OpenAI
+当前分工见 [架构](docs/architecture.md)、[工作方式](docs/workflow.md)、[ADR-0012](docs/adr/0012-matt-led-skill-fusion.md)。[正式设计](docs/specs/2026-11-11-matt-power-agent-fusion.md)列出每项来源、保留判断、融合/删除与验收。
+
+- Matt Pocock Skills，MIT，固定来源 `4ae2317ddb22b046e26455e4f9c9b3aaaf62212d`。
+- [superpowers](https://github.com/obra/superpowers)，Jesse Vincent，MIT。
+- PR 视觉表达保留 Dex Horthy / HumanLayer `show-me` 的署名与 MIT notice。
+- [Harness Engineering](https://openai.com/index/harness-engineering/) 为方法参考，不作为 MIT 软件来源。
+
+许可见 [LICENSE](LICENSE)，第三方完整许可与归属见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。

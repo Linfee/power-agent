@@ -1,0 +1,3 @@
+interface:
+  display_name: "Proof-Oriented Development"
+  short_description: "Implement with behavior-focused proof"

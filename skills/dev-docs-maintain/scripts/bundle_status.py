@@ -325,6 +325,8 @@ def parse_scalar(raw: str) -> Any:
         return value[1:-1]
     if value == "{}":
         return {}
+    if value.startswith(("{", "}")):
+        raise YamlSubsetError("inline mappings other than {} are not supported")
     if value.startswith("[") or value.endswith("]"):
         if not (value.startswith("[") and value.endswith("]")):
             raise YamlSubsetError("malformed inline list")
@@ -959,13 +961,7 @@ def read_bundle_index(
             Finding("invalid-index-frontmatter", f"cannot read index frontmatter: {exc}", location)
         ]
     if not has_frontmatter:
-        return {}, body, [
-            Finding(
-                "missing-index-frontmatter",
-                "index.md must start with YAML frontmatter",
-                location,
-            )
-        ]
+        return {}, body, []
     if frontmatter_error or not isinstance(metadata, dict):
         message = frontmatter_error or "index frontmatter root must be a mapping"
         return {}, body, [Finding("invalid-index-frontmatter", message, location)]

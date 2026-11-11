@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """校验 skills/*/SKILL.md frontmatter description 的估算 token 长度。
 
-规则（writing-skills）：description 应尽可能短且可区分；110 token 是硬上限，不是目标长度。
+规则（writing-for-agents）：description 应尽可能短且可区分；110 token 是硬上限，不是目标长度。
 本脚本不引入第三方依赖，用按字符类别加权的估算器近似 cl100k token 数，
 误差约 ±10，因此 fail 阈值取 115（≈ 真实 110 + 估算余量）。
 
@@ -76,7 +76,7 @@ def main() -> int:
     if failed:
         print(
             f"FAIL: description 超过硬上限（估算 >{FAIL_THRESHOLD}，约真实 110 token）。"
-            "压缩方式见 skills/writing-skills。",
+            "压缩方式见 skills/writing-for-agents。",
             file=sys.stderr,
         )
     else:

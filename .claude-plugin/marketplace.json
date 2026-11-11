@@ -1,0 +1,22 @@
+{
+  "name": "power-agent",
+  "owner": {
+    "name": "linfee"
+  },
+  "description": "Matt-led engineering skills with proof, project knowledge, and authorized autonomous execution.",
+  "plugins": [
+    {
+      "name": "power-agent",
+      "source": "./",
+      "description": "The complete Power-Agent engineering skill bundle.",
+      "category": "engineering",
+      "keywords": [
+        "engineering",
+        "skills",
+        "tdd",
+        "code-review",
+        "subagents"
+      ]
+    }
+  ]
+}

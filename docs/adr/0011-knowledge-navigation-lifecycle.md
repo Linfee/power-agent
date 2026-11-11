@@ -1,6 +1,7 @@
 ---
 type: Decision
-status: accepted
+status: superseded
+superseded_by: 0012-matt-led-skill-fusion.md
 sources:
   - skills/knowledge-navigation/SKILL.md
   - skills/knowledge-navigation/references/discovery-and-dialogue.md
@@ -13,6 +14,8 @@ sources:
 # ADR-0011: 独立的知识导航初始化与演进能力
 
 **日期：** 2026-09-07
+
+**状态：** superseded（由 [ADR-0012](0012-matt-led-skill-fusion.md) 更新自动调用、具名组合与环境评估归属；知识导航目标和证据边界继续保留，下文为历史决定。）
 
 ## 背景
 

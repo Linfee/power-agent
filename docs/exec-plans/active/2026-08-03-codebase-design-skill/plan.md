@@ -3,7 +3,8 @@ type: Execution Plan
 scope:
   - skill-design
   - workflow-routing
-status: active
+status: superseded
+superseded_by: ../../../adr/0012-matt-led-skill-fusion.md
 runner:
   state: AWAITING_COMMIT
   batch: 1/1
@@ -15,7 +16,7 @@ runner:
 # 引入 codebase-design Skill 实现计划
 ## Current applicability
 
-本文档记录旧执行方案及其当时证据，不能作为当前 Skill 路由、Gate 或具名依赖的执行契约。若恢复，先依 [ADR-0010](../../../adr/0010-judgment-oriented-skills.md) 重新判断目标、约束与验收，只复用仍与当前仓库一致的事实。
+本文档记录旧执行方案及其当时证据，不能作为当前 Skill 路由、Gate 或具名依赖的执行契约。旧收尾动作由 [ADR-0012](../../../adr/0012-matt-led-skill-fusion.md) 及本次融合取代，不再等待旧 commit Gate；下文的 runner 和当前状态仅保留历史，不表示今天仍获授权执行。
 
 
 ## 讨论结论 / 产品结论
