@@ -87,7 +87,7 @@ Run the last command when the knowledge tooling changes. Script and behavioral c
 
 ## Design and attribution
 
-See [architecture](docs/architecture.md), [workflow](docs/workflow.md), and [ADR-0013](docs/adr/0013-skill-invocation-and-hook-boundaries.md). [ADR-0012](docs/adr/0012-matt-led-skill-fusion.md) and the [fusion design](docs/specs/2026-11-11-matt-power-agent-fusion.md) retain the sources, judgment, integration decisions, and acceptance background.
+See [architecture](docs/architecture.md), [workflow](docs/workflow.md), and the consolidated [ADR-0014](docs/adr/0014-current-baseline.md) for the current baseline. Earlier decisions, the fusion design, and past evaluations remain in the [ADR index](docs/adr/index.md) and [historical archive](docs/archive/index.md); they are not current instructions or active plans.
 
 - Matt Pocock Skills, MIT; pinned source `4ae2317ddb22b046e26455e4f9c9b3aaaf62212d`.
 - [superpowers](https://github.com/obra/superpowers), Jesse Vincent, MIT.

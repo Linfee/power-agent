@@ -1,17 +1,17 @@
 ---
 okf_version: "0.1"
 title: Power-Agent Knowledge Bundle
-description: Power-Agent 的长期工程知识入口与任务路由。
+description: Power-Agent 当前版本的架构、开发、决定与历史资料入口。
 freshness:
   rules:
     - type: Decision
       strategy: historical
-timestamp: 2026-11-11T09:00:51Z
+timestamp: 2026-11-12
 ---
 
 # Power-Agent Knowledge Bundle
 
-按当前任务读取最少必要知识。本仓库采用 Bundle；除 `index.md` 与 `log.md` 外的 Concept 有非空 `type`，普通业务项目不因此必须迁移成 Bundle。
+以当前 Skill、代码和调用元数据为准，按任务选择下列材料。当前产品基线为 0.2.0；安装到某个宿主的副本和版本须另行确认。本仓库采用 Bundle，普通业务项目不因此必须迁移成 Bundle。
 
 ## 当前架构与开发
 
@@ -21,13 +21,13 @@ timestamp: 2026-11-11T09:00:51Z
 - [宿主兼容性](../skills/setup-power-agent/references/agent-compatibility.md)：六种宿主的整包安装、常驻规则加载条件和验证边界。
 - [Skill 设计](skill-and-harness-design.md)：行为缺口、渐进披露和有效对照。
 - [Harness Engineering](harness-engineering.md)：环境、知识与机械化。
-- [ADR-0013](adr/0013-skill-invocation-and-hook-boundaries.md)：当前模型可见入口、内部依赖与 hook 增强边界；其余融合原则沿用 [ADR-0012](adr/0012-matt-led-skill-fusion.md)。
+- [ADR-0014](adr/0014-current-baseline.md)：唯一现行决定基线，集中说明能力、自动与手动调用、授权、知识和 hook 的取舍；不需要叠加旧 ADR 才能恢复当前规则。
 
-## 融合契约与历史
+## 历史资料
 
-- [融合设计](specs/2026-11-11-matt-power-agent-fusion.md)：每个 Skill 的来源、保留判断、融合、删除和验收。
-- [迁移计划](exec-plans/active/2026-11-11-matt-power-agent-fusion/plan.md)：依赖、切换、授权与验收；本次实施状态只在计划指向的本地 tracker。
-- [ADR 历史](adr/)与[执行计划导航](exec-plans/README.md)：保留历史决定、计划和证据，不反向改写旧名称。
+- [ADR 导航](adr/index.md)：ADR-0001 至 0013 已归档并被 ADR-0014 归并取代，保留原文和双向取代关系。
+- [设计与评估归档](archive/index.md)：保留融合来源、旧验收背景和早期研究；不是当前契约或宿主通过证明。
+- [执行计划导航](exec-plans/README.md)：原 `active/` 计划已归档，不将归档等同完成；没有仓库内活动计划，任务状态仍应查询本次选定的 tracker。
 
 ## 知识维护入口
 
@@ -36,4 +36,4 @@ timestamp: 2026-11-11T09:00:51Z
 - 稳定事实、术语、决定的语义写入：[`dev-docs`](../skills/dev-docs/SKILL.md)，领域意义按需消费 `domain-modeling`。
 - 扫描、漂移核对和安全验证登记：[`dev-docs-maintain`](../skills/dev-docs-maintain/SKILL.md)。
 
-能力可按需具名组合，不是固定全跑。执行状态只在选定 tracker；仓库保存知识，handoff 引用权威指针。Bundle 的验证运行状态在 `docs/.okf/verification.json`，文档年龄、Git diff 或模型自报不能证明 fresh。
+能力按需组合，不是固定全跑。仓库保存知识，计划和 handoff 引用任务的权威状态；历史 `.scratch/` 路径不保证可恢复。需要持久登记实际验证时才使用 `docs/.okf/verification.json`；ledger 可选，缺失不代表正文已验证或工具失败。文档年龄、Git diff、结构通过和模型复述不能证明 fresh 或行为收益。

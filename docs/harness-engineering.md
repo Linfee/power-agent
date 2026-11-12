@@ -6,7 +6,7 @@ scope:
 
 # Harness Engineering 体系设计
 
-Power-Agent 的 Harness 让环境、知识和验证对 Agent 清晰可用，并以 Matt 的轻量能力组织支持授权内连续推进，不用固定流程替代判断。当前调用与 hook 边界见 [ADR-0013](adr/0013-skill-invocation-and-hook-boundaries.md)，其余融合和状态原则沿用 [ADR-0012](adr/0012-matt-led-skill-fusion.md)。
+Power-Agent 的 Harness 让环境、知识和验证对 Agent 清晰可用，并以轻量能力支持授权内连续推进，不用固定流程替代判断。当前决定见 [ADR-0014](adr/0014-current-baseline.md)；组件及安装边界见[架构](architecture.md)。
 
 ## 参考来源
 
@@ -17,7 +17,7 @@ Power-Agent 的 Harness 让环境、知识和验证对 Agent 清晰可用，并�
 - [Building effective agents](https://www.anthropic.com/engineering/building-effective-agents)
 - [Code execution with MCP: Building more efficient agents](https://www.anthropic.com/engineering/code-execution-with-mcp)
 
-这些来源描述了可用模式，不构成项目的固定运行剧本。Power-Agent 根据前沿模型与宿主能力持续做 ablation，只保留当前仍能提高结果可靠性的机制。
+这些来源描述可用模式，不构成项目的固定运行剧本。是否保留或调整机制，应结合当前模型、宿主和实际结果判断；没有对照证据时不声称效果提升。
 
 ## 环境可读性
 
@@ -27,9 +27,9 @@ Agent 无法读取、查询或执行的工程事实，不能稳定约束结果�
 
 `AGENTS.md` 是地图而非百科全书。高频、跨任务约束留在入口；专门知识放到清晰路径并按需读取。上下文越大不等于判断越好，高信号和可发现性比预加载更重要。
 
-对于所有编码任务都适用的最小完整改动偏好，Power-Agent 使用一份[默认规则源](../skills/codebase-design/references/minimal-complete-change.md)，再由插件 hook、扩展或 Cursor 插件自带规则适配到宿主；动态注入时缺少规则源应可见报错，不应伪装成已启用，静态生成规则则通过同步检查发现缺失或过期。按需 Skill 提供更完整的方法，不能用常驻规则替代，也不要求每个任务都调用设计 Skill。安装入口和能力限制见[宿主兼容性](../skills/setup-power-agent/references/agent-compatibility.md)。
+对于所有编码任务都适用的最小完整改动偏好，Power-Agent 使用一份[默认规则源](../skills/codebase-design/references/minimal-complete-change.md)，由宿主 hook、扩展或 Cursor 插件规则适配。动态读取失败时实现会报告错误，静态生成规则可用同步检查发现缺失或过期；这些机制旨在送达约束，并不证明宿主已加载或模型遵循。安装和宿主限制见[兼容性指南](../skills/setup-power-agent/references/agent-compatibility.md)。
 
-整包安装与默认发现分开：工程能力和自动执行依赖保持模型可达，人工流程不加入自动调用链。hook 只保障固定约束送达；事件数量不代表强化效果，Ponytail 的 OMP 会话切换和分支事件主要恢复模式，本包不复制没有消费者的状态机制。是否增加注入点由真实请求中的缺失、重复或生命周期偏差决定。
+整包安装、默认发现和实际送达是不同问题：检查元数据和依赖只能证明静态配置；目标宿主中检查请求上下文才能证明该场景送达；只有任务行为证据才能评估实际效果。手动流程不加入自动调用链；事件数量不代表强化效果，是否增加注入点应由真实请求中的缺失、重复或生命周期偏差决定。
 
 ## 约束与自由度
 
@@ -57,17 +57,13 @@ Harness 应明确必须保护的边界，例如授权、兼容性、数据完整
 
 精确步骤只在外部世界确实要求顺序时保留，例如授权确认、破坏性动作、事务性写入或机器协议。其他地方优先陈述判断原则。
 
-## Sub-agent 作为基础能力
+## Sub-agent 与环境
 
-Power-Agent 面向支持普通 sub-agent 的宿主。主代理可以把独立调查、实现、审查或验证交给干净上下文中的子代理，再整合局部结果。
-
-是否使用一个或多个子代理由任务依赖决定，不由固定层级决定：独立工作并行，共享写边界协调，后续依赖前序证据时串行。仓库不引入 team mode、平台专属 group API 或数字并发上限，也不维护无 sub-agent fallback。
-
-子代理不会自动创造可信度。调用者仍需检查任务解释、证据来源、改动边界和最终整合结果。
+新上下文子代理可以隔离独立调查、实现、审查或验证，但不自动创造可信度；调用者仍需检查任务解释、证据和最终整合结果。支持条件和资源见[架构](architecture.md#宿主与-sub-agent)，协作与授权见[工作方式](workflow.md#任务图与唯一状态源)。
 
 ## 证据优先
 
-模型的流畅解释、自检或流程记录不能证明结果。完成声明需要新鲜、可复现、与实际风险匹配的系统外证据。
+模型的流畅解释、自检或流程记录不能证明结果。完成声明需要与实际风险匹配、覆盖当前被测内容和环境的可核对证据；某些历史或不可重跑场景只能提供有限观察，应说明缺口，不能一概声称可复现。
 
 证据不是固定报告格式。一个局部改动可能只需要真实入口的成功输出；一个 bugfix 需要覆盖原失败场景与根因机制，原场景无法安全重跑时，应说明等价观察的依据与未验收条件；性能、安全、数据和 UI 则需要覆盖相应属性的专门观察。Harness 的责任是让这些观察容易获得、容易理解、容易复现。
 
@@ -79,25 +75,11 @@ Power-Agent 面向支持普通 sub-agent 的宿主。主代理可以把独立调
 
 好的 durable artifact 保存未来行动真正需要的目标、约束、决定、证据与剩余未知。可从 git、CI 或工具重新生成的大体量中间结果留在 scratch 空间；短任务不创建仪式性 handoff、feature list 或 session log。
 
-## 知识系统
+## 知识可定位性
 
-```text
-docs/
-├── architecture.md
-├── development.md
-├── workflow.md
-├── harness-engineering.md
-├── skill-and-harness-design.md
-├── domain/
-├── references/
-├── adr/
-├── exec-plans/
-└── specs/
-```
+长期知识、任务状态与执行时证据各有不同生命周期。Agent 应能定位项目现有术语、决定与稳定事实，以及需要时的 tracker、验证来源和环境条件；不要把计划或交接变成另一份可独立更新的任务状态。普通项目沿用自己的文档协议，不强制启用 Bundle。
 
-`setup-power-agent`、`dev-docs`、`dev-docs-maintain` 共同维护这个系统：分别拥有初始化、语义和机械完整性。它们可以按实际知识缺口互相使用；scanner、frontmatter 和 verification ledger 继续保持机器可验证的精确协议。
-
-需要设计或演进知识导航时，按需使用 `knowledge-navigation`：从任务反推知识单元，区分导航、前置依赖与来源引用，通过项目观察、必要讨论及指定历史反馈选择改动。结构检查、任务走查和真实消费是不同证据，不用目录数量证明效果。它遵循目标仓库协议，允许具名消费文档与维护能力，但不形成固定链；当前边界见 [架构](architecture.md)，历史理由见 [ADR-0011](adr/0011-knowledge-navigation-lifecycle.md)。
+本仓 `docs/` 已采用 Bundle：Concept 使用非空 `type`，ADR 保留历史及被取代关系。`dev-docs` 处理语义与项目协议，`dev-docs-maintain` 按需核对漂移和登记，`setup-power-agent` 只补初始化缺口；`knowledge-navigation` 在需要设计或演进导航时帮助选择真实检索路径。这些能力不组成固定链，scanner 的结构或 ledger 检查不能替代对正文事实的核对，也不应把未执行的验证登记为 fresh。
 
 ## 熵与 ablation
 

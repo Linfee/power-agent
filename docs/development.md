@@ -18,7 +18,7 @@ Skill 名称用小写连字符且与目录一致；description 只负责可区�
 
 跨任务最小完整改动规则只维护在 [`skills/codebase-design/references/minimal-complete-change.md`](../skills/codebase-design/references/minimal-complete-change.md)；`hooks/defaults.cjs` 读取它，原生注入和生成的宿主规则共用这一来源。它不同于按需使用的 `codebase-design` Skill，不应将规则正文手工复制到各适配器。
 
-修改规则后运行 `node scripts/sync-plugin-rules.cjs` 更新 Cursor 插件拥有的 `rules/minimal-complete-change.mdc`；`node scripts/sync-plugin-rules.cjs --check` 只检查是否缺失或过期。六种宿主均通过原生插件或包管理器安装本仓库，无需业务项目规则配置器；宿主入口与能力边界见[兼容性指南](../skills/setup-power-agent/references/agent-compatibility.md)。
+修改规则后运行 `node scripts/sync-plugin-rules.cjs` 更新 Cursor 插件拥有的 `rules/minimal-complete-change.mdc`；`node scripts/sync-plugin-rules.cjs --check` 只检查是否缺失或过期。六类宿主的分发入口为原生插件或包管理器，无需业务项目规则配置器；各入口的适用条件和实际运行证据见[兼容性指南](../skills/setup-power-agent/references/agent-compatibility.md)。
 
 验证集成时在临时项目和隔离 HOME、宿主及 XDG 配置下运行宿主真实入口，分别观察规则是否实际进入上下文、整包 Skill 是否发现、普通 sub-agent 是否可用及其是否收到规则。恢复或压缩上下文、重复注入及更新也应按适用入口覆盖。不要修改真实用户配置或绕过宿主信任，也不要用 manifest 校验、静态文件存在或模型自评代替运行证据。
 
@@ -46,11 +46,13 @@ Skill 名称用小写连字符且与目录一致；description 只负责可区�
 
 ## 文档与状态
 
-执行状态只在项目选定的 tracker；持久计划用于人审或恢复，handoff 引用权威状态，不复制进度。项目文档保存稳定事实、词汇和决定；优先复用现有 CONTEXT/glossary 与 ADR。
+执行状态只在项目选定的 tracker；持久计划用于人审或恢复，handoff 引用权威状态，不复制进度。项目文档保存稳定事实、词汇和决定；优先复用现有 CONTEXT/glossary 与 ADR。当前维护从 [docs 首页](index.md)及 [ADR-0014](adr/0014-current-baseline.md)进入，归档设计和旧计划不承担当前规范或任务状态。
 
-普通项目不强制引入 Bundle。本仓库已采用 Bundle：`docs/` 中除 `index.md`、`log.md` 的 Concept 有非空 `type`，ADR 为 `type: Decision`；`scope`、`sources`、策略有真实含义才声明。ledger 运行状态不写进 Concept，也不把未检查事实标 fresh。根 index 可为普通 Markdown；显式 YAML 仍须合法。
+普通项目不强制引入 Bundle。本仓库已采用 Bundle：`docs/` 中除 `index.md`、`log.md` 的 Concept 有非空 `type`，ADR 为 `type: Decision`；`scope`、`sources`、策略有真实含义才声明。可选 ledger 保存实际验证，不把未检查事实标 fresh；缺少 ledger 也不等于登记损坏。根 index 可为普通 Markdown；显式 YAML 仍须合法。
 
-ADR 被取代时保持历史并双向链接 `supersedes` / `superseded_by`。命名使用 `NNNN-slug.md`、`YYYY-MM-DD-topic.md`、`YYYY-MM-DD-title/`。重大分工或长期知识变化同步现行文档与来源，不为普通修改新建仪式材料。
+ADR 被取代时保持历史并双向链接 `supersedes` / `superseded_by`；现行决定在 `docs/adr/`，旧记录在其 `archive/`，从后续编号继续，不重新编号历史。融合设计和早期评估在 `docs/archive/`，历史计划在 `docs/exec-plans/archive/` 或 `completed/`；归档不证明完成。命名使用 `NNNN-slug.md`、`YYYY-MM-DD-topic.md`、`YYYY-MM-DD-title/`。重大分工或长期知识变化同步现行入口和来源，不为普通修改新建仪式材料。
+
+整理 Bundle 结构或 ADR 生命周期后，可只读运行 `python3 skills/dev-docs-maintain/scripts/bundle_status.py scan --repo . --bundle docs --format json`，检查 Concept 元数据、来源和双向关系。默认退出 0 不代表没有候选，应查看报告；没有验证登记时的 `unverified` 不等同结构失败。扫描不创建或刷新 ledger；需要保存实际核验时再按维护 Skill 的登记协议处理。
 
 ## 协作、授权与交付
 

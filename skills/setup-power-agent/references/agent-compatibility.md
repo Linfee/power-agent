@@ -8,9 +8,11 @@ scope:
 
 Power-Agent 面向 Claude Code、pi、OMP、Codex、Cursor 和 Factory/Droid，按**一个插件或包**分发全部 25 个 Skill 与跨任务[最小完整改动默认规则](../../codebase-design/references/minimal-complete-change.md)。规则和按需调用的 Skill 作用不同：规则不替代 Skill 的方法，也不保证模型遵守。宿主还需要普通 sub-agent 才能完整使用依赖它的工作方式。
 
+仓库还保留 `gemini-extension.json`，其声明只转引项目上下文；本指南未覆盖 Gemini 的 Skill 发现、规则送达与 sub-agent 验证，不据此将它列为完整适配的宿主。
+
 安装前审查插件代码和宿主的权限、信任与配置作用域；插件 hook 和扩展会执行代码。不要把插件安装到一个真实账户、授信或修改其设置当作默认授权。正常安装不需要在业务项目中复制规则或运行项目规则配置器。
 
-本指南随 Skill 整包分发。以下本地安装路径必须指向包含插件声明、`hooks/` 和 `skills/` 的完整插件源，不能把 Skill 安装目录当成仓库根目录。Git 安装取得远端版本；要使用尚未发布的本地修改，应指定完整 checkout。
+本指南随 Skill 整包分发。以下本地安装路径必须指向包含插件声明、`hooks/` 和 `skills/` 的完整插件源，不能把 Skill 安装目录当成仓库根目录。成功的远端安装取得远端版本；可用性取决于宿主和认证条件，OMP 的私有仓库限制见下文。要使用尚未发布的本地修改，应指定完整 checkout。
 
 ## 安装后的调用范围
 
@@ -47,13 +49,18 @@ pi install --local /absolute/path/to/power-agent
 ### OMP
 
 ```bash
+# 开发安装：本地目录以链接加载，不是独立副本
 omp plugin install /absolute/path/to/power-agent
-# 或从 Git 安装
-omp plugin install 'github:Linfee/power-agent'
 omp plugin list
 ```
 
-本地安装链接到用户插件目录；安装后重新启动会话以初始化扩展。OMP 支持包的 `pi` 资源声明；可用 `omp --extension /absolute/path/to/power-agent` 仅在一次会话中加载本地包。安装会写宿主配置，具体行为见 [OMP 插件](https://omp.sh/docs/plugins)和 [扩展加载](https://github.com/can1357/oh-my-pi/blob/main/docs/extension-loading.md)。
+OMP 支持包的 `pi` 资源声明；本地安装链接到用户插件目录，会受 checkout 变动影响，不能当独立快照。安装后启动新会话以初始化扩展；`omp --extension /absolute/path/to/power-agent` 仅在一次会话中加载本地包。安装会写宿主配置，具体行为见 [OMP 插件](https://omp.sh/docs/plugins)和 [扩展加载](https://github.com/can1357/oh-my-pi/blob/main/docs/extension-loading.md)。
+
+**私有 GitHub 与副本安装：** 在 OMP 18.18.9 / Bun 1.4.0 的已观察环境中，本仓原生 `github:` 安装请求 GitHub tarball API 并返回 404；设置 `GITHUB_TOKEN` 或 `GH_TOKEN` 仍未通过，不能把现有 Git/`gh` 登录推断为 Bun 已获得权限。不得为绕过安装失败而擅自公开仓库或登记 SSH key，也不能把 token 写进 URL 和配置。
+
+**独立副本（手动快照）：** 在已授权、已有 `gh` 登录的环境中，已执行的路径是用 `gh api` 下载 GitHub 指定提交的 tarball，在临时目录解包并运行 `npm pack`，将产物保存在 OMP 插件目录的 `sources/`，再在该插件目录以 `bun add file:./sources/<产物文件名>.tgz` 安装。此路径产生独立副本，不是指向工作仓库的链接；直接把 `.tgz` 交给该版本的 `omp plugin install` 会被当目录处理，不能替代这一步。
+
+这是操作记录，不是跨版本通用安装脚本；插件目录及登记、启用状态须按当前宿主配置确认，并在新会话验证加载。它是指定提交的快照，不是原生 GitHub 依赖，更新须显式重新下载、打包和安装，不能声称 `omp plugin upgrade` 会跟踪 `main`。后续版本及其他认证方式须另行验证；没有对应授权不修改凭据、组织策略或账户配置。
 
 ### Codex
 
@@ -93,7 +100,7 @@ droid plugin install power-agent@power-agent --scope user
 |---|---|
 | Claude Code | 2.1.322 在隔离 HOME 中原生安装并发现 25 个 Skill；生命周期专项覆盖连续 Read、实际新上下文子代理、恢复、手动压缩及同进程压缩后继续执行。27 个相关请求各含一份规则；未强制自动压缩，未单独断言本次调用开关修改后的自动列表数量。 |
 | pi | 1.5.2 隔离持久安装后保留 25 个 Skill 命令，向模型通告 17 个；`/skill:to-spec` 可显式展开。10 轮重复工具交互的 20 次 Read 均成功，30 个请求各含一份规则；手动压缩后继续执行也为一份。此前恢复已验证；本次原生工具集没有 sub-agent，未模拟该能力。移除后列表为空。 |
-| OMP | 18.18.9 隔离持久安装后向模型通告 17 个 Skill，`/skill:to-spec` 可显式展开；实际 Read 连续调用、子代理、手动压缩后继续执行的编码请求各含一份规则。此前恢复已验证；自动压缩未强制。原生卸载后列表为空。 |
+| OMP | 18.18.9 隔离持久安装后向模型通告 17 个 Skill，`/skill:to-spec` 可显式展开；实际 Read 连续调用、子代理、手动压缩后继续执行的编码请求各含一份规则。此前恢复已验证；自动压缩未强制。原生卸载后列表为空。这不是私有 GitHub 原生安装成功的证据。 |
 | Codex | 0.167.2 曾安装并启用插件，但请求未含规则；未授予 hook 信任，原因未定位，不能判为通过。完整 Skill 发现及子代理未验证。 |
 | Cursor | 插件规则和 Skill 的真实 IDE 加载未验证；手动 Skill 的菜单可达性另有上述版本风险，不能判为全部可用。 |
 | Factory / Droid | 1.8.0 的加载器代码支持共享 hook 格式，但实际 marketplace 添加被账户插件策略拒绝；未使用真实凭据或绕过策略，插件 hook、Skill 及子代理送达仍未验证。 |

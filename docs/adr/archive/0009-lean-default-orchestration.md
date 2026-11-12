@@ -1,10 +1,16 @@
 ---
 type: Decision
 status: superseded
-superseded_by: 0010-judgment-oriented-skills.md
+superseded_by:
+  - 0010-judgment-oriented-skills.md
+  - ../0014-current-baseline.md
+verification:
+  strategy: historical
 ---
 
 # ADR-0009: Lean Default 与可靠性边界编排
+
+> 历史记录：已由 [ADR-0014](../0014-current-baseline.md) 归并取代，原有取代关系保留。下文的决定、状态说明与旧 Skill 名称保留当时含义，不作为当前指令。
 
 **状态：** superseded by [ADR-0010](0010-judgment-oriented-skills.md)
 **日期：** 2026-08-28  

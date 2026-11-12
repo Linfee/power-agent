@@ -63,7 +63,7 @@ Concept 局部配置覆盖项目默认值。周期只用于重新验证调度，
 - `historical`：用于 ADR 等决策文档；freshness 只检查文档自身、链接、YAML `status` 和 supersede 关系，声明来源内容变化不是 freshness 输入，也没有周期性到期，但声明来源缺失仍为 `blocked`。
 - `generated`：通过生成源或机器契约重新验证；它是 source-sensitive，声明来源变化会触发重新验证。
 
-对 effective strategy 为 `historical` 的 `type: Decision`，YAML `status` 必须是 `proposed`、`accepted` 或 `superseded`。`proposed` 与 `accepted` 不要求 supersede 字段；`superseded` 必须用相对当前 ADR 的 Markdown 路径声明 `superseded_by`，路径必须解析到 Bundle 内有可解析 frontmatter 的 Decision；该目标还必须以 `supersedes` 反向指回当前 ADR。缺失、不可解析、不存在、目标非 Decision 或双向关系不一致均为 metadata issue，scan 会阻止该 Concept，`record` 也会拒绝。
+对 effective strategy 为 `historical` 的 `type: Decision`，YAML `status` 必须是 `proposed`、`accepted` 或 `superseded`。`proposed` 与 `accepted` 不要求 supersede 字段；`superseded` 必须用相对当前 ADR 的 Markdown 路径声明 `superseded_by`，路径必须解析到 Bundle 内有可解析 frontmatter 的 Decision；每个目标还必须以 `supersedes` 反向指回当前 ADR。两个字段均接受单条路径或非空路径列表；scanner 对每个替代目标逐条检查反向关系，列表不得包含空值、无效路径或符号链接。缺失、不可解析、不存在、目标非 Decision 或双向关系不一致均为 metadata issue，scan 会阻止该 Concept，`record` 也会拒绝。
 
 scanner 支持 `PnD` 和 `PnW` 格式，例如 `P30D`、`P12W`。
 

@@ -1,6 +1,6 @@
 # Power-Agent — Agent 指南
 
-Power-Agent 以 Matt Pocock 的轻量工程能力为主干，融合 Power 的证明、因果诊断、工程判断、项目知识和授权内自动推进。当前调用与 hook 边界见 [ADR-0013](docs/adr/0013-skill-invocation-and-hook-boundaries.md)，其余融合原则沿用 [ADR-0012](docs/adr/0012-matt-led-skill-fusion.md)。
+Power-Agent 以 Matt Pocock 的轻量工程能力为主干，融合 Power 的证明、因果诊断、工程判断、项目知识和授权内自动推进。现行决定统一见 [ADR-0014](docs/adr/0014-current-baseline.md)，不再串读旧 ADR 推导当前规则。
 
 ## 核心原则
 
@@ -29,8 +29,8 @@ Power-Agent 以 Matt Pocock 的轻量工程能力为主干，融合 Power 的证
 |自动推进与授权|[docs/workflow.md](docs/workflow.md)|
 |环境与证据|[docs/harness-engineering.md](docs/harness-engineering.md)|
 |Skill 维护|[docs/skill-and-harness-design.md](docs/skill-and-harness-design.md)|
-|融合契约与来源|[正式设计](docs/specs/2026-11-11-matt-power-agent-fusion.md)|
-|历史决定|[docs/adr/](docs/adr/)|
+|当前决定与理由|[ADR-0014](docs/adr/0014-current-baseline.md)|
+|历史决定与融合来源|[ADR 导航](docs/adr/index.md)、[历史资料](docs/archive/index.md)|
 
 项目术语优先沿用已有 CONTEXT 或 glossary；没有真实内容不预建文件。tracker 配置复用项目现有约定，缺省位置为 `docs/agents/issue-tracker.md`；只配置需要的后端，不同时维护本地和远程副本。
 
@@ -66,7 +66,7 @@ Power-Agent 以 Matt Pocock 的轻量工程能力为主干，融合 Power 的证
 
 ## 知识协议
 
-普通文档不强制成为 Knowledge Bundle。本仓库已使用 Bundle：`docs/` 中除 `index.md`、`log.md` 外的 Concept 有非空 `type`；ADR 为 `type: Decision`，被取代时保留历史和双向 `supersedes` / `superseded_by`。`scope`、`sources`、验证策略按真实含义声明，运行时验证在 `docs/.okf/verification.json`，不把未检查事实记成 fresh。
+普通文档不强制成为 Knowledge Bundle。本仓库已使用 Bundle：`docs/` 中除 `index.md`、`log.md` 外的 Concept 有非空 `type`；ADR 为 `type: Decision`，被取代时保留历史和双向 `supersedes` / `superseded_by`。当前指南与归档分开，旧计划、评估和决定不作为活动状态或现行规范。`scope`、`sources`、验证策略按真实含义声明；需要保存实际验证时使用可选的 `docs/.okf/verification.json`，不把未检查事实记成 fresh。
 
 命名沿用 `SKILL.md`、`NNNN-slug.md`、`YYYY-MM-DD-topic.md`；持久计划只在恢复或人审需要时使用。
 

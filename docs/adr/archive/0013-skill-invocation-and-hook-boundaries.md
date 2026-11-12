@@ -1,6 +1,7 @@
 ---
 type: Decision
-status: accepted
+status: superseded
+superseded_by: ../0014-current-baseline.md
 verification:
   strategy: historical
 supersedes:
@@ -14,6 +15,8 @@ sources:
 ---
 
 # ADR-0013: 收敛模型可见入口，按实际缺口增强 hook
+
+> 历史记录：已由 [ADR-0014](../0014-current-baseline.md) 归并取代。下文保留入口收敛时的背景与决定，不作为当前指令。
 
 **日期：** 2026-11-12
 

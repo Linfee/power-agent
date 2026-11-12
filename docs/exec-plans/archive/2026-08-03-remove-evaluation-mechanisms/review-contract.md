@@ -9,9 +9,14 @@ scope:
 ---
 
 # 移除 Skill 评测机制 — Review Contract
+
+> **归档，不再作为活动状态，历史状态保留。** 当前入口见[文档索引](../../../index.md)与 [ADR-0014](../../../adr/0014-current-baseline.md)；下文不授权恢复旧任务。
+
+> **来源限制。** 历史范围中的 `evals/**` 已不存在，当前 Bundle 扫描会报告来源缺失。保留原范围以解释移除对象，不应据此恢复目录或认定旧审阅契约已重新验证。
+
 ## Current applicability
 
-本文档是旧计划的审阅快照，不定义当前运行时 Gate、固定审阅路径或 Skill 依赖。相关旧收尾由 [ADR-0012](../../../adr/0012-matt-led-skill-fusion.md) 取代；保留不恢复永久评测平台的范围，不禁止本次隔离行为验收。
+本文档是旧计划的审阅快照，不定义当前运行时 Gate、固定审阅路径或 Skill 依赖。相关旧收尾由 [ADR-0012](../../../adr/archive/0012-matt-led-skill-fusion.md) 取代；保留不恢复永久评测平台的范围，不禁止本次隔离行为验收。
 
 
 ## Intent

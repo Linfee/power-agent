@@ -1001,18 +1001,30 @@ def historical_decision_issues(meta: dict[str, Any], path: Path, bundle_root: Pa
     if status != "superseded":
         return []
 
-    replacement = resolve_decision_relation(meta.get("superseded_by"), path, bundle_root)
-    if replacement is None:
+    replacements = meta.get("superseded_by")
+    if not isinstance(replacements, list):
+        replacements = [replacements]
+    if not replacements:
         return ["missing-superseded-by"]
-    try:
-        replacement_meta, _, has_frontmatter, _, parse_error = read_markdown(replacement)
-    except OSError:
-        return ["invalid-superseded-by"]
-    if parse_error or not has_frontmatter or replacement_meta.get("type") != "Decision":
-        return ["invalid-superseded-by"]
-    reverse = resolve_decision_relation(replacement_meta.get("supersedes"), replacement, bundle_root)
-    if reverse is None or reverse != path.resolve():
-        return ["invalid-supersedes-relation"]
+    decision_path = path.resolve()
+    for raw_replacement in replacements:
+        replacement = resolve_decision_relation(raw_replacement, path, bundle_root)
+        if replacement is None:
+            return ["missing-superseded-by"]
+        try:
+            replacement_meta, _, has_frontmatter, _, parse_error = read_markdown(replacement)
+        except OSError:
+            return ["invalid-superseded-by"]
+        if parse_error or not has_frontmatter or replacement_meta.get("type") != "Decision":
+            return ["invalid-superseded-by"]
+        reverse_relations = replacement_meta.get("supersedes")
+        if not isinstance(reverse_relations, list):
+            reverse_relations = [reverse_relations]
+        reverse_paths = [
+            resolve_decision_relation(raw, replacement, bundle_root) for raw in reverse_relations
+        ]
+        if None in reverse_paths or decision_path not in reverse_paths:
+            return ["invalid-supersedes-relation"]
     return []
 
 

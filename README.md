@@ -87,7 +87,7 @@ python3 -m unittest skills/dev-docs-maintain/scripts/test_bundle_status.py
 
 ## 设计与来源
 
-当前分工见 [架构](docs/architecture.md)、[工作方式](docs/workflow.md)、[ADR-0013](docs/adr/0013-skill-invocation-and-hook-boundaries.md)。[ADR-0012](docs/adr/0012-matt-led-skill-fusion.md) 与[正式设计](docs/specs/2026-11-11-matt-power-agent-fusion.md)保留融合来源、判断、取舍与验收背景。
+当前分工见[架构](docs/architecture.md)、[工作方式](docs/workflow.md)与统一的[ADR-0014](docs/adr/0014-current-baseline.md)。旧决定、融合设计和早期评估保留在[ADR 导航](docs/adr/index.md)及[历史资料](docs/archive/index.md)，不再作为当前规范或活动计划。
 
 - Matt Pocock Skills，MIT，固定来源 `4ae2317ddb22b046e26455e4f9c9b3aaaf62212d`。
 - [superpowers](https://github.com/obra/superpowers)，Jesse Vincent，MIT。

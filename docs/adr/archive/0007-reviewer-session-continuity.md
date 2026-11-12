@@ -1,10 +1,15 @@
 ---
 type: Decision
-status: accepted
+status: superseded
+verification:
+  strategy: historical
+superseded_by: ../0014-current-baseline.md
 supersedes: 0002-disposable-subagents.md
 ---
 
 # ADR-0007: Reviewer 会话连续性与子代理生命周期
+
+> 历史记录：已由 [ADR-0014](../0014-current-baseline.md) 归并取代。下文的决定、状态说明与旧 Skill 名称保留当时含义，不作为当前指令。
 
 **状态：** accepted（supersedes ADR-0002）
 **日期：** 2026-07-19

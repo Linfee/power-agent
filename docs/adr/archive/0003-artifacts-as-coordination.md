@@ -1,9 +1,14 @@
 ---
 type: Decision
-status: accepted
+status: superseded
+verification:
+  strategy: historical
+superseded_by: ../0014-current-baseline.md
 ---
 
 # ADR-0003: 产出物作为协调介质
+
+> 历史记录：已由 [ADR-0014](../0014-current-baseline.md) 归并取代。下文的决定、状态说明与旧 Skill 名称保留当时含义，不作为当前指令。
 
 ## 背景
 

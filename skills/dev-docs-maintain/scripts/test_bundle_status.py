@@ -954,6 +954,56 @@ status: {status}
         self.assertFalse(old["metadata_issues"])
         self.assertEqual(self.record_concept("docs/old.md")["recorded"][0]["concept_id"], "old")
 
+    def test_merged_decisions_preserve_every_supersession_edge(self) -> None:
+        decisions = (
+            ("old-a.md", "superseded", "superseded_by: [intermediate.md, merged.md]\n"),
+            ("old-b.md", "superseded", "superseded_by: merged.md\n"),
+            (
+                "intermediate.md",
+                "superseded",
+                "supersedes: old-a.md\nsuperseded_by: merged.md\n",
+            ),
+            (
+                "merged.md",
+                "accepted",
+                "supersedes:\n  - old-a.md\n  - old-b.md\n  - intermediate.md\n",
+            ),
+        )
+        for name, status, relation in decisions:
+            (self.repo / "docs" / name).write_text(
+                f"""---
+type: Decision
+status: {status}
+verification:
+  strategy: historical
+{relation}---
+
+# {name}
+""",
+                encoding="utf-8",
+            )
+        report = self.scan("--include-fresh")
+        for name, _, _ in decisions:
+            with self.subTest(name=name):
+                concept = self.report_concept(report, f"docs/{name}")
+                self.assertEqual(concept["metadata_issues"], [])
+
+        self.record_concept("docs/old-a.md")
+        recorded = self.report_concept(self.scan("--include-fresh"), "docs/old-a.md")
+        self.assertEqual(recorded["freshness"], "fresh")
+
+        merged = self.repo / "docs" / "merged.md"
+        merged.write_text(
+            merged.read_text(encoding="utf-8").replace("  - old-a.md\n", ""),
+            encoding="utf-8",
+        )
+        invalid = self.report_concept(self.scan("--include-fresh"), "docs/old-a.md")
+        self.assertEqual(invalid["freshness"], "blocked")
+        self.assertIn("invalid-supersedes-relation", invalid["metadata_issues"])
+        rejected = self.record_concept("docs/old-a.md", check=False)
+        self.assertEqual(rejected["returncode"], 2)
+        self.assertIn("invalid-supersedes-relation", rejected["stderr"])
+
     def test_decision_inherits_historical_rule_and_gates_invalid_lifecycle(self) -> None:
         index = self.repo / "docs" / "index.md"
         index.write_text(
@@ -1062,6 +1112,28 @@ supersedes: old.md
             ),
             "symlinked-replacement": (
                 old_base.replace("superseded_by: new.md", "superseded_by: new-alias.md"),
+                new_base,
+                "missing-superseded-by",
+            ),
+            "empty-replacement-list": (
+                old_base.replace("superseded_by: new.md", "superseded_by: []"),
+                new_base,
+                "missing-superseded-by",
+            ),
+            "partially-invalid-replacement-list": (
+                old_base.replace("superseded_by: new.md", "superseded_by: [new.md, null]"),
+                new_base,
+                "missing-superseded-by",
+            ),
+            "partially-invalid-reverse-list": (
+                old_base,
+                new_base.replace("supersedes: old.md", "supersedes: [old.md, null]"),
+                "invalid-supersedes-relation",
+            ),
+            "symlinked-replacement-list-member": (
+                old_base.replace(
+                    "superseded_by: new.md", "superseded_by: [new.md, new-alias.md]"
+                ),
                 new_base,
                 "missing-superseded-by",
             ),

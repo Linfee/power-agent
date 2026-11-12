@@ -7,6 +7,8 @@ scope:
 
 # Agent systems, reusable skills, and harness engineering
 
+> **Historical research, not current guidance.** This note preserves its original source selection and conclusions. See the [documentation index](../index.md) and [current decision](../adr/0014-current-baseline.md).
+
 ## Scope and selection
 
 This note compares a deliberately small, high-signal set of first-party Anthropic and OpenAI engineering/product posts published in 2025–2026. It covers three connected concerns: agent-system architecture, reusable procedural capabilities, and the engineering harness around an agent. No older source is included: the selected recent posts directly cover the needed concepts.

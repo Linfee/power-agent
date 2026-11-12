@@ -4,7 +4,7 @@ Power-Agent retains its declared MIT license. This file preserves the notices fo
 
 ## Matt Pocock Skills
 
-Source: https://github.com/mattpocock/skills/tree/4ae2317ddb22b046e26455e4f9c9b3aaaf62212d (v1.3.2). Selected tracked engineering and productivity skills were translated, combined, and adapted. Per-skill sources and asset dispositions are recorded in [the fusion design](docs/specs/2026-11-11-matt-power-agent-fusion.md). Untracked local files and non-promoted buckets were not imported.
+Source: https://github.com/mattpocock/skills/tree/4ae2317ddb22b046e26455e4f9c9b3aaaf62212d (v1.3.2). Selected tracked engineering and productivity skills were translated, combined, and adapted. Per-skill sources and asset dispositions are preserved in [the historical fusion design](docs/archive/2026-11-11-matt-power-agent-fusion.md). Untracked local files and non-promoted buckets were not imported.
 
 MIT License
 

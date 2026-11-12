@@ -1,17 +1,23 @@
 ---
 type: Decision
 status: superseded
-superseded_by: 0012-matt-led-skill-fusion.md
+superseded_by:
+  - 0012-matt-led-skill-fusion.md
+  - ../0014-current-baseline.md
+verification:
+  strategy: historical
 sources:
   - skills/knowledge-navigation/SKILL.md
   - skills/knowledge-navigation/references/discovery-and-dialogue.md
   - skills/knowledge-navigation/references/history-and-feedback.md
   - skills/knowledge-navigation/references/design-principles.md
   - skills/knowledge-navigation/references/validation.md
-  - docs/adr/0010-judgment-oriented-skills.md
+  - docs/adr/archive/0010-judgment-oriented-skills.md
 ---
 
 # ADR-0011: 独立的知识导航初始化与演进能力
+
+> 历史记录：已由 [ADR-0014](../0014-current-baseline.md) 归并取代，原有取代关系保留。下文的决定、状态说明与旧 Skill 名称保留当时含义，不作为当前指令。
 
 **日期：** 2026-09-07
 
