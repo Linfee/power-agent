@@ -10,7 +10,7 @@ Power-Agent 是 Matt 主干的整包工程 Skill，辅以项目知识与确定�
 
 ## 结构与约定
 
-`skills/<name>/SKILL.md` 为 24 个平铺入口，`references/` 放按需知识，`scripts/` 放确定性操作。15 个入口允许模型调用、9 个仅手动调用，清单见 [README](../README.md#skills)；手动入口必须同时设置 frontmatter 与 `agents/openai.yaml` 的调用开关，自动入口的界面元数据可选。具名依赖只能指向自动能力；依赖随整包分发，不承诺单独安装。`AGENTS.md` 为能力地图，`CLAUDE.md` 只转引入口。
+`skills/<name>/SKILL.md` 为 24 个平铺入口，`references/` 放按需知识，`scripts/` 放确定性操作。14 个入口允许模型调用、10 个仅手动调用，清单见 [README](../README.md#skills)；手动入口必须同时设置 frontmatter 与 `agents/openai.yaml` 的调用开关，自动入口的界面元数据可选。具名依赖只能指向自动能力；依赖随整包分发，不承诺单独安装。`AGENTS.md` 为能力地图，`CLAUDE.md` 只转引入口。
 
 Skill 名称用小写连字符且与目录一致；description 只负责可区分触发，正文教承重判断与实际方法。格式无需统一章节；确有外部消费者的 schema、授权顺序和安全协议保持准确。修改先确认行为缺口并复用现有模式。迁入内容以固定 Matt 原版为底稿，保留方法、解释、示例、反例和模板，只按确认的差异局部适配，不以更短为目标；具体对照规则见[设计指南](skill-and-harness-design.md#以-matt-原版为内容底稿)。
 

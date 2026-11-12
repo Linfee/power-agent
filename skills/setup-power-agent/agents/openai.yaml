@@ -1,0 +1,5 @@
+interface:
+  display_name: "Setup Power Agent"
+  short_description: "Configure the minimum project Agent entrypoint"
+policy:
+  allow_implicit_invocation: false

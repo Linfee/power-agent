@@ -34,7 +34,7 @@ sources:
 
 以 Matt 固定版本的工程方法为主干，融合 Power 的证明、因果诊断、工程判断和项目知识。24 个 Skill 整包分发，不承诺单 Skill 独立安装，不引入品牌路由器或固定长链；相关迁入内容保留方法、理由、反例、示例和模板，轻量不等于正文越短越好。
 
-15 个入口允许模型调用，9 个仅用户显式启动：`grill-with-docs`、`to-spec`、`to-tickets`、`wayfinder`、`triage`、`improve-codebase-architecture`、`retro`、`handoff`、`knowledge-navigation`。Matt 的自动能力位置（`tdd` 一对一融合为 POD）与 `dev-docs`、`setup-power-agent`、`implement`、`implement-spec` 保持自动可达。数量来自当前用途与依赖，不是配额或收益实验的结论。
+14 个入口允许模型调用，10 个仅用户显式启动：`grill-with-docs`、`to-spec`、`to-tickets`、`wayfinder`、`triage`、`improve-codebase-architecture`、`retro`、`handoff`、`knowledge-navigation`、`setup-power-agent`。Matt 的自动能力位置（`tdd` 一对一融合为 POD）与 `dev-docs`、`implement`、`implement-spec` 保持自动可达。数量来自当前用途与依赖，不是配额或收益实验的结论。
 
 需要用户选择工作方向、且没有内部自动调用依赖的入口才收为手动；零入边本身不表示所有能力都必须手动。整包内部具名调用只指向自动能力，不能读取手动正文绕过限制。手动入口同时声明 `disable-model-invocation: true` 与 Codex 的 `policy.allow_implicit_invocation: false`；宿主的实际发现、菜单可达性和调用语义仍须分别确认，元数据不是访问控制。
 

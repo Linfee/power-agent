@@ -23,7 +23,7 @@ Power-Agent 是以 Matt 轻量工程能力为主干的整包 Skill。目标、�
 
 ## 整包组合
 
-24 个目录平铺在 `skills/`，其中 15 个允许模型调用；9 个仅手动调用：`grill-with-docs`、`to-spec`、`to-tickets`、`wayfinder`、`triage`、`improve-codebase-architecture`、`retro`、`handoff`、`knowledge-navigation`。`implement`、`implement-spec`、`setup-power-agent` 及其实际依赖保持可达；手动流程只由用户显式启动。`grilling` 保留原版问题树、逐轮 frontier 和用户共同理解确认，确认前不实施。支持文件从实际安装位置解析，不假定业务 cwd 有源码目录。
+24 个目录平铺在 `skills/`，其中 14 个允许模型调用；10 个仅手动调用：`grill-with-docs`、`to-spec`、`to-tickets`、`wayfinder`、`triage`、`improve-codebase-architecture`、`retro`、`handoff`、`knowledge-navigation`、`setup-power-agent`。`implement`、`implement-spec` 及其实际依赖保持可达；手动流程只由用户显式启动。`grilling` 保留原版问题树、逐轮 frontier 和用户共同理解确认，确认前不实施。支持文件从实际安装位置解析，不假定业务 cwd 有源码目录。
 
 不承诺单 Skill 独立安装，也不设置品牌 router。主文足以决定何时使用专门知识，references 按当前问题加载；具名调用只指向允许模型调用的能力。手动入口不能成为自动依赖，也不能靠读取其正文绕过限制；元数据是宿主调用策略，不是通用访问控制。已有普通材料可以直接消费，不要求重新通过上游生成。
 

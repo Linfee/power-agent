@@ -29,7 +29,7 @@
 
 ## Skills
 
-24 个 Skill，15 个允许模型调用，9 个仅手动调用。
+24 个 Skill，14 个允许模型调用，10 个仅手动调用。
 
 ### 实现与修复
 
@@ -73,7 +73,7 @@
 | [`knowledge-navigation`](skills/knowledge-navigation/SKILL.md) | 设计或演进仓库知识检索路径 | 手动 |
 | [`writing-for-agents`](skills/writing-for-agents/SKILL.md) | 编写能改变 Agent 判断的 Skill、AGENTS.md 和引用材料 | 自动 |
 | [`retro`](skills/retro/SKILL.md) | 从会话或项目材料改进 Harness，而不是堆禁令 | 手动 |
-| [`setup-power-agent`](skills/setup-power-agent/SKILL.md) | 最小补齐项目 Agent 入口、tracker 和领域指针 | 自动 |
+| [`setup-power-agent`](skills/setup-power-agent/SKILL.md) | 最小补齐项目 Agent 入口、tracker 和领域指针 | 手动 |
 
 ## 安装
 

@@ -14,7 +14,7 @@ Power-Agent 面向 Claude Code、pi、OMP、Codex、Cursor 和 Factory/Droid，�
 
 ## 安装后的调用范围
 
-手动入口是 `grill-with-docs`、`to-spec`、`to-tickets`、`wayfinder`、`triage`、`improve-codebase-architecture`、`retro`、`handoff`、`knowledge-navigation`；其余入口允许模型调用。`implement`、`implement-spec`、`setup-power-agent` 及其实际依赖保持自动可达。
+手动入口是 `grill-with-docs`、`to-spec`、`to-tickets`、`wayfinder`、`triage`、`improve-codebase-architecture`、`retro`、`handoff`、`knowledge-navigation`、`setup-power-agent`；其余入口允许模型调用。`implement`、`implement-spec` 及其实际依赖保持自动可达。
 
 手动入口同时提供 `SKILL.md` 的 `disable-model-invocation: true` 与 Codex 的 `agents/openai.yaml` 中 `policy.allow_implicit_invocation: false`。Claude、pi、OMP、Cursor、Droid 使用前者，Codex 使用后者；这些是宿主调用策略，不是通用访问控制，也不授予外部副作用权限。内部调用只指向自动能力，不读取手动正文绕过限制。
 

@@ -29,7 +29,7 @@ Common entry points, not a required sequence:
 
 ## Skills
 
-24 skills: 15 model-invocable and 9 manual.
+24 skills: 14 model-invocable and 10 manual.
 
 ### Implementation and repair
 
@@ -73,7 +73,7 @@ Common entry points, not a required sequence:
 | [`knowledge-navigation`](skills/knowledge-navigation/SKILL.md) | Design or evolve repository knowledge retrieval paths | Manual |
 | [`writing-for-agents`](skills/writing-for-agents/SKILL.md) | Write skills, AGENTS.md, and reference material that change agent decisions | Auto |
 | [`retro`](skills/retro/SKILL.md) | Improve the harness from session or project evidence instead of stacking prohibitions | Manual |
-| [`setup-power-agent`](skills/setup-power-agent/SKILL.md) | Fill the minimum agent entrypoint, tracker, and domain pointers | Auto |
+| [`setup-power-agent`](skills/setup-power-agent/SKILL.md) | Fill the minimum agent entrypoint, tracker, and domain pointers | Manual |
 
 ## Installation
 
