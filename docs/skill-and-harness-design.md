@@ -6,7 +6,7 @@ scope:
 
 # Skill 与 Harness 设计指南
 
-以 Matt 的轻量能力组织为主干，保留能改变行动、判断、授权或验收的 Power 知识。当前决定见 [ADR-0014](adr/0014-current-baseline.md)；[历史融合设计](archive/2026-11-11-matt-power-agent-fusion.md)用于追溯来源，不作为当前规范。
+以 Matt 的轻量能力组织为主干，保留能改变行动、判断、授权或验收的 Power 知识。当前决定见 [ADR-0014](adr/0014-current-baseline.md)；历史融合设计已从仓库移除，需要追溯来源时检索 Git 历史，不作为当前规范。
 
 ## 先找行为缺口
 

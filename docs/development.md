@@ -49,7 +49,7 @@ Skill 名称用小写连字符且与目录一致；description 只负责可区�
 
 普通项目不强制引入 Bundle。本仓库已采用 Bundle：`docs/` 中除 `index.md`、`log.md` 的 Concept 有非空 `type`，ADR 为 `type: Decision`；`scope`、`sources`、验证策略有真实含义才声明。验证以实际核验为准，不把未检查事实标为已验证。根 index 可为普通 Markdown；显式 YAML 仍须合法。
 
-ADR 被取代时保持历史并双向链接 `supersedes` / `superseded_by`；现行决定在 `docs/adr/`，旧记录在其 `archive/`，从后续编号继续，不重新编号历史。融合设计和早期评估在 `docs/archive/`，历史计划在 `docs/exec-plans/archive/` 或 `completed/`；归档不证明完成。命名使用 `NNNN-slug.md`、`YYYY-MM-DD-topic.md`、`YYYY-MM-DD-title/`。重大分工或长期知识变化同步现行入口和来源，不为普通修改新建仪式材料。
+ADR 被取代时保持编号和 Git 历史，不重新编号历史；现行决定在 `docs/adr/`，归档正文不保留在仓库。执行计划用于人审或恢复，归档或历史记录不证明完成。命名使用 `NNNN-slug.md`、`YYYY-MM-DD-topic.md`、`YYYY-MM-DD-title/`。重大分工或长期知识变化同步现行入口和来源，不为普通修改新建仪式材料。
 
 ## 协作、授权与交付
 

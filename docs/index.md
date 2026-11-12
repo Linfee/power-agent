@@ -1,7 +1,7 @@
 ---
 okf_version: "0.1"
 title: Power-Agent Knowledge Bundle
-description: Power-Agent 当前版本的架构、开发、决定与历史资料入口。
+description: Power-Agent 当前版本的架构、开发与决定入口。
 freshness:
   rules:
     - type: Decision
@@ -23,11 +23,10 @@ timestamp: 2026-11-12
 - [Harness Engineering](harness-engineering.md)：环境、知识与机械化。
 - [ADR-0014](adr/0014-current-baseline.md)：唯一现行决定基线，集中说明能力、自动与手动调用、授权、知识和 hook 的取舍；不需要叠加旧 ADR 才能恢复当前规则。
 
-## 历史资料
+## 历史记录
 
-- [ADR 导航](adr/index.md)：ADR-0001 至 0013 已归档并被 ADR-0014 归并取代，保留原文和双向取代关系。
-- [设计与评估归档](archive/index.md)：保留融合来源、旧验收背景和早期研究；不是当前契约或宿主通过证明。
-- [执行计划导航](exec-plans/README.md)：原 `active/` 计划已归档，不将归档等同完成；没有仓库内活动计划，任务状态仍应查询本次选定的 tracker。
+- [ADR 导航](adr/index.md)：当前仅维护 ADR-0014；ADR-0001 至 0013 已归并取代，归档正文已移除。
+- 旧融合设计、评估和执行计划不再保存在仓库；需要追溯时检索 Git 历史。
 
 ## 知识维护入口
 

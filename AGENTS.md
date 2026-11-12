@@ -30,7 +30,7 @@ Power-Agent 以 Matt Pocock 的轻量工程能力为主干，融合 Power 的证
 |环境与证据|[docs/harness-engineering.md](docs/harness-engineering.md)|
 |Skill 维护|[docs/skill-and-harness-design.md](docs/skill-and-harness-design.md)|
 |当前决定与理由|[ADR-0014](docs/adr/0014-current-baseline.md)|
-|历史决定与融合来源|[ADR 导航](docs/adr/index.md)、[历史资料](docs/archive/index.md)|
+|历史决定与融合来源|[ADR 导航](docs/adr/index.md)（归档正文已移除）|
 
 项目术语优先沿用已有 CONTEXT 或 glossary；没有真实内容不预建文件。tracker 配置复用项目现有约定，缺省位置为 `docs/agents/issue-tracker.md`；只配置需要的后端，不同时维护本地和远程副本。
 

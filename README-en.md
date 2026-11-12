@@ -151,7 +151,7 @@ Script and behavioral changes also need evidence exercising their actual contrac
 
 ## Status
 
-Personal use, continuously adjusted. No promise of a stable API, backward compatibility, or fitness for every team. Skill count, invocation modes, and content may change. The current baseline is [ADR-0014](docs/adr/0014-current-baseline.md); earlier decisions, the fusion design, and old plans remain in the [ADR index](docs/adr/index.md) and [historical archive](docs/archive/index.md), not as current instructions.
+Personal use, continuously adjusted. No promise of a stable API, backward compatibility, or fitness for every team. Skill count, invocation modes, and content may change. The current baseline is [ADR-0014](docs/adr/0014-current-baseline.md); earlier ADR numbers and history remain in Git history, while archived bodies were removed and are not current instructions.
 
 ## Sources and license
 
@@ -163,4 +163,4 @@ Not designed from scratch. Main references:
 - PR visual guidance retains Dex Horthy / HumanLayer `show-me` credits.
 - [Harness Engineering](https://openai.com/index/harness-engineering/) is a methodological reference, not MIT-licensed software copied into this bundle.
 
-Per-skill sources and trade-offs are in the [historical fusion design](docs/archive/2026-11-11-matt-power-agent-fusion.md); third-party notices are in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). License terms are in [LICENSE](LICENSE).
+Per-skill sources and trade-offs were recorded in the historical fusion design, now removed with the archive; the record remains available in Git history. Third-party notices are in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). License terms are in [LICENSE](LICENSE).

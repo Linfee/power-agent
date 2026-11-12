@@ -3,20 +3,6 @@ type: Decision
 status: accepted
 verification:
   strategy: historical
-supersedes:
-  - archive/0001-skill-as-execution-unit.md
-  - archive/0002-disposable-subagents.md
-  - archive/0003-artifacts-as-coordination.md
-  - archive/0004-lean-agents-md.md
-  - archive/0005-gate-mechanism.md
-  - archive/0006-gate-restructuring.md
-  - archive/0007-reviewer-session-continuity.md
-  - archive/0008-complexity-admission.md
-  - archive/0009-lean-default-orchestration.md
-  - archive/0010-judgment-oriented-skills.md
-  - archive/0011-knowledge-navigation-lifecycle.md
-  - archive/0012-matt-led-skill-fusion.md
-  - archive/0013-skill-invocation-and-hook-boundaries.md
 sources:
   - package.json
   - skills/implement/SKILL.md
@@ -40,7 +26,7 @@ sources:
 
 ## 为什么合并
 
-旧 ADR 中仍标为 accepted 的固定 Gate、旧 Skill 链和独立安装要求，已被后续记录部分限定或替代。读者必须串读多份历史才能恢复当前契约，容易把已经退出的义务重新带入。现将当前决定集中在本记录，原文及原有取代链保存在 [ADR 归档](archive/)。日常事实和操作分别见[架构](../architecture.md)、[工作方式](../workflow.md)、[开发指南](../development.md)，不再拼接旧 ADR 作为现行指令。
+旧 ADR 中仍标为 accepted 的固定 Gate、旧 Skill 链和独立安装要求，已被后续记录部分限定或替代。读者必须串读多份历史才能恢复当前契约，容易把已经退出的义务重新带入。现将当前决定集中在本记录；旧 ADR 原文及原有取代链已从仓库移除，需要追溯时检索 Git 历史。日常事实和操作分别见[架构](../architecture.md)、[工作方式](../workflow.md)、[开发指南](../development.md)，不再拼接旧 ADR 作为现行指令。
 
 2026-11-12 后续技能重构将入口收敛为 24 个，`dev-docs-maintain` 合并入 `dev-docs`，`knowledge-navigation` 改为手动；本记录第 1、2、3 节已同步当前边界。
 

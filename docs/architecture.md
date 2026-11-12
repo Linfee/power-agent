@@ -6,7 +6,7 @@ scope:
 
 # 系统架构
 
-Power-Agent 是以 Matt 轻量工程能力为主干的整包 Skill。目标、真实证据和授权决定行动；已选执行路径内的自动能力不要求用户逐站启动，也不绑成长流水线。当前决定见 [ADR-0014](adr/0014-current-baseline.md)；此前融合设计保存在[历史归档](archive/2026-11-11-matt-power-agent-fusion.md)，不是当前规范。
+Power-Agent 是以 Matt 轻量工程能力为主干的整包 Skill。目标、真实证据和授权决定行动；已选执行路径内的自动能力不要求用户逐站启动，也不绑成长流水线。当前决定见 [ADR-0014](adr/0014-current-baseline.md)；此前融合设计已从仓库移除，不是当前规范，需要追溯时检索 Git 历史。
 
 ## 能力边界
 

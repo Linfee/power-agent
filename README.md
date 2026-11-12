@@ -151,7 +151,7 @@ node scripts/sync-plugin-rules.cjs --check
 
 ## 状态
 
-个人使用，持续调整；不承诺稳定 API、向后兼容或适合所有团队。Skill 数量、调用方式和正文都可能变化。当前基线见 [ADR-0014](docs/adr/0014-current-baseline.md)；历史决定、融合设计和旧计划保留在 [ADR 导航](docs/adr/index.md) 与 [历史资料](docs/archive/index.md)，不作为现行指令。
+个人使用，持续调整；不承诺稳定 API、向后兼容或适合所有团队。Skill 数量、调用方式和正文都可能变化。当前基线见 [ADR-0014](docs/adr/0014-current-baseline.md)；旧 ADR 编号与历史记录由 Git 历史保留，归档正文已移除，不作为现行指令。
 
 ## 来源与许可
 
@@ -163,4 +163,4 @@ node scripts/sync-plugin-rules.cjs --check
 - PR 视觉表达保留 Dex Horthy / HumanLayer `show-me` 的署名。
 - [Harness Engineering](https://openai.com/index/harness-engineering/) 为方法参考，不作为 MIT 软件来源。
 
-逐 Skill 的来源和取舍见[历史融合设计](docs/archive/2026-11-11-matt-power-agent-fusion.md)；第三方许可见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。许可条款见 [LICENSE](LICENSE)。
+逐 Skill 的来源和取舍已随归档移除，可在 Git 历史中检索；第三方许可见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。许可条款见 [LICENSE](LICENSE)。
