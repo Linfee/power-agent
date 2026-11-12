@@ -88,43 +88,41 @@ claude plugin install power-agent@power-agent --scope user
 claude plugin install power-agent@power-agent --scope project
 ```
 
-本地加载使用 `claude --plugin-dir /absolute/path/to/power-agent`。仓库包含 marketplace catalog 与 `.claude-plugin/plugin.json`；catalog 校验不等于所有宿主的运行验收。
+仓库包含 marketplace catalog 与 `.claude-plugin/plugin.json`；安装后在新会话确认插件、hook 与 Skill 的实际加载状态。catalog 校验不等于所有宿主的运行验收。
 
 ### Codex
 
 ```bash
-codex plugin marketplace add /absolute/path/to/power-agent
+codex plugin marketplace add Linfee/power-agent
+codex plugin add power-agent@power-agent
 ```
 
-安装入口是 marketplace 注册加桌面应用启用；CLI 没有 `plugin install` 子命令。注册后，在 Codex 桌面应用 Plugins 中安装并启用，再启动新会话。非托管 hook 须在 `/hooks` 审核并信任，定义变更后重新审核。IDE 扩展不支持插件；marketplace 注册成功不等于 Skill 或规则已送达。
+安装后启动新会话；桌面应用的 Plugins 页面可查看启用状态。非托管 hook 须在 `/hooks` 审核并信任，定义变更后重新审核。IDE 扩展不支持插件；marketplace 注册成功不等于 Skill 或规则已送达。
 
 ### OMP
 
 ```bash
-# 本地 checkout 以链接加载，不是独立副本
-omp plugin install /absolute/path/to/power-agent
+omp plugin install github:Linfee/power-agent
 omp plugin list
 ```
 
-单次会话加载：`omp --extension /absolute/path/to/power-agent`。本地安装写宿主配置，并在新会话初始化扩展。
-
-观察到的 OMP 18.18.9 / Bun 1.4.0 环境中，原生 `github:` 安装会请求 GitHub tarball API 并返回 404；私有仓库不要通过公开仓库或写入 token 绕过。需要独立快照时，按[宿主兼容性](docs/agent-compatibility.md#omp)中的 `gh api` + `npm pack` + `bun add file:` 路径处理。
+安装写宿主配置，并在新会话初始化扩展；`omp plugin list` 可确认插件已登记并启用。
 
 ### pi
 
 ```bash
 pi install git:github.com/Linfee/power-agent
-# 或本地 checkout
-pi install /absolute/path/to/power-agent
-# 项目范围安装，须经宿主项目可信确认
-pi install --local /absolute/path/to/power-agent
+# 项目范围安装；--approve 确认信任该项目
+pi install git:github.com/Linfee/power-agent --local --approve
 ```
 
-`pi list` 查看已配置包。个人范围写宿主设置，`--local` 写项目设置；项目包仅在宿主信任项目后加载。
+`pi list --approve` 查看包含项目设置的包。个人范围写宿主设置，`--local` 写项目设置；项目包仅在宿主信任项目后加载。
 
 ### Cursor
 
-在可用 marketplace 的 Customize 页面安装，或按 Cursor 本地插件说明将整个插件放入 `~/.cursor/plugins/local/power-agent`，重启或 Reload Window 后在 Customize 检查。团队 marketplace 和本地导入受组织策略限制；插件内 `disable-model-invocation: true` 的 Skill 在部分版本会从命令菜单消失，须按目标版本实测。
+Cursor 的个人安装入口是 Marketplace：在 **Customize** 中搜索并安装 Power-Agent；是否上架以目标版本为准，公开 Git 仓库本身不能作为个人插件源直接安装。
+
+团队或企业计划可由管理员在 **Dashboard → Plugins & MCPs → Import from Repo** 导入 `https://github.com/Linfee/power-agent`，再在 Customize 安装。插件内 `disable-model-invocation: true` 的 Skill 在部分版本会从命令菜单消失，须按目标版本实测。
 
 ### Droid
 

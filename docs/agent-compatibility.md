@@ -10,7 +10,7 @@ Power-Agent 面向 Claude Code、pi、OMP、Codex、Cursor 和 Factory/Droid，�
 
 安装前审查插件代码和宿主的权限、信任与配置作用域；插件 hook 和扩展会执行代码。不要把插件安装到一个真实账户、授信或修改其设置当作默认授权。正常安装不需要在业务项目中复制规则或运行项目规则配置器。
 
-以下本地安装路径必须指向包含插件声明、`hooks/` 和 `skills/` 的完整插件源，不能把 Skill 安装目录当成仓库根目录。成功的远端安装取得远端版本；可用性取决于宿主和认证条件，OMP 的私有仓库限制见下文。要使用尚未发布的本地修改，应指定完整 checkout。
+以下命令以公开仓库为安装源；需要验证尚未发布的本地修改时，使用完整 checkout，具体开发入口见[开发指南](development.md)。成功的远端安装取得远端版本，可用性取决于宿主版本、认证和信任条件；插件安装不等于规则、Skill 或 hook 已实际加载。
 
 ## 安装后的调用范围
 
@@ -30,49 +30,43 @@ claude plugin install power-agent@power-agent --scope user
 # 或使用 --scope project
 ```
 
-临时加载本地 checkout：`claude --plugin-dir /absolute/path/to/power-agent`。插件 hook 提供默认规则；安装及启用状态和适用生命周期由宿主控制。参见 [Claude Code 插件](https://code.claude.com/docs/en/plugins)与 [hooks](https://code.claude.com/docs/en/hooks)。
+插件 hook 提供默认规则；安装及启用状态和适用生命周期由宿主控制。参见 [Claude Code 插件](https://code.claude.com/docs/en/plugins)与 [hooks](https://code.claude.com/docs/en/hooks)。
 
 ### pi
 
 ```bash
 pi install git:github.com/Linfee/power-agent
-# 或安装本地 checkout
-pi install /absolute/path/to/power-agent
-# 项目范围安装（须经宿主项目可信确认）
-pi install --local /absolute/path/to/power-agent
+# 项目范围安装；--approve 确认信任该项目
+pi install git:github.com/Linfee/power-agent --local --approve
 ```
 
-包声明 Skill 目录与扩展；`pi list` 查看已配置包。个人安装写用户设置，`--local` 写项目的 pi 设置，项目包仅在宿主信任项目后加载。用 [pi packages](https://pi.dev/docs/latest/packages) 核对当前版本及移除方式；安装配置可筛选资源，不要关闭本包所需的 Skill 或扩展。
+包声明 Skill 目录与扩展；`pi list --approve` 查看包含项目设置的包。个人安装写用户设置，`--local` 写项目的 pi 设置，项目包仅在宿主信任项目后加载。用 [pi packages](https://pi.dev/docs/latest/packages) 核对当前版本及移除方式；安装配置可筛选资源，不要关闭本包所需的 Skill 或扩展。
 
 ### OMP
 
 ```bash
-# 开发安装：本地目录以链接加载，不是独立副本
-omp plugin install /absolute/path/to/power-agent
+omp plugin install github:Linfee/power-agent
 omp plugin list
 ```
 
-OMP 支持包的 `pi` 资源声明；本地安装链接到用户插件目录，会受 checkout 变动影响，不能当独立快照。安装后启动新会话以初始化扩展；`omp --extension /absolute/path/to/power-agent` 仅在一次会话中加载本地包。安装会写宿主配置，具体行为见 [OMP 插件](https://omp.sh/docs/plugins)和 [扩展加载](https://github.com/can1357/oh-my-pi/blob/main/docs/extension-loading.md)。
-
-**私有 GitHub 与副本安装：** 在 OMP 18.18.9 / Bun 1.4.0 的已观察环境中，本仓原生 `github:` 安装请求 GitHub tarball API 并返回 404；设置 `GITHUB_TOKEN` 或 `GH_TOKEN` 仍未通过，不能把现有 Git/`gh` 登录推断为 Bun 已获得权限。不得为绕过安装失败而擅自公开仓库或登记 SSH key，也不能把 token 写进 URL 和配置。
-
-**独立副本（手动快照）：** 在已授权、已有 `gh` 登录的环境中，已执行的路径是用 `gh api` 下载 GitHub 指定提交的 tarball，在临时目录解包并运行 `npm pack`，将产物保存在 OMP 插件目录的 `sources/`，再在该插件目录以 `bun add file:./sources/<产物文件名>.tgz` 安装。此路径产生独立副本，不是指向工作仓库的链接；直接把 `.tgz` 交给该版本的 `omp plugin install` 会被当目录处理，不能替代这一步。
-
-这是操作记录，不是跨版本通用安装脚本；插件目录及登记、启用状态须按当前宿主配置确认，并在新会话验证加载。它是指定提交的快照，不是原生 GitHub 依赖，更新须显式重新下载、打包和安装，不能声称 `omp plugin upgrade` 会跟踪 `main`。后续版本及其他认证方式须另行验证；没有对应授权不修改凭据、组织策略或账户配置。
+OMP 支持包的 `pi` 资源声明；安装写宿主配置，并在新会话初始化扩展。公开仓库的 `github:` 安装已验证；`omp plugin list` 确认插件登记和启用状态。具体行为见 [OMP 插件](https://omp.sh/docs/plugins)和 [扩展加载](https://github.com/can1357/oh-my-pi/blob/main/docs/extension-loading.md)。
 
 ### Codex
 
-先从本地 checkout 注册 marketplace：
+从公开仓库注册 marketplace 并安装：
 
 ```bash
-codex plugin marketplace add /absolute/path/to/power-agent
+codex plugin marketplace add Linfee/power-agent
+codex plugin add power-agent@power-agent
 ```
 
-Codex CLI 不提供 `plugin install` 子命令。按[本地插件安装说明](https://developers.openai.com/plugins/build/plugins#install-a-local-plugin-manually)，在 Codex 桌面应用 Plugins 中安装并启用插件，再启动新会话。官方将生命周期 hook 限于手动安装的桌面插件；非托管 hook 须在 `/hooks` 审核并信任，定义变更后需重新审核。不要未经用户授权授信或绕过信任。Codex IDE 扩展不支持插件；marketplace 注册成功不能证明规则送达。
+安装后启动新会话；桌面应用 Plugins 页面可查看启用状态。官方将生命周期 hook 限于手动安装的桌面插件；非托管 hook 须在 `/hooks` 审核并信任，定义变更后需重新审核。不要未经用户授权授信或绕过信任。Codex IDE 扩展不支持插件；marketplace 注册成功不能证明规则送达。
 
 ### Cursor
 
-在可用 marketplace 的 **Customize** 页面找到 Power-Agent，选择 Install 和用户或项目范围。团队 marketplace 及从仓库导入受计划和管理员权限限制。本地测试时可按 [Cursor 插件说明](https://cursor.com/docs/plugins#test-plugins-locally)将整个插件放入 `~/.cursor/plugins/local/power-agent`，重启或 Reload Window，再在 Customize 检查；本地导入可能被组织策略禁止，指向该目录以外的符号链接不会加载。
+个人安装入口是 Cursor Marketplace：在 **Customize** 中搜索 Power-Agent 并选择 Install 和用户或项目范围。是否上架以目标版本为准；公开 Git 仓库不能作为个人插件源直接安装。
+
+团队或企业计划可由管理员在 **Dashboard → Plugins & MCPs → Import from Repo** 导入 `https://github.com/Linfee/power-agent`，再在 Customize 安装；导入和访问受计划、管理员权限及组织策略限制。
 
 Cursor 使用插件自己的 `rules/minimal-complete-change.mdc`，而非业务项目的 `.cursor/rules`；该文件作为插件资源安装，与其他宿主共用同一规则源。插件 manifest 还声明 `skills/`。参见 [Cursor 插件格式](https://cursor.com/docs/reference/plugins)。
 
@@ -86,7 +80,7 @@ droid plugin install power-agent@power-agent --scope user
 # 或使用 --scope project
 ```
 
-`/plugins` 可查看及管理插件。Factory 从插件根目录发现 `skills/` 和 `hooks/hooks.json`，默认规则通过 `SessionStart` hook 提供；官方列出 startup、resume、clear 和 compact 事件，没有文档化的 `SubagentStart`。添加本地源时须提供包含插件条目的 marketplace，而不是直接把插件目录当成 marketplace。见 [Factory 插件](https://docs.factory.ai/harness/plugins)及 [hooks](https://docs.factory.ai/harness/hooks#plugin-hooks)。
+`/plugins` 可查看及管理插件。Factory 从插件根目录发现 `skills/` 和 `hooks/hooks.json`，默认规则通过 `SessionStart` hook 提供；官方列出 startup、resume、clear 和 compact 事件，没有文档化的 `SubagentStart`。公开仓库本身包含插件条目，可直接作为 marketplace；不要把单个插件目录当成 marketplace。见 [Factory 插件](https://docs.factory.ai/harness/plugins)及 [hooks](https://docs.factory.ai/harness/hooks#plugin-hooks)。
 
 ## 安装条件与限制
 

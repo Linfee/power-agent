@@ -88,43 +88,41 @@ claude plugin install power-agent@power-agent --scope user
 claude plugin install power-agent@power-agent --scope project
 ```
 
-For a local checkout: `claude --plugin-dir /absolute/path/to/power-agent`. A marketplace catalog and `.claude-plugin/plugin.json` are included. Manifest validation is not runtime validation of every host.
+The repository includes a marketplace catalog and `.claude-plugin/plugin.json`. After installation, verify plugin, hook, and skill loading in a new session; catalog validation is not runtime validation of every host.
 
 ### Codex
 
 ```bash
-codex plugin marketplace add /absolute/path/to/power-agent
+codex plugin marketplace add Linfee/power-agent
+codex plugin add power-agent@power-agent
 ```
 
-Installation is marketplace registration plus desktop-app enablement; the CLI has no `plugin install` subcommand. After registration, install and enable in the Codex desktop app's Plugins page, then start a new session. Non-managed hooks must be reviewed and trusted in `/hooks`, and re-reviewed after definition changes. The IDE extension does not support plugins; successful marketplace registration does not prove that skills or rules were delivered.
+Start a new session after installation; the desktop app's Plugins page shows enablement. Non-managed hooks must be reviewed and trusted in `/hooks`, and re-reviewed after definition changes. The IDE extension does not support plugins; successful marketplace registration does not prove that skills or rules were delivered.
 
 ### OMP
 
 ```bash
-# Local checkout is linked, not copied into an independent snapshot
-omp plugin install /absolute/path/to/power-agent
+omp plugin install github:Linfee/power-agent
 omp plugin list
 ```
 
-Load for one session with `omp --extension /absolute/path/to/power-agent`. Local installation writes host configuration and initializes the extension in a new session.
-
-In the observed OMP 18.18.9 / Bun 1.4.0 environment, a native `github:` install requests the GitHub tarball API and returns 404. Do not work around this by making a private repository public or embedding a token. For an independent snapshot, follow the `gh api` + `npm pack` + `bun add file:` path in [host compatibility](docs/agent-compatibility.md#omp).
+Installation writes host configuration and initializes the extension in a new session; `omp plugin list` confirms that the plugin is registered and enabled.
 
 ### pi
 
 ```bash
 pi install git:github.com/Linfee/power-agent
-# Or a local checkout
-pi install /absolute/path/to/power-agent
-# Project-scoped install, subject to host trust confirmation
-pi install --local /absolute/path/to/power-agent
+# Project-scoped install; --approve trusts this project for the command
+pi install git:github.com/Linfee/power-agent --local --approve
 ```
 
-Use `pi list` to inspect configured packages. Personal scope writes host settings; `--local` writes project settings, and a project package loads only after the host trusts the project.
+Use `pi list --approve` to include project-scoped packages. Personal scope writes host settings; `--local` writes project settings, and a project package loads only after the host trusts the project.
 
 ### Cursor
 
-Install from Customize when a marketplace is available, or follow Cursor's local plugin instructions to place the whole plugin under `~/.cursor/plugins/local/power-agent`, then restart or reload the window and inspect Customize. Team marketplaces and local imports are subject to organization policy. On some versions, skills with `disable-model-invocation: true` disappear from the command menu; verify against the target version.
+Personal installation goes through Cursor Marketplace: search for Power-Agent in **Customize** and install it. Availability depends on the target version; a public Git repository alone is not a personal plugin source.
+
+Teams and Enterprise admins can import the public repository through **Dashboard → Plugins & MCPs → Import from Repo**, then install from Customize. On some versions, skills with `disable-model-invocation: true` disappear from the command menu; verify against the target version.
 
 ### Droid
 
