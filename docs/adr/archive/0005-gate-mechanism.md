@@ -1,11 +1,17 @@
 ---
 type: Decision
 status: superseded
-superseded_by: 0006-gate-restructuring.md
+superseded_by:
+  - 0006-gate-restructuring.md
+  - ../0014-current-baseline.md
 superseded_at: 2026-03-25
+verification:
+  strategy: historical
 ---
 
 # ADR-0005: Gate 机制强制人工确认
+
+> 历史记录：已由 [ADR-0014](../0014-current-baseline.md) 归并取代，原有取代关系保留。下文的决定、状态说明与旧 Skill 名称保留当时含义，不作为当前指令。
 
 > **状态：** superseded by [ADR-0006](0006-gate-restructuring.md)（2026-03-25）
 

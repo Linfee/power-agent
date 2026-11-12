@@ -1,13 +1,15 @@
 ---
 type: Plan
-status: active
+status: archived
 ---
 
 # Matt 主干融合迁移计划
 
+> **归档，不再作为活动状态，历史状态保留。** 归档前状态为 `active`；旧授权、恢复步骤与下方状态源指针均为当时记录，不表示任务已完成或可据此恢复；`.scratch/` 是当时临时 tracker，不保证仍可用。当前入口见[文档索引](../../../index.md)与 [ADR-0014](../../../adr/0014-current-baseline.md)。
+
 ## 计划用途与当前边界
 
-本计划供人工审阅和后续会话实施，[正式设计](../../../specs/2026-11-11-matt-power-agent-fusion.md)是目标、25 个 Skill 的来源/取舍/验收及退出映射的真源。
+本计划供人工审阅和后续会话实施，[正式设计](../../../archive/2026-11-11-matt-power-agent-fusion.md)是目标、25 个 Skill 的来源/取舍/验收及退出映射的真源。
 
 **用户已确认按本设计推进本地实施。** 可修改目标 Skill、相关脚本、分发及现行文档，并按设计退出旧资产；不执行 commit、branch/worktree、push、远端 PR/tracker、用户安装目录或秘密/生产配置操作。下述验收入口不代表已运行。
 

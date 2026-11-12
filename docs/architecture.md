@@ -6,7 +6,7 @@ scope:
 
 # 系统架构
 
-Power-Agent 是以 Matt 轻量工程能力为主干的整包 Skill。目标、真实证据和授权决定行动；已选执行路径内的自动能力不要求用户逐站启动，也不绑成长流水线。当前调用与 hook 决定见 [ADR-0013](adr/0013-skill-invocation-and-hook-boundaries.md)，其余融合原则与来源见 [ADR-0012](adr/0012-matt-led-skill-fusion.md) 和[融合设计](specs/2026-11-11-matt-power-agent-fusion.md)。
+Power-Agent 是以 Matt 轻量工程能力为主干的整包 Skill。目标、真实证据和授权决定行动；已选执行路径内的自动能力不要求用户逐站启动，也不绑成长流水线。当前决定见 [ADR-0014](adr/0014-current-baseline.md)；此前融合设计保存在[历史归档](archive/2026-11-11-matt-power-agent-fusion.md)，不是当前规范。
 
 ## 能力边界
 
@@ -23,9 +23,9 @@ Power-Agent 是以 Matt 轻量工程能力为主干的整包 Skill。目标、�
 
 ## 整包组合
 
-24 个目录平铺在 `skills/`，其中 15 个允许模型调用、9 个仅手动调用，清单见 [README](../README.md#skills)。自动实施入口、工程内核及实际依赖保持可达；手动流程只由用户显式启动。`grilling` 保留原版问题树、逐轮 frontier 和用户共同理解确认，确认前不实施。支持文件从实际安装位置解析，不假定业务 cwd 有源码目录。
+24 个目录平铺在 `skills/`，其中 15 个允许模型调用；9 个仅手动调用：`grill-with-docs`、`to-spec`、`to-tickets`、`wayfinder`、`triage`、`improve-codebase-architecture`、`retro`、`handoff`、`knowledge-navigation`。`implement`、`implement-spec`、`setup-power-agent` 及其实际依赖保持可达；手动流程只由用户显式启动。`grilling` 保留原版问题树、逐轮 frontier 和用户共同理解确认，确认前不实施。支持文件从实际安装位置解析，不假定业务 cwd 有源码目录。
 
-不承诺单 Skill 独立安装，也不设置品牌 router。主文足以决定何时使用专门知识，references 按当前问题加载；具名调用只指向允许模型调用的能力。手动入口不能成为自动依赖，也不能靠读取其正文绕过限制。用户选定路径后不逐步交回人工；已有普通材料可以直接消费，不要求重新通过上游生成。
+不承诺单 Skill 独立安装，也不设置品牌 router。主文足以决定何时使用专门知识，references 按当前问题加载；具名调用只指向允许模型调用的能力。手动入口不能成为自动依赖，也不能靠读取其正文绕过限制；元数据是宿主调用策略，不是通用访问控制。已有普通材料可以直接消费，不要求重新通过上游生成。
 
 例如，实现可消费 POD 的测试判断与 review 的审查判断；讨论落盘可消费领域语义及目标项目文档协议。是否需要这些能力由任务决定，不把整包依赖图变成每次必跑的链。
 
@@ -33,21 +33,17 @@ Power-Agent 是以 Matt 轻量工程能力为主干的整包 Skill。目标、�
 
 最小完整改动默认规则的唯一来源是 [`skills/codebase-design/references/minimal-complete-change.md`](../skills/codebase-design/references/minimal-complete-change.md)。它指导所有编码任务优先解决已授权的实际问题，避免无实际消费者的抽象和扩张；完整性、正确性、安全、兼容性和必要验证仍由任务决定。它不是必须执行的固定工作流，也不替代 `codebase-design` 等按需加载的 Skill。
 
-`hooks/defaults.cjs` 从安装位置读取该来源，以受管理标记提供给原生 hook 和 pi 扩展；Cursor 插件的规则由 `scripts/sync-plugin-rules.cjs` 从同一来源生成到 `rules/minimal-complete-change.mdc`，不维护第二份规则正文。六种宿主均安装本仓库的插件或包，不向业务项目复制规则。规则送达、Skill 发现和普通 sub-agent 是不同能力；各宿主的入口、限制及验证边界见[兼容性指南](agent-compatibility.md)。
+`hooks/defaults.cjs` 从安装位置读取该来源，供原生 hook 和 pi/OMP 扩展使用；Cursor 插件规则由 `scripts/sync-plugin-rules.cjs` 从同一来源生成到 `rules/minimal-complete-change.mdc`，不维护第二份规则正文。Claude Code、pi、OMP、Codex、Cursor、Factory/Droid 使用本仓库的插件或包，无需向业务项目复制规则。各宿主的入口、信任条件和验证边界见[兼容性指南](agent-compatibility.md)；资源声明不等于实际送达或模型遵循。
 
 ## 执行状态与知识
 
-执行状态只在项目已选定的 tracker。配置复用现有位置，无约定才用 `docs/agents/issue-tracker.md`；GitHub、GitLab、本地三选一。spec 表达整体目标，tickets 在有调度消费者时表达工作切片，现有完整 issue 无需再包装。
+有持久任务图时，执行状态以项目选定的 tracker 为唯一真源；没有 tracker 时，普通实现不因此受阻。配置复用已有位置，无约定才用 `docs/agents/issue-tracker.md`；已有 GitHub、GitLab、本地或其他后端按项目实际工作方式配置，不复制第二份状态。仓库文档保存术语、决定和稳定系统事实；计划与交接引用状态源，不取代它。
 
-native 关系/状态受实际平台版本与 tier 支持时优先使用；不支持时用约定正文，一个属性不双写。本地条目最小区分 `Kind`、`State`、`Blocked by`、`Owner`，仅外来请求另有可选 `Triage`。单协调者拥有状态写入，assignee 或重读标记不是原子锁。
+多票协调者从 tracker 获取任务图，按真实依赖、写所有权和授权推进，并对整体组合验收负责。关系表达、状态写入与恢复方式见[工作方式](workflow.md#任务图与唯一状态源)。
 
-仓库文档保存术语、决定、稳定系统事实和拒绝理由。计划与 handoff 保存意图、证据和状态源指针，不复制进度；恢复先重读当前 tracker。子项完成不能直接关闭父 spec/map，整体组合验收仍由协调者负责。
+## 宿主与 Sub-agent
 
-## Sub-agent 与集成
-
-宿主必须提供普通 sub-agent 的任务传入、上下文传递、结果收集和并行执行。子代理使用新上下文；独立工作按依赖并行，共享文件或接口由唯一整合者写入或串行处理。结果是待核验证据，不自动构成完成声明。
-
-不使用 team mode、不规定并发数字、不提供无 sub-agent fallback。默认可以在工作树按不重叠写范围协作，不为并行暗中创建分支、worktree、commit、merge、PR 或清理目录。
+支持完整工作方式的宿主需要普通 sub-agent 的任务传入、上下文传递和结果收集能力；独立工作可并行，共享写入需协调。子代理使用新上下文，结果仍由协调者核验和集成。不依赖 team mode，不规定平台并发数字，也不维护无 sub-agent fallback；宿主实际能力不能仅由安装声明推断。
 
 ## 证据、授权与机器协议
 

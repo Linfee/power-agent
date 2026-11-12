@@ -7,7 +7,7 @@ scope:
   - docs/**
   - .gitignore
 status: superseded
-superseded_by: ../../../adr/0012-matt-led-skill-fusion.md
+superseded_by: ../../../adr/archive/0012-matt-led-skill-fusion.md
 runner:
   state: AWAITING_COMMIT
   batch: 2/2
@@ -17,9 +17,14 @@ runner:
 ---
 
 # 移除 Skill 评测机制实现计划
+
+> **归档，不再作为活动状态，历史状态保留。** 当前入口见[文档索引](../../../index.md)与 [ADR-0014](../../../adr/0014-current-baseline.md)；下文不授权恢复旧任务。
+
+> **来源限制。** 历史范围中的 `evals/**` 已不存在，当前 Bundle 扫描会报告来源缺失。保留原范围以解释移除对象，不应据此恢复目录或认定旧计划已重新验证。
+
 ## Current applicability
 
-本文档记录移除 eval 时的旧执行方案，不能作为当前 Skill 路由、Gate 或具名依赖的执行契约。旧收尾动作由 [ADR-0012](../../../adr/0012-matt-led-skill-fusion.md) 及本次融合取代，不再等待旧 commit Gate；下文 runner 和当前状态为历史。无持续消费者的永久评测平台仍不恢复，本次允许隔离的行为验收。
+本文档记录移除 eval 时的旧执行方案，不能作为当前 Skill 路由、Gate 或具名依赖的执行契约。旧收尾动作由 [ADR-0012](../../../adr/archive/0012-matt-led-skill-fusion.md) 及本次融合取代，不再等待旧 commit Gate；下文 runner 和当前状态为历史。无持续消费者的永久评测平台仍不恢复，本次允许隔离的行为验收。
 
 
 ## 讨论结论 / 产品结论
@@ -44,7 +49,7 @@ runner:
 ### Out of Scope
 - 删除普通代码测试、项目验证、Proof Block、最终验证、代码审查或 docs scanner。
 - 改写 `docs/exec-plans/completed/` 的历史事实。
-- 删除仅记录外部项目评测研究的 `docs/references/superpowers-and-mattpocock-evaluations.md`。
+- 删除仅记录外部项目评测研究的 `docs/references/superpowers-and-mattpocock-evaluations.md`（现[归档于此](../../../archive/superpowers-and-mattpocock-evaluations.md)）。
 
 ## Key Decisions
 
@@ -54,7 +59,7 @@ runner:
   - 执行含义：删除 eval 专属资产和契约，保留 Proof、review、scanner 与目标项目测试指导。
 - 决策：当前 active `codebase-design-skill` plan 是 live consumer，必须 material amendment；completed plans 保留历史记录。
   - 原因：该 active plan 将路由/行为评测作为 scope、acceptance 与主证明；删除资产后原验收不可成立。其 invocation consistency script 是普通结构检查，继续保留。
-  - 证据：`docs/exec-plans/active/2026-08-03-codebase-design-skill/{plan,review-contract}.md`；`scripts/check-invocation-consistency.sh` 只核对 frontmatter 与 `AGENTS.md` 索引。
+  - 证据：`docs/exec-plans/active/2026-08-03-codebase-design-skill/{plan,review-contract}.md`（现归档的[计划](../2026-08-03-codebase-design-skill/plan.md)与[审阅快照](../2026-08-03-codebase-design-skill/review-contract.md)）；`scripts/check-invocation-consistency.sh` 只核对 frontmatter 与 `AGENTS.md` 索引。
   - 执行含义：在同一改动中更新其当前范围、证明和状态，不重写归档计划，也不删除一致性检查。
 
 ## Agent 自主边界

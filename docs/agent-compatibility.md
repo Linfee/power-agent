@@ -10,11 +10,11 @@ Power-Agent 面向 Claude Code、pi、OMP、Codex、Cursor 和 Factory/Droid，�
 
 安装前审查插件代码和宿主的权限、信任与配置作用域；插件 hook 和扩展会执行代码。不要把插件安装到一个真实账户、授信或修改其设置当作默认授权。正常安装不需要在业务项目中复制规则或运行项目规则配置器。
 
-以下本地安装路径必须指向包含插件声明、`hooks/` 和 `skills/` 的完整插件源，不能把 Skill 安装目录当成仓库根目录。Git 安装取得远端版本；要使用尚未发布的本地修改，应指定完整 checkout。
+以下本地安装路径必须指向包含插件声明、`hooks/` 和 `skills/` 的完整插件源，不能把 Skill 安装目录当成仓库根目录。成功的远端安装取得远端版本；可用性取决于宿主和认证条件，OMP 的私有仓库限制见下文。要使用尚未发布的本地修改，应指定完整 checkout。
 
 ## 安装后的调用范围
 
-手动入口是 `grill-with-docs`、`to-spec`、`to-tickets`、`wayfinder`、`triage`、`improve-codebase-architecture`、`retro`、`handoff`；其余入口允许模型调用。`implement`、`implement-spec`、`setup-power-agent` 及其实际依赖保持自动可达。
+手动入口是 `grill-with-docs`、`to-spec`、`to-tickets`、`wayfinder`、`triage`、`improve-codebase-architecture`、`retro`、`handoff`、`knowledge-navigation`；其余入口允许模型调用。`implement`、`implement-spec`、`setup-power-agent` 及其实际依赖保持自动可达。
 
 手动入口同时提供 `SKILL.md` 的 `disable-model-invocation: true` 与 Codex 的 `agents/openai.yaml` 中 `policy.allow_implicit_invocation: false`。Claude、pi、OMP、Cursor、Droid 使用前者，Codex 使用后者；这些是宿主调用策略，不是通用访问控制，也不授予外部副作用权限。内部调用只指向自动能力，不读取手动正文绕过限制。
 
@@ -47,13 +47,18 @@ pi install --local /absolute/path/to/power-agent
 ### OMP
 
 ```bash
+# 开发安装：本地目录以链接加载，不是独立副本
 omp plugin install /absolute/path/to/power-agent
-# 或从 Git 安装
-omp plugin install 'github:Linfee/power-agent'
 omp plugin list
 ```
 
-本地安装链接到用户插件目录；安装后重新启动会话以初始化扩展。OMP 支持包的 `pi` 资源声明；可用 `omp --extension /absolute/path/to/power-agent` 仅在一次会话中加载本地包。安装会写宿主配置，具体行为见 [OMP 插件](https://omp.sh/docs/plugins)和 [扩展加载](https://github.com/can1357/oh-my-pi/blob/main/docs/extension-loading.md)。
+OMP 支持包的 `pi` 资源声明；本地安装链接到用户插件目录，会受 checkout 变动影响，不能当独立快照。安装后启动新会话以初始化扩展；`omp --extension /absolute/path/to/power-agent` 仅在一次会话中加载本地包。安装会写宿主配置，具体行为见 [OMP 插件](https://omp.sh/docs/plugins)和 [扩展加载](https://github.com/can1357/oh-my-pi/blob/main/docs/extension-loading.md)。
+
+**私有 GitHub 与副本安装：** 在 OMP 18.18.9 / Bun 1.4.0 的已观察环境中，本仓原生 `github:` 安装请求 GitHub tarball API 并返回 404；设置 `GITHUB_TOKEN` 或 `GH_TOKEN` 仍未通过，不能把现有 Git/`gh` 登录推断为 Bun 已获得权限。不得为绕过安装失败而擅自公开仓库或登记 SSH key，也不能把 token 写进 URL 和配置。
+
+**独立副本（手动快照）：** 在已授权、已有 `gh` 登录的环境中，已执行的路径是用 `gh api` 下载 GitHub 指定提交的 tarball，在临时目录解包并运行 `npm pack`，将产物保存在 OMP 插件目录的 `sources/`，再在该插件目录以 `bun add file:./sources/<产物文件名>.tgz` 安装。此路径产生独立副本，不是指向工作仓库的链接；直接把 `.tgz` 交给该版本的 `omp plugin install` 会被当目录处理，不能替代这一步。
+
+这是操作记录，不是跨版本通用安装脚本；插件目录及登记、启用状态须按当前宿主配置确认，并在新会话验证加载。它是指定提交的快照，不是原生 GitHub 依赖，更新须显式重新下载、打包和安装，不能声称 `omp plugin upgrade` 会跟踪 `main`。后续版本及其他认证方式须另行验证；没有对应授权不修改凭据、组织策略或账户配置。
 
 ### Codex
 

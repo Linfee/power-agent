@@ -6,9 +6,12 @@ scope:
 ---
 
 # 引入 codebase-design Skill — Review Contract
+
+> **归档，不再作为活动状态，历史状态保留。** 当前入口见[文档索引](../../../index.md)与 [ADR-0014](../../../adr/0014-current-baseline.md)；下文不授权恢复旧任务。
+
 ## Current applicability
 
-本文档是旧计划的审阅快照，不定义当前运行时 Gate、固定审阅路径或 Skill 依赖。相关旧收尾由 [ADR-0012](../../../adr/0012-matt-led-skill-fusion.md) 取代，不重新触发本文的 commit 或评审步骤。
+本文档是旧计划的审阅快照，不定义当前运行时 Gate、固定审阅路径或 Skill 依赖。相关旧收尾由 [ADR-0012](../../../adr/archive/0012-matt-led-skill-fusion.md) 取代，不重新触发本文的 commit 或评审步骤。
 
 
 ## Intent

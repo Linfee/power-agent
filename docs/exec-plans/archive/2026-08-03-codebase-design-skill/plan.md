@@ -4,7 +4,7 @@ scope:
   - skill-design
   - workflow-routing
 status: superseded
-superseded_by: ../../../adr/0012-matt-led-skill-fusion.md
+superseded_by: ../../../adr/archive/0012-matt-led-skill-fusion.md
 runner:
   state: AWAITING_COMMIT
   batch: 1/1
@@ -14,9 +14,12 @@ runner:
 ---
 
 # 引入 codebase-design Skill 实现计划
+
+> **归档，不再作为活动状态，历史状态保留。** 当前入口见[文档索引](../../../index.md)与 [ADR-0014](../../../adr/0014-current-baseline.md)；下文不授权恢复旧任务。
+
 ## Current applicability
 
-本文档记录旧执行方案及其当时证据，不能作为当前 Skill 路由、Gate 或具名依赖的执行契约。旧收尾动作由 [ADR-0012](../../../adr/0012-matt-led-skill-fusion.md) 及本次融合取代，不再等待旧 commit Gate；下文的 runner 和当前状态仅保留历史，不表示今天仍获授权执行。
+本文档记录旧执行方案及其当时证据，不能作为当前 Skill 路由、Gate 或具名依赖的执行契约。旧收尾动作由 [ADR-0012](../../../adr/archive/0012-matt-led-skill-fusion.md) 及本次融合取代，不再等待旧 commit Gate；下文的 runner 和当前状态仅保留历史，不表示今天仍获授权执行。
 
 
 ## 讨论结论 / 产品结论

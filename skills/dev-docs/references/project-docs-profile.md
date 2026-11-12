@@ -35,7 +35,7 @@ verification:
 ---
 ```
 
-接受时更新状态；已授权取代时保留旧决定，旧 ADR 设 `superseded` 并以相对路径写 `superseded_by`，新 ADR 用相对路径的 `supersedes` 反向指回。两者均须是 Bundle 内可解析的 Decision。非 Bundle 项目沿用自己的生命周期格式。
+接受时更新状态；已授权取代时保留旧决定，旧 ADR 设 `superseded` 并以相对路径写 `superseded_by`，新 ADR 用相对路径的 `supersedes` 反向指回。两个字段都可使用单条路径或非空路径列表，以支持合并决定并保留原取代链。每个替代目标须是 Bundle 内可解析的 Decision，且其 `supersedes` 包含旧 ADR 的路径；列表不能包含空值或无效路径。非 Bundle 项目沿用自己的生命周期格式。
 
 ## 渐进迁移
 

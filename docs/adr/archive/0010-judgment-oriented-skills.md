@@ -1,11 +1,17 @@
 ---
 type: Decision
 status: superseded
-superseded_by: 0012-matt-led-skill-fusion.md
+superseded_by:
+  - 0012-matt-led-skill-fusion.md
+  - ../0014-current-baseline.md
 supersedes: 0009-lean-default-orchestration.md
+verification:
+  strategy: historical
 ---
 
 # ADR-0010: 判断导向的独立 Skill
+
+> 历史记录：已由 [ADR-0014](../0014-current-baseline.md) 归并取代，原有取代关系保留。下文的决定、状态说明与旧 Skill 名称保留当时含义，不作为当前指令。
 
 **状态：** superseded（由 [ADR-0012](0012-matt-led-skill-fusion.md) 取代；下文保留当时决定。原 supersedes [ADR-0009](0009-lean-default-orchestration.md)）
 **日期：** 2026-08-30  

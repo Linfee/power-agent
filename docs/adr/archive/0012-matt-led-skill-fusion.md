@@ -1,13 +1,16 @@
 ---
 type: Decision
 status: superseded
+verification:
+  strategy: historical
 supersedes:
   - 0010-judgment-oriented-skills.md
   - 0011-knowledge-navigation-lifecycle.md
 superseded_by:
   - 0013-skill-invocation-and-hook-boundaries.md
+  - ../0014-current-baseline.md
 sources:
-  - docs/specs/2026-11-11-matt-power-agent-fusion.md
+  - docs/archive/2026-11-11-matt-power-agent-fusion.md
   - AGENTS.md
   - skills/proof-oriented-development/SKILL.md
   - skills/implement-spec/SKILL.md
@@ -15,13 +18,15 @@ sources:
 
 # ADR-0012: Matt 主干、整包组合与授权内连续推进
 
+> 历史记录：已由 [ADR-0014](../0014-current-baseline.md) 归并取代，原有取代关系保留。下文的决定、状态说明与旧 Skill 名称保留当时含义，不作为当前指令。
+
 **日期：** 2026-11-11
 
 **后续决定（2026-11-12）：** [ADR-0013](0013-skill-invocation-and-hook-boundaries.md) 取代本记录的默认调用策略，收敛为 17 个模型可调用入口与 8 个手动入口，并明确 hook 先验证缺口再增强；其余融合原则由新决定继续采用。下文保留当时的决定与修订。
 
-**同日后续修订：** 用户要求 `grilling` 与 `grill-with-docs` 恢复 Matt 固定版本原文及调用元数据。下文保留初次融合决定；其中“25 个均可模型调用”更新为 `grill-with-docs` 手动、其余可模型调用，讨论的完成与行动边界以原版问题树和用户共同理解确认为准。具体当前契约见[正式设计 S05/S06](../specs/2026-11-11-matt-power-agent-fusion.md#s05-grilling)，其余融合决定不变。
+**同日后续修订：** 用户要求 `grilling` 与 `grill-with-docs` 恢复 Matt 固定版本原文及调用元数据。下文保留初次融合决定；其中“25 个均可模型调用”更新为 `grill-with-docs` 手动、其余可模型调用，讨论的完成与行动边界以原版问题树和用户共同理解确认为准。具体当时契约见[融合设计 S05/S06](../../archive/2026-11-11-matt-power-agent-fusion.md#s05-grilling)，其余融合决定不变。
 
-**内容深度修订：** 用户进一步要求按 Matt 原版的篇幅设计，避免过度压缩。迁入内容改以固定原版正文与 references 为底稿，保留完整方法、理由、反例、示例和模板，仅在已确认的融合差异处局部改写。轻量衡量加载、重复、人工接力和状态成本，不以文件更短为目标；不设置等长配额，也不借恢复内容重引已否决的流程和授权政策。具体规则见[正式设计 §3.4](../specs/2026-11-11-matt-power-agent-fusion.md#34-原版内容深度与删改判据)。
+**内容深度修订：** 用户进一步要求按 Matt 原版的篇幅设计，避免过度压缩。迁入内容改以固定原版正文与 references 为底稿，保留完整方法、理由、反例、示例和模板，仅在已确认的融合差异处局部改写。轻量衡量加载、重复、人工接力和状态成本，不以文件更短为目标；不设置等长配额，也不借恢复内容重引已否决的流程和授权政策。具体规则见[融合设计 §3.4](../../archive/2026-11-11-matt-power-agent-fusion.md#34-原版内容深度与删改判据)。
 
 ## 背景
 
