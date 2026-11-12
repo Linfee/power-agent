@@ -6,7 +6,7 @@ scope:
 
 # 工作方式与 Skill 协调
 
-用户给出目标并确认必要取舍后，Agent 在授权内连续推进实现、验证、适用审查和修复。Skill 是按需能力，不是等用户逐个点击的阶段。当前分工见 [ADR-0012](adr/0012-matt-led-skill-fusion.md)。
+用户给出目标并确认必要取舍后，Agent 在已选执行路径内连续推进授权内的实现、验证、适用审查和修复。自动能力按需组合；手动 Skill 须由用户显式启动，不被内部调用链绕过。当前边界见 [ADR-0013](adr/0013-skill-invocation-and-hook-boundaries.md)。
 
 ## 从当前缺口进入
 
@@ -16,8 +16,8 @@ scope:
 
 - 目标或取舍未清：`grilling` 按原版问题树逐轮访谈；用户显式选择 `grill-with-docs` 时，组合 `grilling` 与 `domain-modeling`。
 - 明确行为变更：`implement` 与 POD；根因不明先用 `diagnosing-bugs` 获取区分性证据。
-- 需要依赖调度或跨会话恢复：按需使用 `to-spec`、`to-tickets`、`implement-spec`；复杂决定地图可用 `wayfinder`。
-- 审查、技术研究、原型、PR 草稿、项目知识或 Harness 评估，可以直接选择对应入口，不先走其他站点。
+- 需要依赖调度或跨会话恢复：`implement-spec` 可直接消费已有 spec、票据和关系；用户需要专门的规划流程时显式选择 `to-spec`、`to-tickets` 或 `wayfinder`，不为进入实施额外造票。
+- 审查、技术研究、原型、PR 草稿和项目知识可按缺口使用自动能力；`triage`、`improve-codebase-architecture`、`retro`、`handoff` 是用户选择的手动入口，不自动扩展当前任务。
 
 进入 `grilling` 后，当前前置条件已满足的问题组成一轮 frontier；依赖尚未回答问题的分支留到后续轮次，事实调查使用新上下文子代理。问题树收敛后仍须用户确认共同理解，不能用自动推进绕过此确认；确认前不实施。`grill-with-docs` 保留原版手动调用元数据，不是模型自动选择的讨论入口。
 

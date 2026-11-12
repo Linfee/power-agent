@@ -9,18 +9,20 @@ status: accepted
 
 方向与实施已获用户确认；本文是 25 个目标 Skill 的融合契约。S05/S06 已按用户后续要求恢复 Matt 固定版本原文与调用元数据，不再使用初次融合的简化讨论行为。用户进一步要求按 Matt 原版的篇幅设计，迁入内容以原版方法和 references 的完整度为底稿，不再以缩短为目标。当前实现与验证按[迁移计划](../exec-plans/active/2026-11-11-matt-power-agent-fusion/plan.md)推进，完成证据以实际验收记录为准，不以设计描述代替运行结果。
 
+**后续调用策略修订（2026-11-12）：** 用户已确认按 [ADR-0013](../adr/0013-skill-invocation-and-hook-boundaries.md) 收敛默认模型入口并维持薄 hook。下文的产品决定与加载方式同步此边界，其余来源、内容深度和融合判断保留。
+
 目标不是并排安装两套规则，而是：**以 Matt 的轻量工程能力为主干，用 Power-Agent 的少量判断、证明和自动推进能力补足。** 不以旧 ADR 限制新设计；被改变的旧决定在实施切换时通过新 ADR 明确取代，不提前宣称已废止。
 
 ## 1. 已确认的产品决定
 
 1. Matt 是默认来源，以固定原版正文及 references 为内容底稿，保留方法、理由、反例、示例和模板。Power-Agent 的内容只有在改变行动、判断、授权边界或验收时保留，并在确认的差异处局部融合，不拼接两份重复正文。
-2. 用户确认目标和必要取舍后，Agent 在授权范围内连续完成实现、验证、适用审查与修复，不把每个 Skill 的结束变成人工启动下一步的关卡。进入 `grilling` 时保留原版用户共同理解确认，确认前不实施。
+2. 用户确认目标和必要取舍后，Agent 在已选执行路径内连续完成授权内的实现、验证、适用审查与修复，不把自动能力的切换变成人工关卡；手动 Skill 由用户显式启动。进入 `grilling` 时保留原版共同理解确认，确认前不实施。
 3. 保留 `proof-oriented-development`（下文简称 POD），吸收 Matt 的 TDD 知识，不再提供一份平行的 `tdd`。可自动化验证的行为变更默认 Red/Green/Refactor；UI、文档和机械变更采用匹配结果的证据。
 4. 沿用 Matt 的主要分工与命名。`systematic-debugging` 改为 `diagnosing-bugs`；讨论、计划、收尾、Skill 写作和环境评估的旧入口分别融合，不留兼容别名。
 5. 采用 tracker 中的 spec、tickets 和依赖关系。tracker 保存执行状态；仓库文档保存术语、决定和仍然成立的知识，不双写进度。
 6. 小而明确的任务直接进入 POD。只有跨会话、任务依赖或并行协作需要时才展开 spec/tickets；已有 issue 可以直接实现，不必为了形式再建 ticket。
 7. 保留知识写入、维护和导航能力；OKF 字段、账本、扫描器按真实消费者裁剪，不整体照搬，也不整体删掉。
-8. 默认分发整套能力，允许具名 Skill 调用；`grill-with-docs` 按 Matt 原版手动调用，其余入口允许模型调用。不再承诺每个 Skill 单独安装也完整运行。宿主仍需支持普通 sub-agent，不引入 team mode、无 sub-agent fallback 或固定并发上限。
+8. 默认分发整套能力，17 个入口允许模型调用、8 个仅手动调用，清单与理由见 ADR-0013。具名依赖只能指向自动能力，不读取手动正文绕过限制。不承诺每个 Skill 单独安装也完整运行。宿主仍需支持普通 sub-agent，不引入 team mode、无 sub-agent fallback 或固定并发上限。
 9. 审查保留“需求符合性”和“工程正确性与质量”两维。维度不等于固定两个 reviewer；独立性和投入由影响、复杂度及不确定性决定。
 10. 诊断优先建立反馈，但没有可运行的红色命令不妨碍提出、检验假设。日志、trace、成功/失败差分可以提供区分性证据；读代码不能单独证明失败运行的根因。
 11. 自动推进不扩大授权。commit、push、PR、合并、issue 修改、敏感配置和破坏性动作，均核对已有授权是否覆盖具体对象与操作；覆盖时不重复询问，未覆盖时只暂停相关动作。
@@ -57,17 +59,17 @@ Matt 本地存在未跟踪扩展，例如 `writing-great-skills`、`resolving-me
 
 - **目标清楚、范围小**：POD 完成实现和对应证明；需要时调用设计、诊断、审查。无需先建 spec、ticket 或完成报告文件。
 - **影响结果的取舍未定**：`grilling` 按 Matt 原版的问题树和 frontier 分轮访谈，事实由新上下文子代理查证；问题树收敛且用户确认共同理解后，才可继续已授权行动。需要边讨论边记录领域知识时，由用户选择 `grill-with-docs`。
-- **目标已知但需持久协作**：`to-spec` 表达目标；`to-tickets` 仅在拆分有收益时建立可交付切片与依赖；`implement` 执行单个目标，`implement-spec` 协调整张任务图。
-- **目标尚在探索**：`wayfinder` 维护低分辨率地图和当前待解问题，可调用研究、原型或讨论；信息足够后转入交付，不强制每个决定占一个会话。
+- **目标已知但需持久协作**：用户显式选择 `to-spec` 表达目标、`to-tickets` 在拆分有收益时建立切片与依赖；`implement` 与 `implement-spec` 保持自动可达，直接消费已有完整材料。
+- **目标尚在探索**：用户可显式选择 `wayfinder` 维护低分辨率地图和待解问题，并按需使用研究、原型或讨论；信息足够后继续已授权工作，不强制每个决定占一个会话。
 - **完成**：交付当前请求需要的结果及证据。若发布已获授权，可继续 `pr` 等动作；否则说明完成的本地结果和未执行的发布动作，不把缺少发布授权误报成实现未完成。
 
-没有固定的 `grilling → to-spec → to-tickets → implement → review → pr` 必跑链，也不要求用户记住这串命令。常见路由放在 description、README 与 setup 生成的项目指针中；不引入 `ask-matt` 或新的品牌路由 Skill。
+没有固定的 `grilling → to-spec → to-tickets → implement → review → pr` 必跑链。用户选择手动入口后，内部只组合自动能力，不逐阶段接力；未选择专门流程时仍可直接完成明确任务。路由说明放在 description、README 与项目指针中，不引入 `ask-matt` 或新的品牌路由 Skill。
 
 ### 3.3 具名调用与加载方式
 
-除 `grill-with-docs` 按原版保留手动调用外，其余目标 Skill 允许模型根据任务调用。`grill-with-docs` 的 frontmatter 保留 `disable-model-invocation: true`，Codex metadata 保留 `policy.allow_implicit_invocation: false`。发现性、调用开关和副作用权限是三件事：能自动调用 `pr`，不代表可以自动发布。
+25 个 Skill 整包安装，17 个允许模型根据任务调用、8 个仅用户显式调用。手动入口同时设置 `disable-model-invocation: true` 与 Codex 的 `policy.allow_implicit_invocation: false`，任何 Skill 都不能自动调用它们。发现性、正文加载、调用开关和副作用权限分别处理：能自动调用 `pr` 不代表可以自动发布。
 
-共享工程判断只保留一个权威来源：POD 负责行为证明，`codebase-design` 负责模块与接口判断，`code-review` 负责审查判断，`domain-modeling` 负责术语和决定的语义。调用方给出触发条件和上下文，不复制整份规则。宿主无名为 Skill 的工具时，可以按安装后的可靠指针读取正文；这不是无 sub-agent fallback。
+共享工程判断只保留一个权威来源：POD 负责行为证明，`codebase-design` 负责模块与接口判断，`code-review` 负责审查判断，`domain-modeling` 负责术语与决定的语义。调用方给出触发条件和上下文，不复制整份规则。宿主无名为 Skill 的工具时，可以按可靠安装指针读取允许自动调用的正文；不能用此方式绕过手动入口限制，也不是无 sub-agent fallback。
 
 sub-agent 使用新的上下文，不把父会话全文当任务 brief。交付目标、范围、写所有权、必要事实和验收；需要保持原始讨论理由时给原始来源指针，不把无依据的摘要当事实。并行取决于真正独立的工作和写所有权，不规定固定 reviewer 数或设计候选数。
 

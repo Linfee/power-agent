@@ -1,14 +1,14 @@
 # Power-Agent — Agent 指南
 
-Power-Agent 以 Matt Pocock 的轻量工程能力为主干，融合 Power 的证明、因果诊断、工程判断、项目知识和授权内自动推进。当前决定见 [ADR-0012](docs/adr/0012-matt-led-skill-fusion.md)。
+Power-Agent 以 Matt Pocock 的轻量工程能力为主干，融合 Power 的证明、因果诊断、工程判断、项目知识和授权内自动推进。当前调用与 hook 边界见 [ADR-0013](docs/adr/0013-skill-invocation-and-hook-boundaries.md)，其余融合原则沿用 [ADR-0012](docs/adr/0012-matt-led-skill-fusion.md)。
 
 ## 核心原则
 
-- **目标先于流程。** 用户确认目标和必要取舍后，在授权内连续实现、验证、适用审查和修复；不等用户逐个启动 Skill。进入 `grilling` 时保留原版的共同理解确认，确认前不实施。
+- **目标先于流程。** 用户确认目标和必要取舍后，在已选执行路径内连续实现、验证、适用审查和修复，不等用户逐个启动自动能力；手动流程须由用户显式调用。进入 `grilling` 时保留原版的共同理解确认，确认前不实施。
 - **小任务直接做。** 明确的现成 issue 可直接实现。spec、tickets 和地图只在依赖、恢复或协作需要时存在。
 - **轻内核，真实证据。** 可自动验证的行为变更默认红绿重构；已有失败可以复用，纯重构、UI、文档和机械变更选择匹配证据，不制造无意义的红灯。
 - **复杂度需要理由。** 新依赖、公开接口、共享状态、配置和生命周期由当前消费者或真实运行边界证明，不按 adapter 数或固定阶梯裁决。
-- **整包组合，单一判断来源。** 25 个 Skill 整包分发；`grill-with-docs` 按 Matt 原版手动调用，其余允许模型调用。可以具名调用互补能力，但不预绑所有任务的固定长链。不承诺单 Skill 独立安装。
+- **整包组合，单一判断来源。** 25 个 Skill 整包分发，17 个允许模型调用、8 个仅手动调用，见下表。工程内核、自动执行入口及其依赖保持可达；手动入口不作为自动依赖，也不以读取其正文绕过限制。可以具名组合自动能力，不预绑固定长链，不承诺单 Skill 独立安装。
 - **状态与知识分开。** 执行状态只在选定 tracker；仓库保存仍成立的知识。交接和计划只引用状态源，不另记进度。
 - **机械化胜过提示。** 确定、重复、机器可裁决的工作交给脚本、测试或 schema。
 - **自治不扩张授权。** 讨论、建议、草稿不等于实施或发布；外部副作用、破坏性操作、秘密、权限和生产边界按具体已有授权处理。
@@ -17,12 +17,15 @@ Power-Agent 以 Matt Pocock 的轻量工程能力为主干，融合 Power 的证
 
 宿主须支持普通 sub-agent：任务与上下文传入、独立执行及结果收集。子代理使用新上下文；并行由真实依赖和写所有权决定，共享文件和状态有唯一协调者。不使用 team mode，不维护无 sub-agent fallback，不规定平台并发数字。
 
+跨任务的最小完整改动默认规则见 [`minimal-complete-change.md`](skills/codebase-design/references/minimal-complete-change.md)，与 25 个 Skill 一起由插件或包提供；它不同于按任务调用的设计 Skill。[宿主兼容性](skills/setup-power-agent/references/agent-compatibility.md)说明六种宿主的安装方式、加载条件及证据边界。
+
 ## 知识库导航
 
 |主题|位置|
 |---|---|
 |架构与能力边界|[docs/architecture.md](docs/architecture.md)|
 |开发与验证入口|[docs/development.md](docs/development.md)|
+|宿主安装与能力范围|[安装指南](skills/setup-power-agent/references/agent-compatibility.md)|
 |自动推进与授权|[docs/workflow.md](docs/workflow.md)|
 |环境与证据|[docs/harness-engineering.md](docs/harness-engineering.md)|
 |Skill 维护|[docs/skill-and-harness-design.md](docs/skill-and-harness-design.md)|
@@ -42,20 +45,20 @@ Power-Agent 以 Matt Pocock 的轻量工程能力为主干，融合 Power 的证
 |`grilling`|按问题树逐轮追问，直到用户确认共同理解|
 |`grill-with-docs`|手动调用；组合原版 grilling 与 domain-modeling|
 |`domain-modeling`|复用术语真源，维护领域边界与值得记录的决定|
-|`to-spec`|将目标整理成可交付、可验收的 spec|
-|`to-tickets`|按垂直结果与真实依赖拆分可执行工作|
+|`to-spec`|手动调用；将目标整理成可交付、可验收的 spec|
+|`to-tickets`|手动调用；按垂直结果与真实依赖拆分可执行工作|
 |`implement`|从明确任务或现成 issue 连续完成实现、验证和修复|
 |`implement-spec`|从唯一 tracker 调度任务图并验收组合结果|
-|`triage`|识别请求的范围、重复、信息缺口与可执行性|
-|`wayfinder`|把复杂目标中的决定与可执行工作分开推进|
-|`improve-codebase-architecture`|从实际摩擦找到值得深化的模块边界|
+|`triage`|手动调用；识别请求的范围、重复、信息缺口与可执行性|
+|`wayfinder`|手动调用；把复杂目标中的决定与可执行工作分开推进|
+|`improve-codebase-architecture`|手动调用；从实际摩擦找到值得深化的模块边界|
 |`research`|用匹配版本的一手来源解决技术未知|
 |`prototype`|用可运行逻辑或真实画面回答设计问题|
 |`pr`|根据真实 diff 与证据起草 PR，按明确授权发布|
 |`wizard`|为确需人工输入或批准的配置生成安全脚本|
-|`handoff`|携带目标、证据与状态真源指针，不复制进度|
+|`handoff`|手动调用；携带目标、证据与状态真源指针，不复制进度|
 |`writing-for-agents`|编写能改变 Agent 判断、按需可达的指令与 Skill|
-|`retro`|从会话或项目材料改进环境，而非堆叠禁令|
+|`retro`|手动调用；从会话或项目材料改进环境，而非堆叠禁令|
 |`dev-docs`|按项目协议保存稳定知识，不强制引入 Bundle|
 |`dev-docs-maintain`|扫描、核对知识并安全登记实际验证|
 |`knowledge-navigation`|按真实任务建立或改善知识检索路径|

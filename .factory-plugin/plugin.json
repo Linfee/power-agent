@@ -9,6 +9,5 @@
   "homepage": "https://github.com/linfee/power-agent",
   "repository": "https://github.com/linfee/power-agent",
   "license": "MIT",
-  "keywords": ["skills", "matt-pocock", "tdd", "proof-oriented", "verification", "debugging", "subagent", "project-knowledge"],
-  "skills": "./skills/"
+  "keywords": ["skills", "matt-pocock", "tdd", "proof-oriented", "verification", "debugging", "subagent", "project-knowledge"]
 }

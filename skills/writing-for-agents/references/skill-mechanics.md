@@ -8,6 +8,8 @@
 
 当一个主题只有一部分场景需要，优先考虑让现有入口指向普通 reference；当它有独立任务目标、消费者确实需要单独发现时，才考虑拆成独立 Skill。被多个入口使用的资料应指向可达的共同权威位置；按宿主验证共享路径，避免为了去重让消费者无法读取内容。新增入口的描述需要持续维护，也让使用者多记一个选择；拆分应证明独立发现的收益。
 
-Power-Agent 默认整包分发，除按原版手动调用的 `grill-with-docs` 外，其余入口允许模型调用；可按实际需要具名使用包内其他 Skill。不保证单个目录单独安装完整，也不因此引入强制调用链或 router。模型可调用、用户可显式调用和允许产生副作用是不同问题：调用本身不授予发布、删除或访问敏感数据等权限。
+Power-Agent 默认整包分发 25 个 Skill：17 个允许模型调用，8 个仅手动调用。手动入口是 `grill-with-docs`、`to-spec`、`to-tickets`、`wayfinder`、`triage`、`improve-codebase-architecture`、`retro`、`handoff`；只能由用户显式启动。启动后可以调用自动能力，但任何 Skill 都不能自动调用手动入口，也不能读取其正文绕过限制。`implement`、`implement-spec`、`setup-power-agent` 及其依赖保留自动可达，维持授权内连续执行。模型可调用、用户可显式调用和允许产生副作用是不同问题，调用不授予发布、删除或访问敏感数据等权限。
 
-其他项目若有不同策略，以其实际宿主与授权为准。部分宿主使用 `disable-model-invocation: true`，Codex 可能使用 `agents/openai.yaml` 的 `policy.allow_implicit_invocation: false`；开关是否影响发现或上下文取决于宿主，不能凭配置推断实际行为。名称、描述或调用方式改变时，同步项目索引与直接消费者，并在目标宿主分别验证自然发现、显式调用和依赖读取。
+整包组合不保证单个目录独立安装完整，也不引入固定调用链或 router。正文中的具名入口引用表示依赖：行内代码、Skill tool 的双引号名称参数和兄弟 `SKILL.md` 链接由调用检查器核对；围栏示例及普通支持资料不视为调度。该检查不理解所有自然语言，修改入口开关时仍要核对直接消费者。
+
+手动入口同时设置 `SKILL.md` 的 `disable-model-invocation: true` 和 `agents/openai.yaml` 的 `policy.allow_implicit_invocation: false`。Claude、pi、OMP、Cursor、Droid 使用前者，Codex 使用后者；具体发现、菜单和调用行为以宿主及版本为准，不把元数据当通用访问控制。名称、描述或调用方式改变时，同步项目索引与直接消费者，分别验证模型发现、用户显式调用和依赖可达性。其他项目有不同策略时，以其宿主与授权为准。

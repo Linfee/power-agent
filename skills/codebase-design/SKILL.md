@@ -7,6 +7,10 @@ description: 设计或审查模块接口、依赖边界与测试切入点，判�
 
 设计深模块：让调用方通过易理解的接口使用足够多的行为，同时把应由模块承担的复杂度留在内部。先看实际调用者、需求、已有契约和依赖；使用项目已有领域术语，不为形式新建术语文件。
 
+## 先选择是否需要新增
+
+新增实现前按[最小完整改动](references/minimal-complete-change.md)选择可完整满足约束的最直接方案，先查项目已有实现，再看标准库、平台和已装依赖。找到合适方案就停止扩展，不为小任务额外产出设计报告；确有边界取舍时再使用下文判断。短规则也由宿主常驻加载，两条路径使用同一来源，不以“已读 Skill”代替实际加载证据。
+
 ## 理解模块
 
 - **模块**可以是函数、类、包或一段跨层实现；它有供调用方使用的**接口**和内部实现。
@@ -43,4 +47,4 @@ applyDiscount(cart): void
 
 给实施者说明接口、调用约束、隐藏的复杂度、边界理由与可观察验证入口；需要用户决定的取舍与代码可查事实分开。不因设计建议自动扩大实现授权。
 
-来源：融合 mattpocock/skills 的 engineering/codebase-design 与 Power-Agent 的 codebase-design；seam 概念源自 Michael Feathers，深模块和 Design It Twice 源自 John Ousterhout。
+来源：融合 mattpocock/skills 的 engineering/codebase-design 与 Power-Agent 的 codebase-design；最小完整改动的选择顺序适配自 [Ponytail v5.3.3](https://github.com/DietrichGebert/ponytail/tree/96608e078b2d5ea607c5c3b8b5a54d1c1fba6846)（DietrichGebert，MIT）；seam 概念源自 Michael Feathers，深模块和 Design It Twice 源自 John Ousterhout。

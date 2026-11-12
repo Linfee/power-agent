@@ -10,5 +10,5 @@
   "repository": "https://github.com/linfee/power-agent",
   "license": "MIT",
   "keywords": ["skills", "matt-pocock", "tdd", "proof-oriented", "verification", "debugging", "subagent", "project-knowledge"],
-  "skills": "./skills/"
+  "hooks": "./hooks/claude.json"
 }

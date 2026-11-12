@@ -18,9 +18,10 @@ timestamp: 2026-11-11T09:00:51Z
 - [系统架构](architecture.md)：Matt 主干的 25 项能力、整包具名组合与状态边界。
 - [工作方式](workflow.md)：授权内连续推进、任务图、真实证据与必要人工决定。
 - [开发指南](development.md)：安装路径、元数据、脚本与验证入口。
+- [宿主兼容性](../skills/setup-power-agent/references/agent-compatibility.md)：六种宿主的整包安装、常驻规则加载条件和验证边界。
 - [Skill 设计](skill-and-harness-design.md)：行为缺口、渐进披露和有效对照。
 - [Harness Engineering](harness-engineering.md)：环境、知识与机械化。
-- [ADR-0012](adr/0012-matt-led-skill-fusion.md)：当前融合决定；被取代的 ADR 保留历史，不作为相反的现行指令。
+- [ADR-0013](adr/0013-skill-invocation-and-hook-boundaries.md)：当前模型可见入口、内部依赖与 hook 增强边界；其余融合原则沿用 [ADR-0012](adr/0012-matt-led-skill-fusion.md)。
 
 ## 融合契约与历史
 

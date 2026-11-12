@@ -1,3 +1,5 @@
 interface:
   display_name: "Handoff"
   short_description: "为后续工作创建交接"
+policy:
+  allow_implicit_invocation: false

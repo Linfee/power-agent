@@ -1,0 +1,10 @@
+{
+  "name": "power-agent",
+  "version": "0.2.0",
+  "description": "Engineering skills and minimal complete change defaults.",
+  "author": { "name": "linfee" },
+  "repository": "https://github.com/linfee/power-agent",
+  "license": "MIT",
+  "skills": "./skills/",
+  "hooks": "./hooks/codex.json"
+}

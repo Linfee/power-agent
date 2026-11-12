@@ -1,6 +1,7 @@
 ---
 name: triage
 description: 分诊外来 issue 或项目纳入的外部 PR，核对范围、重复、证据和信息缺口，提出或按授权应用处理建议。
+disable-model-invocation: true
 ---
 
 # Triage

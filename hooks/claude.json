@@ -1,0 +1,7 @@
+{
+  "hooks": {
+    "SubagentStart": [
+      { "hooks": [{ "type": "command", "command": "node", "args": ["${CLAUDE_PLUGIN_ROOT}/hooks/inject.cjs", "SubagentStart"], "timeout": 10 }] }
+    ]
+  }
+}

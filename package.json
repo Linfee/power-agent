@@ -1,0 +1,14 @@
+{
+  "name": "power-agent",
+  "version": "0.2.0",
+  "private": true,
+  "license": "MIT",
+  "keywords": ["pi-package"],
+  "scripts": {
+    "test": "node --test tests/*.test.cjs"
+  },
+  "pi": {
+    "extensions": ["./pi-extension/index.mjs"],
+    "skills": ["./skills"]
+  }
+}

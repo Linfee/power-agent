@@ -110,7 +110,7 @@ class ReferenceCheckerTests(unittest.TestCase):
         result = self.run_check()
         self.assertEqual(result.returncode, 0, result.stderr)
 
-    def test_skill_script_pointer_uses_owner_then_repository(self) -> None:
+    def test_skill_script_pointer_requires_installed_skill_asset(self) -> None:
         self.write(
             "skills/demo/SKILL.md",
             "# Demo\nRun `python3 scripts/local.py --name <value>`.\n"
@@ -122,9 +122,48 @@ class ReferenceCheckerTests(unittest.TestCase):
         result = self.run_check()
         self.assertEqual(result.returncode, 1)
         self.assertIn(
+            "skills/demo/SKILL.md:3: missing local target: scripts/repository.py", result.stderr,
+        )
+        self.assertIn(
             "skills/demo/SKILL.md:3: missing local target: scripts/missing.py", result.stderr,
         )
-        self.assertEqual(result.stderr.count("\n"), 1)
+        self.assertEqual(result.stderr.count("\n"), 2)
+
+    def test_skill_links_stay_within_relocatable_bundle(self) -> None:
+        self.write("skills/shared/SKILL.md", "# Shared\n")
+        guide = self.write(
+            "skills/demo/references/guide.md",
+            "# Guide\n[peer](../../shared/SKILL.md#shared)\n",
+        )
+        self.write(
+            "skills/demo/SKILL.md",
+            "# Demo\n[guide](references/guide.md#guide)\n",
+        )
+        self.assertEqual(self.run_check("skills").returncode, 0)
+
+        self.write("docs/repository-only.md", "# Repository only\n")
+        guide.write_text(
+            "# Guide\n[unshipped](../../../docs/repository-only.md#repository-only)\n",
+            encoding="utf-8",
+        )
+        self.write(
+            "skills/demo/SKILL.md",
+            f"# Demo\n[guide](references/guide.md#guide)\n[absolute]({guide.as_uri()})\n",
+        )
+        result = self.run_check("skills")
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("skills/demo/references/guide.md:2:", result.stderr)
+        self.assertIn("skills/demo/SKILL.md:3:", result.stderr)
+
+    def test_skill_symlink_cannot_reach_repository_only_docs(self) -> None:
+        self.write("skills/demo/SKILL.md", "# Demo\n")
+        target = self.write("docs/repository-only.md", "# Repository only\n")
+        alias = self.root / "skills/demo/references/guide.md"
+        alias.parent.mkdir()
+        alias.symlink_to(target)
+        result = self.run_check("skills/demo/references/guide.md")
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("skills/demo/references/guide.md:1:", result.stderr)
 
     def test_internal_symlink_is_valid_external_links_are_rejected(self) -> None:
         self.write("docs/real.md", "# Internal\n")

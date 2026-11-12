@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e 'const fs = require(\"node:fs\"); const path = require(\"node:path\"); const envRoot = process.env.CLAUDE_PLUGIN_ROOT; const root = envRoot && envRoot !== \"/PLUGIN_ROOT_NOT_EXPANDED_ERROR\" ? envRoot : fs.readFileSync(0, \"utf8\").replace(/\\n$/, \"\"); const script = path.join(root, \"hooks/inject.cjs\"); process.argv = [process.execPath, script, \"SessionStart\"]; require(script)' <<'POWER_AGENT_PLUGIN_ROOT_EOF'\n${CLAUDE_PLUGIN_ROOT}\nPOWER_AGENT_PLUGIN_ROOT_EOF",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}

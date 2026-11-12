@@ -1,6 +1,7 @@
 ---
 name: retro
 description: 复盘 Agent 工作会话，或评估项目 Harness、规则与反馈环境。
+disable-model-invocation: true
 ---
 
 # Retro

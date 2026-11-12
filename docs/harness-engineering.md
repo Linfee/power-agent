@@ -6,7 +6,7 @@ scope:
 
 # Harness Engineering 体系设计
 
-Power-Agent 的 Harness 让环境、知识和验证对 Agent 清晰可用，并以 Matt 的轻量能力组织支持授权内连续推进，不用固定流程替代判断。当前整包组合与状态规则见 [ADR-0012](adr/0012-matt-led-skill-fusion.md)。
+Power-Agent 的 Harness 让环境、知识和验证对 Agent 清晰可用，并以 Matt 的轻量能力组织支持授权内连续推进，不用固定流程替代判断。当前调用与 hook 边界见 [ADR-0013](adr/0013-skill-invocation-and-hook-boundaries.md)，其余融合和状态原则沿用 [ADR-0012](adr/0012-matt-led-skill-fusion.md)。
 
 ## 参考来源
 
@@ -26,6 +26,10 @@ Agent 无法读取、查询或执行的工程事实，不能稳定约束结果�
 仓库是长期工程真相的 canonical store，不是唯一运行时信息来源。CI、issue、观测系统、宿主 session 和 memory 都可提供权威事实；关键是来源可定位、与当前版本匹配，并能被再次检查。
 
 `AGENTS.md` 是地图而非百科全书。高频、跨任务约束留在入口；专门知识放到清晰路径并按需读取。上下文越大不等于判断越好，高信号和可发现性比预加载更重要。
+
+对于所有编码任务都适用的最小完整改动偏好，Power-Agent 使用一份[默认规则源](../skills/codebase-design/references/minimal-complete-change.md)，再由插件 hook、扩展或 Cursor 插件自带规则适配到宿主；动态注入时缺少规则源应可见报错，不应伪装成已启用，静态生成规则则通过同步检查发现缺失或过期。按需 Skill 提供更完整的方法，不能用常驻规则替代，也不要求每个任务都调用设计 Skill。安装入口和能力限制见[宿主兼容性](../skills/setup-power-agent/references/agent-compatibility.md)。
+
+整包安装与默认发现分开：工程能力和自动执行依赖保持模型可达，人工流程不加入自动调用链。hook 只保障固定约束送达；事件数量不代表强化效果，Ponytail 的 OMP 会话切换和分支事件主要恢复模式，本包不复制没有消费者的状态机制。是否增加注入点由真实请求中的缺失、重复或生命周期偏差决定。
 
 ## 约束与自由度
 

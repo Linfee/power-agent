@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# 校验 skills/*/SKILL.md 的调用方式与 AGENTS.md 索引、Codex 元数据一致。
+# 校验调用方式、AGENTS.md 索引、Codex 元数据及正文具名依赖的可达性。
 # 兼容 frontmatter 的宿主用 disable-model-invocation: true 表示手动调用；
 # Codex 用 agents/openai.yaml 的 policy.allow_implicit_invocation: false。
 # 用法：scripts/check-invocation-consistency.sh [repo-root]
@@ -10,6 +10,7 @@ cd "$repo"
 
 agents_md="AGENTS.md"
 failed=0
+manual_skills=""
 section="$(awk '/^## Skill 速查/{f=1; next} /^## /{if(f) exit} f' "$agents_md")"
 
 frontmatter() {
@@ -125,6 +126,9 @@ for f in skills/*/SKILL.md; do
 
   manual=no
   [[ "$flag" == true ]] && manual=yes
+  if [[ "$manual" == yes ]]; then
+    manual_skills+=$'\n'"$name"
+  fi
   expected_marked=no
   [[ "$manual" == yes ]] && expected_marked=yes
   if [[ "$marked" != "$expected_marked" ]]; then
@@ -159,6 +163,25 @@ for f in skills/*/SKILL.md; do
   fi
 done
 
+# 正文中的具名入口表示依赖；忽略 frontmatter、围栏示例和普通支持资料。
+for f in skills/*/SKILL.md; do
+  name="$(basename "$(dirname "$f")")"
+  body="$(awk '
+    NR == 1 && /^---$/ { header = 1; next }
+    header { if ($0 == "---") header = 0; next }
+    /^[[:space:]]*(```|~~~)/ { fenced = !fenced; next }
+    !fenced { print }
+  ' "$f")"
+  while IFS= read -r target; do
+    [[ -n "$target" && "$target" != "$name" ]] || continue
+    printf -v dependency_pattern '(`%s`|"%s"|\\]\\(\\.\\./%s/SKILL\\.md([#)]|$))' "$target" "$target" "$target"
+    if grep -Eq "$dependency_pattern" <<<"$body"; then
+      echo "DRIFT: $name 的具名依赖 $target 是手动 Skill，不能自动调用。" >&2
+      failed=1
+    fi
+  done <<<"$manual_skills"
+done
+
 while IFS= read -r indexed_name; do
   [[ -n "$indexed_name" ]] || continue
   if [[ ! -f "skills/$indexed_name/SKILL.md" ]]; then
@@ -168,6 +191,6 @@ while IFS= read -r indexed_name; do
 done < <(awk -F '`' '/^\|[[:space:]]*`[^`]+`[[:space:]]*\|/ { print $2 }' <<<"$section")
 
 if [[ "$failed" -eq 0 ]]; then
-  echo "OK: 索引、frontmatter 与 Codex 调用方式一致。"
+  echo "OK: 索引、frontmatter、Codex 调用方式与具名依赖可达性一致。"
 fi
 exit "$failed"

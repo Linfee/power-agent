@@ -1,6 +1,7 @@
 ---
 name: wayfinder
 description: 探索目标或路线尚不明确的大型工作，维护决策地图、研究未知并区分需人决定的取舍。
+disable-model-invocation: true
 ---
 
 # Wayfinder

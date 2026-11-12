@@ -1,9 +1,11 @@
 ---
 type: Decision
-status: accepted
+status: superseded
 supersedes:
   - 0010-judgment-oriented-skills.md
   - 0011-knowledge-navigation-lifecycle.md
+superseded_by:
+  - 0013-skill-invocation-and-hook-boundaries.md
 sources:
   - docs/specs/2026-11-11-matt-power-agent-fusion.md
   - AGENTS.md
@@ -14,6 +16,8 @@ sources:
 # ADR-0012: Matt 主干、整包组合与授权内连续推进
 
 **日期：** 2026-11-11
+
+**后续决定（2026-11-12）：** [ADR-0013](0013-skill-invocation-and-hook-boundaries.md) 取代本记录的默认调用策略，收敛为 17 个模型可调用入口与 8 个手动入口，并明确 hook 先验证缺口再增强；其余融合原则由新决定继续采用。下文保留当时的决定与修订。
 
 **同日后续修订：** 用户要求 `grilling` 与 `grill-with-docs` 恢复 Matt 固定版本原文及调用元数据。下文保留初次融合决定；其中“25 个均可模型调用”更新为 `grill-with-docs` 手动、其余可模型调用，讨论的完成与行动边界以原版问题树和用户共同理解确认为准。具体当前契约见[正式设计 S05/S06](../specs/2026-11-11-matt-power-agent-fusion.md#s05-grilling)，其余融合决定不变。
 

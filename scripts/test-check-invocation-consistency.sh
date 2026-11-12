@@ -36,6 +36,38 @@ make_skill manual 'disable-model-invocation: true # compatible host manual mode'
 write_index '| `automatic` | 自动调用 |' '| `manual` | 手动调用 |'
 "$checker" "$fixture"
 
+# 手动入口可以调用自动能力；示例和支持资料链接不是 Skill 调度。
+printf '%s\n' 'Call the Skill tool with "automatic".' >>"$fixture/skills/manual/SKILL.md"
+printf '%s\n' '`not-a-skill`' '```md' '`manual`' '```' \
+  '[支持资料](../manual/references/example.md)' >>"$fixture/skills/automatic/SKILL.md"
+"$checker" "$fixture"
+
+printf '%s\n' '使用 `manual` 完成任务。' >>"$fixture/skills/automatic/SKILL.md"
+if "$checker" "$fixture"; then
+  echo 'expected automatic-to-manual dependency to fail' >&2
+  exit 1
+fi
+
+make_skill automatic '' interface-only
+printf '%s\n' '[调用入口](../manual/SKILL.md#test)' >>"$fixture/skills/automatic/SKILL.md"
+if "$checker" "$fixture"; then
+  echo 'expected linked manual Skill dependency to fail' >&2
+  exit 1
+fi
+
+make_skill automatic '' interface-only
+make_skill manual-peer 'disable-model-invocation: true' false
+write_index '| `automatic` | 自动调用 |' '| `manual` | 手动调用 |' '| `manual-peer` | 手动调用 |'
+printf '%s\n' 'Call the Skill tool with "manual-peer".' >>"$fixture/skills/manual/SKILL.md"
+if "$checker" "$fixture"; then
+  echo 'expected manual-to-manual dependency to fail' >&2
+  exit 1
+fi
+
+rm -rf "$fixture/skills/manual-peer"
+make_skill manual 'disable-model-invocation: true' false
+write_index '| `automatic` | 自动调用 |' '| `manual` | 手动调用 |'
+
 printf '%s\n' 'policy: {allow_implicit_invocation: false} # must reject automatic' >"$fixture/skills/automatic/agents/openai.yaml"
 if "$checker" "$fixture"; then
   echo 'expected automatic Codex false to fail' >&2

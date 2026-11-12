@@ -4,11 +4,13 @@ A Matt-led engineering skill bundle, combining [Matt Pocock’s skills](https://
 
 ## Usage
 
-Describe the result. A clear small task or existing issue goes straight to implementation; discuss genuine uncertainty and create specs/tickets only when dependencies, coordination, or recovery need them. The user does not manually relay every skill transition.
+Describe the result. A clear small task or existing issue goes straight to implementation; discuss genuine uncertainty and use specs/tickets only when dependencies, coordination, or recovery need them. Within the chosen execution path, the agent composes automatic capabilities without step-by-step human relay. Skills marked manual below require explicit user invocation.
 
 Automated behavioral changes default to red/green/refactor. Continue through relevant verification, review, and repairs, but a request for advice, discussion, or a draft does not authorize implementation or publication. Commits, pushes, PRs, merges, secrets, permissions, and production changes retain their explicit authorization boundaries.
 
-All 25 skills are **distributed together**: 24 are model-invocable; `grill-with-docs` retains Matt's manual invocation policy. `grilling` retains the original question-tree rounds and requires the user to confirm shared understanding before action. Named dependencies are intentional; standalone skill installation is not supported. The host needs ordinary sub-agents with fresh contexts. Parallelism follows dependencies and write ownership. One tracker owns execution state; documentation and handoffs do not duplicate progress.
+The cross-task [minimal complete change defaults](skills/codebase-design/references/minimal-complete-change.md) steer agents toward the authorized problem instead of abstractions for hypothetical needs, without sacrificing correctness, appropriate evidence, or safety. They ship with all 25 skills in one plugin or package, loaded through hooks, an extension, or a Cursor plugin-owned rule. This is distinct from invoking the `codebase-design` skill.
+
+All 25 skills are **distributed together**: 17 are model-invocable and 8 are manual, as marked below. `implement`, `implement-spec`, and their dependencies remain automatically reachable. No skill may autonomously invoke a manual entry or read its body to bypass the restriction. `grilling` retains the original question-tree rounds and requires the user to confirm shared understanding before action. Standalone skill installation is not supported. The host needs ordinary sub-agents with fresh contexts. Parallelism follows dependencies and write ownership. One tracker owns execution state; documentation and handoffs do not duplicate progress.
 
 ## Skills
 
@@ -21,20 +23,20 @@ All 25 skills are **distributed together**: 24 are model-invocable; `grill-with-
 | [`grilling`](skills/grilling/SKILL.md) | Work the question tree in rounds until the user confirms shared understanding |
 | [`grill-with-docs`](skills/grill-with-docs/SKILL.md) | Manually invoke the original grilling and domain-modeling composition |
 | [`domain-modeling`](skills/domain-modeling/SKILL.md) | Reuse domain terminology and record consequential decisions |
-| [`to-spec`](skills/to-spec/SKILL.md) | Turn a goal into an actionable, verifiable spec |
-| [`to-tickets`](skills/to-tickets/SKILL.md) | Slice work by observable outcomes and real dependencies |
+| [`to-spec`](skills/to-spec/SKILL.md) | Manual; turn a goal into an actionable, verifiable spec |
+| [`to-tickets`](skills/to-tickets/SKILL.md) | Manual; slice work by observable outcomes and real dependencies |
 | [`implement`](skills/implement/SKILL.md) | Complete a clear task or existing issue with implementation and proof |
 | [`implement-spec`](skills/implement-spec/SKILL.md) | Execute a task graph from one tracker and verify the integrated result |
-| [`triage`](skills/triage/SKILL.md) | Triage scope, duplicates, missing information, and readiness |
-| [`wayfinder`](skills/wayfinder/SKILL.md) | Separate decisions from implementation in complex work |
-| [`improve-codebase-architecture`](skills/improve-codebase-architecture/SKILL.md) | Find architectural improvements grounded in actual friction |
+| [`triage`](skills/triage/SKILL.md) | Manual; triage scope, duplicates, missing information, and readiness |
+| [`wayfinder`](skills/wayfinder/SKILL.md) | Manual; separate decisions from implementation in complex work |
+| [`improve-codebase-architecture`](skills/improve-codebase-architecture/SKILL.md) | Manual; find architectural improvements grounded in actual friction |
 | [`research`](skills/research/SKILL.md) | Resolve technical unknowns with version-matched primary sources |
 | [`prototype`](skills/prototype/SKILL.md) | Answer a design question with running logic or actual UI |
 | [`pr`](skills/pr/SKILL.md) | Draft a PR from the actual diff and evidence; publish only when authorized |
 | [`wizard`](skills/wizard/SKILL.md) | Generate safe scripts for setup that genuinely needs human input |
-| [`handoff`](skills/handoff/SKILL.md) | Carry intent, evidence, and the authoritative state pointer |
+| [`handoff`](skills/handoff/SKILL.md) | Manual; carry intent, evidence, and the authoritative state pointer |
 | [`writing-for-agents`](skills/writing-for-agents/SKILL.md) | Write agent instructions and skills that change useful decisions |
-| [`retro`](skills/retro/SKILL.md) | Improve the harness from session or project evidence |
+| [`retro`](skills/retro/SKILL.md) | Manual; improve the harness from session or project evidence |
 | [`dev-docs`](skills/dev-docs/SKILL.md) | Preserve durable knowledge using the project’s documentation conventions |
 | [`dev-docs-maintain`](skills/dev-docs-maintain/SKILL.md) | Scan knowledge and safely record verification that actually occurred |
 | [`knowledge-navigation`](skills/knowledge-navigation/SKILL.md) | Build or improve knowledge retrieval paths for actual tasks |
@@ -62,11 +64,11 @@ droid plugin install power-agent@power-agent --scope user
 droid plugin install power-agent@power-agent --scope project
 ```
 
-### Other hosts
+### pi, OMP, Codex, and Cursor
 
-Cursor and Factory manifests are `.cursor-plugin/plugin.json` and `.factory-plugin/plugin.json`. Alternatively install the complete `skills/` contents in the host’s supported skill location, preserving sibling directories. Confirm the host’s loading behavior and ordinary sub-agent support.
+Install the complete pi package with `pi install git:github.com/Linfee/power-agent`. OMP, Codex, and Cursor also load this repository through their native plugin or package mechanisms; see [host compatibility](skills/setup-power-agent/references/agent-compatibility.md) for steps, version limits, and trust conditions. Cursor requires an available marketplace or its local plugin development entry; do not assume this repository is publicly listed.
 
-`gemini-extension.json` references the project entrypoint through `GEMINI.md`; this does not establish installation or discovery of the 25 skills. Configure whole-bundle discovery separately and verify the host capabilities.
+None of the six hosts requires copying rules into a business project or running a project configurator. Actual rule delivery, skill discovery, and sub-agent capabilities depend on the host version and enablement; a manifest alone is not runtime evidence.
 
 ## Development
 
@@ -76,6 +78,8 @@ See [development.md](docs/development.md) and [the skill design guide](docs/skil
 python3 scripts/check-description-length.py
 bash scripts/check-invocation-consistency.sh
 python3 scripts/check-skill-references.py
+node --test tests/*.test.cjs
+node scripts/sync-plugin-rules.cjs --check
 python3 -m unittest skills/dev-docs-maintain/scripts/test_bundle_status.py
 ```
 
@@ -83,10 +87,11 @@ Run the last command when the knowledge tooling changes. Script and behavioral c
 
 ## Design and attribution
 
-See [architecture](docs/architecture.md), [workflow](docs/workflow.md), and [ADR-0012](docs/adr/0012-matt-led-skill-fusion.md). The [fusion design](docs/specs/2026-11-11-matt-power-agent-fusion.md) records per-skill sources, retained judgment, integration, deletions, and acceptance.
+See [architecture](docs/architecture.md), [workflow](docs/workflow.md), and [ADR-0013](docs/adr/0013-skill-invocation-and-hook-boundaries.md). [ADR-0012](docs/adr/0012-matt-led-skill-fusion.md) and the [fusion design](docs/specs/2026-11-11-matt-power-agent-fusion.md) retain the sources, judgment, integration decisions, and acceptance background.
 
 - Matt Pocock Skills, MIT; pinned source `4ae2317ddb22b046e26455e4f9c9b3aaaf62212d`.
 - [superpowers](https://github.com/obra/superpowers), Jesse Vincent, MIT.
+- [Ponytail](https://github.com/DietrichGebert/ponytail/tree/96608e078b2d5ea607c5c3b8b5a54d1c1fba6846) v5.3.3, DietrichGebert, MIT; minimal-change and host-integration inspiration, with no separate Ponytail install.
 - PR visual guidance retains Dex Horthy / HumanLayer `show-me` credits and its MIT notice.
 - [Harness Engineering](https://openai.com/index/harness-engineering/) is a methodological reference, not MIT-licensed software copied into this bundle.
 

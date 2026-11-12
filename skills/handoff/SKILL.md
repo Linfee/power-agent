@@ -1,6 +1,7 @@
 ---
 name: handoff
 description: 为跨会话、人员或宿主继续工作创建可携带的交接。
+disable-model-invocation: true
 ---
 
 # Handoff

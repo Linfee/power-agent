@@ -6,10 +6,12 @@ documents and superseded ADRs. Explicit paths opt into historical documents.
 Supports common single-line inline/reference links, ATX/setext anchors and IDs.
 Fenced/indented code, comments, frontmatter and placeholder targets are ignored.
 Relative links use the document directory. Bare scripts/... code pointers use
-the owning Skill, then repository scripts/. Absolute local paths must stay in
-the repository. Remote URLs are not fetched. Multiline link syntax and renderer
+the owning Skill, never repository scripts/. Skill-local pointers must be
+relative and remain inside the installed skills/ bundle, including symlinks;
+references to sibling Skills are allowed. Other local paths stay in the
+repository. Remote URLs are not fetched. Multiline link syntax and renderer
 extensions require their own checks; arbitrary code-span filenames are not links.
-This is a repository pointer check, not a Markdown renderer or semantic review.
+This is a pointer check, not a Markdown renderer or semantic review.
 """
 from __future__ import annotations
 
@@ -230,11 +232,17 @@ def is_placeholder(target: str) -> bool:
     return bool(re.search(r"[<>{}*]|\$[A-Za-z_{]|\.\.\.|…", target))
 
 
-def inside(path: Path, repo: Path) -> Path:
-    """Resolve before reading; allow internal symlinks but reject escapes."""
+def inside(path: Path, repo: Path, source: Path | None = None) -> Path:
+    """Reject repository escapes and unshipped targets referenced from Skills."""
     resolved = path.resolve()
     if not resolved.is_relative_to(repo):
         raise ValueError("target resolves outside repository")
+    if (
+        source is not None
+        and source.is_relative_to(repo / "skills")
+        and not resolved.is_relative_to((repo / "skills").resolve())
+    ):
+        raise ValueError("target resolves outside installed Skill bundle")
     return resolved
 
 
@@ -245,7 +253,7 @@ def skill_root(source: Path, repo: Path) -> Path | None:
             break
         marker = parent / "SKILL.md"
         if marker.exists():
-            inside(marker, repo)
+            inside(marker, repo, source)
             return parent
     return None
 
@@ -268,14 +276,13 @@ def check_reference(
             raise ValueError("external file host is not a repository path")
         path_text = unquote(url.path)
         fragment = unquote(url.fragment)
+        if source.is_relative_to(repo / "skills") and Path(path_text).is_absolute():
+            raise ValueError("Skill target must be relative to the installed bundle")
         target = source.parent / path_text if path_text else source
         if ref.kind == "script" and path_text.startswith("scripts/"):
             owner = skill_root(source, repo)
             target = (owner or source.parent) / path_text
-            inside(target, repo)
-            if not target.exists():
-                target = repo / path_text
-        resolved = inside(target, repo)
+        resolved = inside(target, repo, source)
         if not resolved.exists():
             raise ValueError("missing local target")
         if ref.kind == "script" and not resolved.is_file():
@@ -317,7 +324,7 @@ def collect(paths: list[Path], repo: Path, default: bool) -> tuple[list[Path], l
             if parts and parts[0] == "docs" and HISTORICAL_DIRS.intersection(parts):
                 continue
         try:
-            resolved = inside(path, repo)
+            resolved = inside(path, repo, path)
             if not resolved.exists():
                 raise ValueError("input path does not exist")
             if path.is_dir():
@@ -356,7 +363,7 @@ def main(argv: list[str] | None = None) -> int:
     for source in files:
         try:
             refs = references(
-                inside(source, repo).read_text(encoding="utf-8"),
+                inside(source, repo, source).read_text(encoding="utf-8"),
                 skill_root(source, repo) is not None,
             )
             for ref in refs:

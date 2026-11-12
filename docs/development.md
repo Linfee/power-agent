@@ -10,28 +10,39 @@ Power-Agent 是 Matt 主干的整包工程 Skill，辅以项目知识与确定�
 
 ## 结构与约定
 
-`skills/<name>/SKILL.md` 为 25 个平铺入口，`references/` 放按需知识，`scripts/` 放确定性操作，`agents/openai.yaml` 是可选界面/调用元数据。`grill-with-docs` 按 Matt 原版手动调用，其余入口允许模型调用；具名依赖随整包分发，不承诺单独安装。`AGENTS.md` 为能力地图，`CLAUDE.md` 与 `GEMINI.md` 只转引入口。
+`skills/<name>/SKILL.md` 为 25 个平铺入口，`references/` 放按需知识，`scripts/` 放确定性操作。17 个入口允许模型调用、8 个仅手动调用，清单见 [README](../README.md#skills)；手动入口必须同时设置 frontmatter 与 `agents/openai.yaml` 的调用开关，自动入口的界面元数据可选。具名依赖只能指向自动能力；依赖随整包分发，不承诺单独安装。`AGENTS.md` 为能力地图，`CLAUDE.md` 与 `GEMINI.md` 只转引入口。
 
 Skill 名称用小写连字符且与目录一致；description 只负责可区分触发，正文教承重判断与实际方法。格式无需统一章节；确有外部消费者的 schema、授权顺序和安全协议保持准确。修改先确认行为缺口并复用现有模式。迁入内容以固定 Matt 原版为底稿，保留方法、解释、示例、反例和模板，只按确认的差异局部适配，不以更短为目标；具体对照规则见[设计指南](skill-and-harness-design.md#以-matt-原版为内容底稿)。
 
 支持文件相对实际安装位置解析，业务项目可能没有 `skills/`；脚本收到明确业务目录后必须安全切换，切换失败不能回落旧 cwd。整包改名须迁移所有当前消费者和 manifest，不留旧 alias。
+
+跨任务最小完整改动规则只维护在 [`skills/codebase-design/references/minimal-complete-change.md`](../skills/codebase-design/references/minimal-complete-change.md)；`hooks/defaults.cjs` 读取它，原生注入和生成的宿主规则共用这一来源。它不同于按需使用的 `codebase-design` Skill，不应将规则正文手工复制到各适配器。
+
+修改规则后运行 `node scripts/sync-plugin-rules.cjs` 更新 Cursor 插件拥有的 `rules/minimal-complete-change.mdc`；`node scripts/sync-plugin-rules.cjs --check` 只检查是否缺失或过期。六种宿主均通过原生插件或包管理器安装本仓库，无需业务项目规则配置器；宿主入口与能力边界见[兼容性指南](../skills/setup-power-agent/references/agent-compatibility.md)。
+
+验证集成时在临时项目和隔离 HOME、宿主及 XDG 配置下运行宿主真实入口，分别观察规则是否实际进入上下文、整包 Skill 是否发现、普通 sub-agent 是否可用及其是否收到规则。恢复或压缩上下文、重复注入及更新也应按适用入口覆盖。不要修改真实用户配置或绕过宿主信任，也不要用 manifest 校验、静态文件存在或模型自评代替运行证据。
 
 ## 选择检查
 
 |改动|直接检查|
 |---|---|
 |description|`python3 scripts/check-description-length.py`|
-|名称、目录、调用方式、速查表|`bash scripts/check-invocation-consistency.sh`；修改检查器时运行 `bash scripts/test-check-invocation-consistency.sh`|
+|名称、目录、调用方式、速查表或具名依赖|`bash scripts/check-invocation-consistency.sh`；修改检查器时运行 `bash scripts/test-check-invocation-consistency.sh`|
 |入口、链接、锚点或明确脚本指针|`python3 scripts/check-skill-references.py`，可传路径限定；修改检查器时运行 `python3 scripts/test-check-skill-references.py`|
 |scanner、freshness、ledger|`python3 -m unittest skills/dev-docs-maintain/scripts/test_bundle_status.py`|
 |可选审查 package/workspace CLI|`bash skills/implement/scripts/test-review-package.sh`|
 |wizard 输入、确认与中断清理|`python3 skills/wizard/scripts/test-template.py`；`bash -n skills/wizard/scripts/template.sh`|
 |plugin 或 marketplace|`claude plugin validate . --strict`，另做本地隔离加载消费|
+|常驻规则、hook、扩展或插件规则生成器|`node --test tests/*.test.cjs`；`node scripts/sync-plugin-rules.cjs --check`；按兼容性指南运行相应宿主隔离验证|
 |其他脚本或行为|最窄真实入口、沙盒、语法或风险边界场景|
 
 引用检查器只读验证本地 Markdown 链接、锚点和明确脚本指针，不执行脚本、不保证远程 URL，不证明自然触发。默认略过 completed/archive 及 superseded Decision 正文；历史材料可显式检查。仓库内软链接可用，仓库外引用拒绝读取，参数见检查器 `--help`。
 
+`skills/` 中的本地链接必须相对安装位置解析，目标（包括软链接解析结果）只能位于整包 `skills/` 内，可引用兄弟 Skill；不能依赖仓库根的 `docs/`、声明文件或脚本。裸 `scripts/...` 指针只从所属 Skill 查找，不回退仓库脚本。目标项目路径示例和外部来源引用不属于这类本地依赖。
+
 路由或精简需要行为对照时，保持输入、模型、工具、授权和验收一致，记录实际读取和执行轨迹。显式读取只能证明消费，不能称自然发现；目录匹配和模型自评不算行为证据。见 [`writing-for-agents` 判据](../skills/writing-for-agents/references/criteria.md)。
+
+调用检查器核对 frontmatter、速查表、Codex policy 以及 Skill 正文中可识别的具名依赖；围栏示例和支持资料链接不作为调度。它不证明所有自然语言调用或宿主实际行为；新手动入口仍须在真实宿主中确认从自动列表排除、可显式使用且自动依赖未断。
 
 ## 文档与状态
 

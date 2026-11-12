@@ -6,7 +6,7 @@ scope:
 
 # 系统架构
 
-Power-Agent 是以 Matt 轻量工程能力为主干的整包 Skill。目标、真实证据和授权决定行动；不要求用户逐站启动，也不把所有能力绑成长流水线。当前决定见 [ADR-0012](adr/0012-matt-led-skill-fusion.md)，逐项来源与取舍见[融合设计](specs/2026-11-11-matt-power-agent-fusion.md)。
+Power-Agent 是以 Matt 轻量工程能力为主干的整包 Skill。目标、真实证据和授权决定行动；已选执行路径内的自动能力不要求用户逐站启动，也不绑成长流水线。当前调用与 hook 决定见 [ADR-0013](adr/0013-skill-invocation-and-hook-boundaries.md)，其余融合原则与来源见 [ADR-0012](adr/0012-matt-led-skill-fusion.md) 和[融合设计](specs/2026-11-11-matt-power-agent-fusion.md)。
 
 ## 能力边界
 
@@ -23,11 +23,17 @@ Power-Agent 是以 Matt 轻量工程能力为主干的整包 Skill。目标、�
 
 ## 整包组合
 
-25 个目录平铺在 `skills/`；`grill-with-docs` 保留 Matt 原版手动调用，其余允许模型调用。`grilling` 保留原版问题树、逐轮 frontier 和用户共同理解确认，确认前不实施。主文可具名调用同包能力，将每种承重判断保留在一个权威位置；支持文件从实际安装位置解析，不假定业务 cwd 有源码目录。
+25 个目录平铺在 `skills/`，其中 17 个允许模型调用、8 个仅手动调用，清单见 [README](../README.md#skills)。自动实施入口、工程内核及实际依赖保持可达；手动流程只由用户显式启动。`grilling` 保留原版问题树、逐轮 frontier 和用户共同理解确认，确认前不实施。支持文件从实际安装位置解析，不假定业务 cwd 有源码目录。
 
-不承诺单 Skill 独立安装，也不设置品牌 router。主文足以决定何时使用专门知识；references 只按当前问题加载。具名调用是模型内部协作，不是向用户交回“下一步请调用另一个 Skill”。已有普通材料可以直接消费，不要求重新通过某个上游生成。
+不承诺单 Skill 独立安装，也不设置品牌 router。主文足以决定何时使用专门知识，references 按当前问题加载；具名调用只指向允许模型调用的能力。手动入口不能成为自动依赖，也不能靠读取其正文绕过限制。用户选定路径后不逐步交回人工；已有普通材料可以直接消费，不要求重新通过上游生成。
 
 例如，实现可消费 POD 的测试判断与 review 的审查判断；讨论落盘可消费领域语义及目标项目文档协议。是否需要这些能力由任务决定，不把整包依赖图变成每次必跑的链。
+
+## 跨任务默认与按需 Skill
+
+最小完整改动默认规则的唯一来源是 [`skills/codebase-design/references/minimal-complete-change.md`](../skills/codebase-design/references/minimal-complete-change.md)。它指导所有编码任务优先解决已授权的实际问题，避免无实际消费者的抽象和扩张；完整性、正确性、安全、兼容性和必要验证仍由任务决定。它不是必须执行的固定工作流，也不替代 `codebase-design` 等按需加载的 Skill。
+
+`hooks/defaults.cjs` 从安装位置读取该来源，以受管理标记提供给原生 hook 和 pi 扩展；Cursor 插件的规则由 `scripts/sync-plugin-rules.cjs` 从同一来源生成到 `rules/minimal-complete-change.mdc`，不维护第二份规则正文。六种宿主均安装本仓库的插件或包，不向业务项目复制规则。规则送达、Skill 发现和普通 sub-agent 是不同能力；各宿主的入口、限制及验证边界见[兼容性指南](../skills/setup-power-agent/references/agent-compatibility.md)。
 
 ## 执行状态与知识
 

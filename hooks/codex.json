@@ -1,0 +1,10 @@
+{
+  "hooks": {
+    "SessionStart": [
+      { "hooks": [{ "type": "command", "command": "node \"$PLUGIN_ROOT/hooks/inject.cjs\" SessionStart", "commandWindows": "node \"$env:PLUGIN_ROOT/hooks/inject.cjs\" SessionStart", "timeout": 10 }] }
+    ],
+    "SubagentStart": [
+      { "hooks": [{ "type": "command", "command": "node \"$PLUGIN_ROOT/hooks/inject.cjs\" SubagentStart", "commandWindows": "node \"$env:PLUGIN_ROOT/hooks/inject.cjs\" SubagentStart", "timeout": 10 }] }
+    ]
+  }
+}
