@@ -15,10 +15,10 @@ timestamp: 2026-11-11T09:00:51Z
 
 ## 当前架构与开发
 
-- [系统架构](architecture.md)：Matt 主干的 25 项能力、整包具名组合与状态边界。
+- [系统架构](architecture.md)：Matt 主干的 24 项能力、整包具名组合与状态边界。
 - [工作方式](workflow.md)：授权内连续推进、任务图、真实证据与必要人工决定。
 - [开发指南](development.md)：安装路径、元数据、脚本与验证入口。
-- [宿主兼容性](../skills/setup-power-agent/references/agent-compatibility.md)：六种宿主的整包安装、常驻规则加载条件和验证边界。
+- [宿主兼容性](agent-compatibility.md)：六种宿主的整包安装、常驻规则加载条件和验证边界。
 - [Skill 设计](skill-and-harness-design.md)：行为缺口、渐进披露和有效对照。
 - [Harness Engineering](harness-engineering.md)：环境、知识与机械化。
 - [ADR-0013](adr/0013-skill-invocation-and-hook-boundaries.md)：当前模型可见入口、内部依赖与 hook 增强边界；其余融合原则沿用 [ADR-0012](adr/0012-matt-led-skill-fusion.md)。
@@ -32,8 +32,6 @@ timestamp: 2026-11-11T09:00:51Z
 ## 知识维护入口
 
 - 最小 Agent 入口、选定 tracker 和领域指针：[`setup-power-agent`](../skills/setup-power-agent/SKILL.md)。
-- 体系初始化或真实检索路径优化：[`knowledge-navigation`](../skills/knowledge-navigation/SKILL.md)。
-- 稳定事实、术语、决定的语义写入：[`dev-docs`](../skills/dev-docs/SKILL.md)，领域意义按需消费 `domain-modeling`。
-- 扫描、漂移核对和安全验证登记：[`dev-docs-maintain`](../skills/dev-docs-maintain/SKILL.md)。
-
-能力可按需具名组合，不是固定全跑。执行状态只在选定 tracker；仓库保存知识，handoff 引用权威指针。Bundle 的验证运行状态在 `docs/.okf/verification.json`，文档年龄、Git diff 或模型自报不能证明 fresh。
+- 体系初始化或真实检索路径优化（手动调用）：[`knowledge-navigation`](../skills/knowledge-navigation/SKILL.md)。
+- 稳定事实、术语、决定的语义写入与核验：[`dev-docs`](../skills/dev-docs/SKILL.md)，领域意义按需消费 `domain-modeling`。
+- 能力可按需具名组合，不是固定全跑。执行状态只在选定 tracker；仓库保存知识，handoff 引用权威指针。文档年龄、Git diff 或模型自报不能证明内容正确；关键声明须对照权威来源。

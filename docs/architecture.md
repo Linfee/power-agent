@@ -12,18 +12,18 @@ Power-Agent 是以 Matt 轻量工程能力为主干的整包 Skill。目标、�
 
 |范围|入口|承重判断|
 |---|---|---|
-|工程内核|`proof-oriented-development`、`code-review`、`diagnosing-bugs`、`codebase-design`|红绿重构、需求与工程双维审查、因果证据、模块深度与真实责任|
+|工程内核|`proof-oriented-development`、`code-review`、`diagnosing-bugs`、`codebase-design`|Red/Green、需求与工程双维审查、因果证据、模块深度与真实责任|
 |目标与知识对齐|`grilling`、`grill-with-docs`、`domain-modeling`|问题树逐轮追问、确认共同理解、复用术语真源、记录值得保留的决定|
 |任务与调度|`to-spec`、`to-tickets`、`implement`、`implement-spec`、`triage`、`wayfinder`|小任务直接做；必要时创建可验收结果和真实依赖，由单一协调者推进|
 |探索与交付|`improve-codebase-architecture`、`research`、`prototype`、`pr`、`wizard`|从证据回答未知、实际运行或展示、草稿与发布分开、必要人工批准|
 |协作与环境|`handoff`、`writing-for-agents`、`retro`|携带权威指针、按需可达指令、改进环境而非堆禁令|
-|项目知识|`dev-docs`、`dev-docs-maintain`、`knowledge-navigation`、`setup-power-agent`|按既有协议写知识、扫描与安全登记、真实检索路径、最小初始化|
+|项目知识|`dev-docs`、`knowledge-navigation`、`setup-power-agent`|按既有协议写入与核验知识、真实检索路径、最小初始化|
 
 这六行是能力地图，不是执行层级。完整入口见 [README](../README.md#skills)。
 
 ## 整包组合
 
-25 个目录平铺在 `skills/`，其中 17 个允许模型调用、8 个仅手动调用，清单见 [README](../README.md#skills)。自动实施入口、工程内核及实际依赖保持可达；手动流程只由用户显式启动。`grilling` 保留原版问题树、逐轮 frontier 和用户共同理解确认，确认前不实施。支持文件从实际安装位置解析，不假定业务 cwd 有源码目录。
+24 个目录平铺在 `skills/`，其中 15 个允许模型调用、9 个仅手动调用，清单见 [README](../README.md#skills)。自动实施入口、工程内核及实际依赖保持可达；手动流程只由用户显式启动。`grilling` 保留原版问题树、逐轮 frontier 和用户共同理解确认，确认前不实施。支持文件从实际安装位置解析，不假定业务 cwd 有源码目录。
 
 不承诺单 Skill 独立安装，也不设置品牌 router。主文足以决定何时使用专门知识，references 按当前问题加载；具名调用只指向允许模型调用的能力。手动入口不能成为自动依赖，也不能靠读取其正文绕过限制。用户选定路径后不逐步交回人工；已有普通材料可以直接消费，不要求重新通过上游生成。
 
@@ -33,7 +33,7 @@ Power-Agent 是以 Matt 轻量工程能力为主干的整包 Skill。目标、�
 
 最小完整改动默认规则的唯一来源是 [`skills/codebase-design/references/minimal-complete-change.md`](../skills/codebase-design/references/minimal-complete-change.md)。它指导所有编码任务优先解决已授权的实际问题，避免无实际消费者的抽象和扩张；完整性、正确性、安全、兼容性和必要验证仍由任务决定。它不是必须执行的固定工作流，也不替代 `codebase-design` 等按需加载的 Skill。
 
-`hooks/defaults.cjs` 从安装位置读取该来源，以受管理标记提供给原生 hook 和 pi 扩展；Cursor 插件的规则由 `scripts/sync-plugin-rules.cjs` 从同一来源生成到 `rules/minimal-complete-change.mdc`，不维护第二份规则正文。六种宿主均安装本仓库的插件或包，不向业务项目复制规则。规则送达、Skill 发现和普通 sub-agent 是不同能力；各宿主的入口、限制及验证边界见[兼容性指南](../skills/setup-power-agent/references/agent-compatibility.md)。
+`hooks/defaults.cjs` 从安装位置读取该来源，以受管理标记提供给原生 hook 和 pi 扩展；Cursor 插件的规则由 `scripts/sync-plugin-rules.cjs` 从同一来源生成到 `rules/minimal-complete-change.mdc`，不维护第二份规则正文。六种宿主均安装本仓库的插件或包，不向业务项目复制规则。规则送达、Skill 发现和普通 sub-agent 是不同能力；各宿主的入口、限制及验证边界见[兼容性指南](agent-compatibility.md)。
 
 ## 执行状态与知识
 
@@ -51,8 +51,8 @@ native 关系/状态受实际平台版本与 tier 支持时优先使用；不支
 
 ## 证据、授权与机器协议
 
-可自动验证的行为变更默认红绿重构；复用已知失败，绿色纯重构、UI、文档和机械变更使用匹配证据。review 同时对照需求和工程质量；因果诊断接受 trace、差分及同口径性能/稳定性观测，不要求先造 runnable red command。模块边界由不变量、复杂度或真实资源责任证明，不按 adapter 数裁决。
+可自动验证的行为变更默认 Red/Green；复用已知失败，绿色纯重构、UI、文档和机械变更使用匹配证据；重构在 review 阶段进行。review 默认由需求与工程两个独立 reviewer 并行对照。因果诊断先建立能变红的紧反馈环，再提出假设；trace、差分及同口径性能/稳定性观测必须作为可重放的反馈环使用，而不是静态猜测的替代。只有一个实现时先假设 seam 可能不存在：一个 adapter 是假设的 seam，两个 adapter 才说明变化真实存在；独立资源责任或真实消费者边界可以证明单实现 seam。
 
 dirty working tree 可直接验证。声明绑定被测内容、依赖和环境；只有提交、PR、合并等 commit-bound 动作才需绑定提交，目标 CI 门禁仍独立满足。测试通过不扩大授权。模型可连续完成已授权的本地工作；讨论、建议、草稿和生成脚本不授权实施、发布或执行秘密/权限操作。
 
-精确协议只服务真实机器消费者：tracker 关系、scanner、ledger、文件格式、API 和副作用批准。普通 docs 不自动启用 Knowledge Bundle；已有 Bundle 保留 frontmatter、来源语义、freshness 策略及安全原子登记。OKF 细节只有 `dev-docs` 一份权威 reference。
+精确协议只服务真实机器消费者：tracker 关系、文件格式、API 和副作用批准。普通 docs 不自动启用 Knowledge Bundle；已有 Bundle 保留 frontmatter、来源语义和验证策略。OKF 细节只有 `dev-docs` 一份权威 reference。

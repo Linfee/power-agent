@@ -6,9 +6,9 @@ Power-Agent 以 Matt Pocock 的轻量工程能力为主干，融合 Power 的证
 
 - **目标先于流程。** 用户确认目标和必要取舍后，在已选执行路径内连续实现、验证、适用审查和修复，不等用户逐个启动自动能力；手动流程须由用户显式调用。进入 `grilling` 时保留原版的共同理解确认，确认前不实施。
 - **小任务直接做。** 明确的现成 issue 可直接实现。spec、tickets 和地图只在依赖、恢复或协作需要时存在。
-- **轻内核，真实证据。** 可自动验证的行为变更默认红绿重构；已有失败可以复用，纯重构、UI、文档和机械变更选择匹配证据，不制造无意义的红灯。
-- **复杂度需要理由。** 新依赖、公开接口、共享状态、配置和生命周期由当前消费者或真实运行边界证明，不按 adapter 数或固定阶梯裁决。
-- **整包组合，单一判断来源。** 25 个 Skill 整包分发，17 个允许模型调用、8 个仅手动调用，见下表。工程内核、自动执行入口及其依赖保持可达；手动入口不作为自动依赖，也不以读取其正文绕过限制。可以具名组合自动能力，不预绑固定长链，不承诺单 Skill 独立安装。
+- **轻内核，真实证据。** 可自动验证的行为变更默认 Red/Green；已有失败可以复用，纯重构、UI、文档和机械变更选择匹配证据，不制造无意义的红灯。重构在 review 阶段进行。
+- **复杂度需要理由。** 新依赖、公开接口、共享状态、配置和生命周期由当前消费者或真实运行边界证明，不按固定阶梯裁决。只有一个实现时先假设 seam 可能不存在；一个 adapter 是假设的 seam，两个 adapter 才说明变化真实存在；独立资源所有权、不变量或真实消费者边界仍可证明单实现 seam。
+- **整包组合，单一判断来源。** 24 个 Skill 整包分发，15 个允许模型调用、9 个仅手动调用，见下表。工程内核、自动执行入口及其依赖保持可达；手动入口不作为自动依赖，也不以读取其正文绕过限制。可以具名组合自动能力，不预绑固定长链，不承诺单 Skill 独立安装。
 - **状态与知识分开。** 执行状态只在选定 tracker；仓库保存仍成立的知识。交接和计划只引用状态源，不另记进度。
 - **机械化胜过提示。** 确定、重复、机器可裁决的工作交给脚本、测试或 schema。
 - **自治不扩张授权。** 讨论、建议、草稿不等于实施或发布；外部副作用、破坏性操作、秘密、权限和生产边界按具体已有授权处理。
@@ -17,7 +17,7 @@ Power-Agent 以 Matt Pocock 的轻量工程能力为主干，融合 Power 的证
 
 宿主须支持普通 sub-agent：任务与上下文传入、独立执行及结果收集。子代理使用新上下文；并行由真实依赖和写所有权决定，共享文件和状态有唯一协调者。不使用 team mode，不维护无 sub-agent fallback，不规定平台并发数字。
 
-跨任务的最小完整改动默认规则见 [`minimal-complete-change.md`](skills/codebase-design/references/minimal-complete-change.md)，与 25 个 Skill 一起由插件或包提供；它不同于按任务调用的设计 Skill。[宿主兼容性](skills/setup-power-agent/references/agent-compatibility.md)说明六种宿主的安装方式、加载条件及证据边界。
+跨任务的最小完整改动默认规则见 [`minimal-complete-change.md`](skills/codebase-design/references/minimal-complete-change.md)，与 24 个 Skill 一起由插件或包提供；它不同于按任务调用的设计 Skill。[宿主兼容性](docs/agent-compatibility.md)说明六种宿主的安装方式、加载条件及证据边界。
 
 ## 知识库导航
 
@@ -25,7 +25,7 @@ Power-Agent 以 Matt Pocock 的轻量工程能力为主干，融合 Power 的证
 |---|---|
 |架构与能力边界|[docs/architecture.md](docs/architecture.md)|
 |开发与验证入口|[docs/development.md](docs/development.md)|
-|宿主安装与能力范围|[安装指南](skills/setup-power-agent/references/agent-compatibility.md)|
+|宿主安装与能力范围|[安装指南](docs/agent-compatibility.md)|
 |自动推进与授权|[docs/workflow.md](docs/workflow.md)|
 |环境与证据|[docs/harness-engineering.md](docs/harness-engineering.md)|
 |Skill 维护|[docs/skill-and-harness-design.md](docs/skill-and-harness-design.md)|
@@ -38,7 +38,7 @@ Power-Agent 以 Matt Pocock 的轻量工程能力为主干，融合 Power 的证
 
 |Skill|帮助模型判断什么|
 |---|---|
-|`proof-oriented-development`|以红绿重构默认实现行为，并选择覆盖真实风险的证据|
+|`proof-oriented-development`|以 Red/Green 默认实现行为，并选择覆盖真实风险的证据|
 |`code-review`|对照需求与工程质量，找出有证据的交付问题|
 |`diagnosing-bugs`|用区分性证据定位根因，而非猜补丁|
 |`codebase-design`|判断模块深度、资源责任与接口是否降低复杂度|
@@ -59,14 +59,13 @@ Power-Agent 以 Matt Pocock 的轻量工程能力为主干，融合 Power 的证
 |`handoff`|手动调用；携带目标、证据与状态真源指针，不复制进度|
 |`writing-for-agents`|编写能改变 Agent 判断、按需可达的指令与 Skill|
 |`retro`|手动调用；从会话或项目材料改进环境，而非堆叠禁令|
-|`dev-docs`|按项目协议保存稳定知识，不强制引入 Bundle|
-|`dev-docs-maintain`|扫描、核对知识并安全登记实际验证|
-|`knowledge-navigation`|按真实任务建立或改善知识检索路径|
+|`dev-docs`|按项目协议写入、修订和核验稳定知识，不强制引入 Bundle|
+|`knowledge-navigation`|手动调用；按真实任务建立或改善知识检索路径|
 |`setup-power-agent`|最小补齐 Agent 入口与选定的 tracker/领域指针|
 
 ## 知识协议
 
-普通文档不强制成为 Knowledge Bundle。本仓库已使用 Bundle：`docs/` 中除 `index.md`、`log.md` 外的 Concept 有非空 `type`；ADR 为 `type: Decision`，被取代时保留历史和双向 `supersedes` / `superseded_by`。`scope`、`sources`、验证策略按真实含义声明，运行时验证在 `docs/.okf/verification.json`，不把未检查事实记成 fresh。
+普通文档不强制成为 Knowledge Bundle。本仓库已使用 Bundle：`docs/` 中除 `index.md`、`log.md` 外的 Concept 有非空 `type`；ADR 为 `type: Decision`，被取代时保留历史和双向 `supersedes` / `superseded_by`。`scope`、`sources`、验证策略按真实含义声明；验证以实际核验为准，不把未检查事实记成已验证。
 
 命名沿用 `SKILL.md`、`NNNN-slug.md`、`YYYY-MM-DD-topic.md`；持久计划只在恢复或人审需要时使用。
 

@@ -1,6 +1,0 @@
-{
-  "name": "power-agent",
-  "description": "Matt 主干的 Power-Agent 工程技能；本扩展声明仅转引项目入口，整包技能发现与 sub-agent 能力须由宿主另行配置。",
-  "version": "0.2.0",
-  "contextFileName": "GEMINI.md"
-}

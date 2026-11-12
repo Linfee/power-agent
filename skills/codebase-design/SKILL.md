@@ -9,7 +9,7 @@ description: 设计或审查模块接口、依赖边界与测试切入点，判�
 
 ## 先选择是否需要新增
 
-新增实现前按[最小完整改动](references/minimal-complete-change.md)选择可完整满足约束的最直接方案，先查项目已有实现，再看标准库、平台和已装依赖。找到合适方案就停止扩展，不为小任务额外产出设计报告；确有边界取舍时再使用下文判断。短规则也由宿主常驻加载，两条路径使用同一来源，不以“已读 Skill”代替实际加载证据。
+新增实现前按[最小完整改动](references/minimal-complete-change.md)选择可完整满足约束的最直接方案，先查项目已有实现，再看标准库、平台和已装依赖。找到合适方案就停止扩展，不为小任务额外产出设计报告；确有边界取舍时再使用下文判断。
 
 ## 理解模块
 
@@ -41,10 +41,8 @@ applyDiscount(cart): void
 
 ## 选择边界
 
-从消费者需要的结果和真实运行性质选择直接组合、内部隔离或稳定 adapter。第三方 I/O 的协议隔离、独立资源所有权或消费者依赖的不变量都可能证明单实现边界有价值；仅为测试替身而需要替换，不能独立证明公开多态接口必要。远程依赖不自动要求 port，也不按 adapter 数量判定 seam 是否真实。按实际行为和风险选择真实组件、契约测试或替身。
+从消费者需要的结果和真实运行性质选择直接组合、内部隔离或稳定 adapter。只有一个实现时，先假设 seam 可能不存在：一个 adapter 只是假设的 seam，两个 adapter 才说明变化真实存在。第三方 I/O 的协议隔离、独立资源所有权或消费者依赖的不变量可以证明单实现边界有价值，但不要默认新增公开多态接口。仅为测试替身而需要替换，不能独立证明 seam 必要。按实际行为和风险选择真实组件、契约测试或替身。
 
 依赖性质与安全加深的细节见 [dependency-boundaries.md](references/dependency-boundaries.md)。用户要求比较，或高影响、长期接口存在会改变决定的真实取舍时，读 [design-it-twice.md](references/design-it-twice.md)；无需为凑数设计候选。
 
 给实施者说明接口、调用约束、隐藏的复杂度、边界理由与可观察验证入口；需要用户决定的取舍与代码可查事实分开。不因设计建议自动扩大实现授权。
-
-来源：融合 mattpocock/skills 的 engineering/codebase-design 与 Power-Agent 的 codebase-design；最小完整改动的选择顺序适配自 [Ponytail v5.3.3](https://github.com/DietrichGebert/ponytail/tree/96608e078b2d5ea607c5c3b8b5a54d1c1fba6846)（DietrichGebert，MIT）；seam 概念源自 Michael Feathers，深模块和 Design It Twice 源自 John Ousterhout。

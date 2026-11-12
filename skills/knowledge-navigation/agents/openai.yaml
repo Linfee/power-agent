@@ -1,0 +1,5 @@
+interface:
+  display_name: "Knowledge Navigation"
+  short_description: "Design and evolve repository knowledge navigation"
+policy:
+  allow_implicit_invocation: false

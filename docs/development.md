@@ -10,7 +10,7 @@ Power-Agent 是 Matt 主干的整包工程 Skill，辅以项目知识与确定�
 
 ## 结构与约定
 
-`skills/<name>/SKILL.md` 为 25 个平铺入口，`references/` 放按需知识，`scripts/` 放确定性操作。17 个入口允许模型调用、8 个仅手动调用，清单见 [README](../README.md#skills)；手动入口必须同时设置 frontmatter 与 `agents/openai.yaml` 的调用开关，自动入口的界面元数据可选。具名依赖只能指向自动能力；依赖随整包分发，不承诺单独安装。`AGENTS.md` 为能力地图，`CLAUDE.md` 与 `GEMINI.md` 只转引入口。
+`skills/<name>/SKILL.md` 为 24 个平铺入口，`references/` 放按需知识，`scripts/` 放确定性操作。15 个入口允许模型调用、9 个仅手动调用，清单见 [README](../README.md#skills)；手动入口必须同时设置 frontmatter 与 `agents/openai.yaml` 的调用开关，自动入口的界面元数据可选。具名依赖只能指向自动能力；依赖随整包分发，不承诺单独安装。`AGENTS.md` 为能力地图，`CLAUDE.md` 只转引入口。
 
 Skill 名称用小写连字符且与目录一致；description 只负责可区分触发，正文教承重判断与实际方法。格式无需统一章节；确有外部消费者的 schema、授权顺序和安全协议保持准确。修改先确认行为缺口并复用现有模式。迁入内容以固定 Matt 原版为底稿，保留方法、解释、示例、反例和模板，只按确认的差异局部适配，不以更短为目标；具体对照规则见[设计指南](skill-and-harness-design.md#以-matt-原版为内容底稿)。
 
@@ -18,7 +18,7 @@ Skill 名称用小写连字符且与目录一致；description 只负责可区�
 
 跨任务最小完整改动规则只维护在 [`skills/codebase-design/references/minimal-complete-change.md`](../skills/codebase-design/references/minimal-complete-change.md)；`hooks/defaults.cjs` 读取它，原生注入和生成的宿主规则共用这一来源。它不同于按需使用的 `codebase-design` Skill，不应将规则正文手工复制到各适配器。
 
-修改规则后运行 `node scripts/sync-plugin-rules.cjs` 更新 Cursor 插件拥有的 `rules/minimal-complete-change.mdc`；`node scripts/sync-plugin-rules.cjs --check` 只检查是否缺失或过期。六种宿主均通过原生插件或包管理器安装本仓库，无需业务项目规则配置器；宿主入口与能力边界见[兼容性指南](../skills/setup-power-agent/references/agent-compatibility.md)。
+修改规则后运行 `node scripts/sync-plugin-rules.cjs` 更新 Cursor 插件拥有的 `rules/minimal-complete-change.mdc`；`node scripts/sync-plugin-rules.cjs --check` 只检查是否缺失或过期。六种宿主均通过原生插件或包管理器安装本仓库，无需业务项目规则配置器；宿主入口与能力边界见[兼容性指南](agent-compatibility.md)。
 
 验证集成时在临时项目和隔离 HOME、宿主及 XDG 配置下运行宿主真实入口，分别观察规则是否实际进入上下文、整包 Skill 是否发现、普通 sub-agent 是否可用及其是否收到规则。恢复或压缩上下文、重复注入及更新也应按适用入口覆盖。不要修改真实用户配置或绕过宿主信任，也不要用 manifest 校验、静态文件存在或模型自评代替运行证据。
 
@@ -29,7 +29,6 @@ Skill 名称用小写连字符且与目录一致；description 只负责可区�
 |description|`python3 scripts/check-description-length.py`|
 |名称、目录、调用方式、速查表或具名依赖|`bash scripts/check-invocation-consistency.sh`；修改检查器时运行 `bash scripts/test-check-invocation-consistency.sh`|
 |入口、链接、锚点或明确脚本指针|`python3 scripts/check-skill-references.py`，可传路径限定；修改检查器时运行 `python3 scripts/test-check-skill-references.py`|
-|scanner、freshness、ledger|`python3 -m unittest skills/dev-docs-maintain/scripts/test_bundle_status.py`|
 |可选审查 package/workspace CLI|`bash skills/implement/scripts/test-review-package.sh`|
 |wizard 输入、确认与中断清理|`python3 skills/wizard/scripts/test-template.py`；`bash -n skills/wizard/scripts/template.sh`|
 |plugin 或 marketplace|`claude plugin validate . --strict`，另做本地隔离加载消费|
@@ -48,7 +47,7 @@ Skill 名称用小写连字符且与目录一致；description 只负责可区�
 
 执行状态只在项目选定的 tracker；持久计划用于人审或恢复，handoff 引用权威状态，不复制进度。项目文档保存稳定事实、词汇和决定；优先复用现有 CONTEXT/glossary 与 ADR。
 
-普通项目不强制引入 Bundle。本仓库已采用 Bundle：`docs/` 中除 `index.md`、`log.md` 的 Concept 有非空 `type`，ADR 为 `type: Decision`；`scope`、`sources`、策略有真实含义才声明。ledger 运行状态不写进 Concept，也不把未检查事实标 fresh。根 index 可为普通 Markdown；显式 YAML 仍须合法。
+普通项目不强制引入 Bundle。本仓库已采用 Bundle：`docs/` 中除 `index.md`、`log.md` 的 Concept 有非空 `type`，ADR 为 `type: Decision`；`scope`、`sources`、验证策略有真实含义才声明。验证以实际核验为准，不把未检查事实标为已验证。根 index 可为普通 Markdown；显式 YAML 仍须合法。
 
 ADR 被取代时保持历史并双向链接 `supersedes` / `superseded_by`。命名使用 `NNNN-slug.md`、`YYYY-MM-DD-topic.md`、`YYYY-MM-DD-title/`。重大分工或长期知识变化同步现行文档与来源，不为普通修改新建仪式材料。
 

@@ -1,6 +1,6 @@
 # Project Docs Profile
 
-仅供明确采用 Power Bundle 的项目使用；普通项目沿用自己的文档协议。完整格式背景见 [OKF 参考](okf-v0.1.md)，扫描器和 ledger 的机器语义见 [维护策略](../../dev-docs-maintain/references/maintenance-policy.md)。
+仅供明确采用 Power Bundle 的项目使用；普通项目沿用自己的文档协议。完整格式背景见 [OKF 参考](okf-v0.1.md)。验证状态由实际核验决定，必要时按项目已有工具记录。
 
 ## Bundle 边界
 
@@ -18,7 +18,7 @@ sources:
 ---
 ```
 
-除 `type` 外，`title`、`description`、`tags`、`timestamp`、`owners`、`scope`、`sources` 和 `verification` 按实际需要使用，不填虚构值。`timestamp` 只表示正文语义变化，不证明验证。新来源追踪用仓库根相对的 `sources`；路径形 `scope` 的既有扫描意义不变，纯概念范围不是文件来源。索引策略及完整 source/scope、策略集合和状态解释见[维护策略](../../dev-docs-maintain/references/maintenance-policy.md)。扫描只读；ledger 可选，不存在不等于写入失败。验证状态仅在实际核验并需要登记时由受控工具写入，不凭修改时间或结构成功标 fresh。
+除 `type` 外，`title`、`description`、`tags`、`timestamp`、`owners`、`scope`、`sources` 和 `verification` 按实际需要使用，不填虚构值。`timestamp` 只表示正文语义变化，不证明验证；`scope` 和 `sources` 只表达真实覆盖范围与来源。索引策略及完整 source/scope 语义由项目采用的工具或约定说明。没有实际核验时保留未验证状态，不凭修改时间或结构成功标为已验证。
 
 内部关系用 Markdown 链接，来源须支撑对应声明；敏感资料不写入引用。索引在导航变化时更新，必要时记录有长期意义的变化。
 
@@ -39,4 +39,4 @@ verification:
 
 ## 渐进迁移
 
-仅对已采用 Bundle 的项目，在已授权的相关写入中处理不合规元数据；不批量移动或重写已有文档。旧 HTML header metadata 不再作为 YAML 或 ledger 的输入；需要相应值时依据当前正文和权威来源重建，不回填旧验证日期。移动、拆分、合并或删除按实际证据和授权处理，并修复入链；未知字段、旧记录和有效知识不自动清除。
+仅对已采用 Bundle 的项目，在已授权的相关写入中处理不合规元数据；不批量移动或重写已有文档。旧 HTML header metadata 不再作为 YAML 的输入；需要相应值时依据当前正文和权威来源重建，不伪造验证日期。移动、拆分、合并或删除按实际证据和授权处理，并修复入链；未知字段、旧记录和有效知识不自动清除。

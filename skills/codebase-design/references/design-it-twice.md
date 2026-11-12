@@ -41,5 +41,3 @@
 ## 完成判据
 
 已经比较会改变当前决策的可行替代方案，选择理由能回到消费者和可观察约束；没有为了达到固定数量而添加候选。若证据只支持当前方案，说明其依据和仍存在的不确定性即可。
-
-来源：融合 mattpocock/skills 的 engineering/codebase-design/DESIGN-IT-TWICE.md 与 Power-Agent 的比较判断；方法源自 John Ousterhout。

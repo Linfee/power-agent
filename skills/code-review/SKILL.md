@@ -26,10 +26,10 @@ description: 审查分支、PR 或工作树变更，也用于核验代码审查�
 
 ## 审查投入与复核
 
-独立性与投入取决于出错后果和实现不确定性，而不是人数规则。小改动可由一名 reviewer 覆盖两维；高影响或高不确定性时使用未参与实现的独立 reviewer。用户明确要求多角度时按请求组织；独立委派使用新上下文并提供范围、需求来源、当前变更与相关证据，可用 [审查 brief](references/code-reviewer.md)。需要细分影响和实现风险时读 [risk-classification.md](references/risk-classification.md)。
+两个维度默认由两个未参与实现的独立 reviewer 在新上下文中并行审查：需求 reviewer 只拿需求来源、范围和验收，工程 reviewer 只拿适用标准、diff 和受影响调用路径。各自独立得出结论后汇总，分别呈现两维的结论与证据缺口，不让一维通过掩盖另一维失败。只有用户明确要求合并时，才由一名 reviewer 覆盖两维，并仍按维度分别报告。
+
+独立委派使用新上下文并提供范围、需求来源、当前变更与相关证据，可用 [审查 brief](references/code-reviewer.md)。需要细分影响和实现风险时读 [risk-classification.md](references/risk-classification.md)。
 
 收到反馈先核验契约、触发条件和实际影响，再在授权范围内修复；只要求评估时不改代码。修复后复核原问题、增量与受影响路径；范围或关键契约发生实质变化时重审受影响部分，不机械重跑无关审查。例子见 [response-examples.md](references/response-examples.md)。
 
-只有明确提供 Review Assets manifest 时才使用 [Review Assets 协议](references/code-reviewer.md#review-assets)；无 manifest 不扫描 `.power-agent`，校验失败报告证据缺口，不扩大搜索。结论说明范围、已核验问题和未验证面。
-
-来源：融合 mattpocock/skills 的 engineering/code-review 与 Power-Agent 的 code-review。
+结论说明范围、已核验问题和未验证面。审查材料只使用用户给出的范围、diff、工作树和显式提供的路径；不扫描 `.power-agent` 等未请求的 scratch 目录。

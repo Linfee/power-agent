@@ -10,7 +10,7 @@ sources:
   - skills/writing-for-agents/references/skill-mechanics.md
   - scripts/check-invocation-consistency.sh
   - pi-extension/index.mjs
-  - skills/setup-power-agent/references/agent-compatibility.md
+  - docs/agent-compatibility.md
 ---
 
 # ADR-0013: 收敛模型可见入口，按实际缺口增强 hook
