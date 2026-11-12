@@ -1,47 +1,83 @@
 # power-agent
 
-以 [Matt Pocock 的工程 Skills](https://github.com/mattpocock/skills) 为主干，融合 Power-Agent 的 POD、因果诊断、工程判断、项目知识与**授权内连续推进**。目标是少一点流程负担，不是少一点正确性和证据。
+个人使用的工程 Skill 清单。
+
+从多个开源 Agent Skill 项目中选择、改写和组合，按既定工程习惯沉淀成一套可按需加载的 Skills：实现、诊断、设计、审查、交付、文档。不是通用框架、团队规范或开箱即用产品；默认服务于个人工作流。
+
+## 取舍
+
+- 小任务直接做。只有依赖、恢复或协作确有需要时，才用 spec、tickets 或地图。
+- 行为变更先 Red/Green；重构留到 review 阶段，在行为覆盖更完整时进行。
+- 诊断先建立能变红、能断言所报症状的反馈环，再提假设。
+- 审查默认把需求与工程质量分别交给独立 reviewer；只有明确要求时才合并。
+- 自动调用按需触发；标为“手动”的入口只在显式调用时进入。方向、范围、取舍和验收不因自动调用而转移。
+- 文档写入项目现有的权威位置；不把会话记录、执行计划或临时结论当长期知识。
+- 能自动调用不等于有权提交、推送、发布、删除或改生产；这些仍按具体授权。
 
 ## 怎么用
 
-直接描述结果即可：明确的小任务或已有 issue 直接实现；目标不清才讨论；存在任务依赖或恢复需求才使用 spec/tickets。在已选执行路径内，模型按需组合自动能力，不需要用户逐步接力；下表标记的手动 Skill 仅在用户显式调用时进入。
+直接描述要完成的结果。自动 Skill 按需触发；手动入口只在显式调用时进入。没有固定流水线，不要求每个任务都跑完整套。
 
-可自动验证的行为变更默认 Red/Green。完成实现后继续取得匹配证据、处理适用审查和修复；只请求讨论、建议、草稿时不越界实施或发布。commit、push、PR、merge、秘密/权限与生产变更仍由具体授权控制。
+常见入口示例，不是固定顺序：
 
-跨任务的[最小完整改动默认规则](skills/codebase-design/references/minimal-complete-change.md)帮助 Agent 解决已授权的问题，避免为假想需求增加抽象；它不牺牲正确性、必要验证或安全边界。它与 24 个 Skill 随同一插件或包交付，由 hook、扩展或 Cursor 插件自带规则加载；这不同于按需调用的 `codebase-design` Skill。
-
-24 个 Skill **整包分发**：15 个允许模型调用、9 个仅手动调用，见下表。`implement`、`implement-spec` 及其依赖保持自动可达；任何 Skill 都不能自动调用手动入口或读取其正文绕过限制。`grilling` 保留原版逐轮问题树与共同理解确认，确认前不实施。不承诺单独安装。宿主必须支持普通 sub-agent；独立工作可以使用新上下文并行，共享写入由唯一协调者处理。执行状态只存选定 tracker，知识和交接不另建进度副本。
+- 明确的小任务或已有 issue → `implement`；需要证明行为时由 `proof-oriented-development` 选择证据。
+- 原因不明的问题 → `diagnosing-bugs`；先建立反馈环，再定位根因。
+- 目标不清或方案有分歧 → `grilling`；需要领域文档时用 `grill-with-docs`。
+- 需要可交付计划 → `to-spec` / `to-tickets`；复杂目标先 `wayfinder`。
+- 要比较设计或架构 → `codebase-design` / `improve-codebase-architecture`；需要真实画面或逻辑时用 `prototype`。
+- 实现完成 → `code-review`；需要交付说明时用 `pr`。
 
 ## Skills
 
-| Skill | 负责的结果 |
-|---|---|
-| [`proof-oriented-development`](skills/proof-oriented-development/SKILL.md) | 以 Red/Green 默认实现行为，并选择覆盖真实风险的证据 |
-| [`code-review`](skills/code-review/SKILL.md) | 对照需求与工程质量，找出有证据的交付问题 |
-| [`diagnosing-bugs`](skills/diagnosing-bugs/SKILL.md) | 用区分性证据定位根因，而非猜补丁 |
-| [`codebase-design`](skills/codebase-design/SKILL.md) | 判断模块深度、资源责任与接口是否降低复杂度 |
-| [`grilling`](skills/grilling/SKILL.md) | 按问题树逐轮追问，直到用户确认共同理解 |
-| [`grill-with-docs`](skills/grill-with-docs/SKILL.md) | 手动调用；组合原版 grilling 与 domain-modeling |
-| [`domain-modeling`](skills/domain-modeling/SKILL.md) | 复用术语真源，维护领域边界与值得记录的决定 |
-| [`to-spec`](skills/to-spec/SKILL.md) | 手动调用；将目标整理成可交付、可验收的 spec |
-| [`to-tickets`](skills/to-tickets/SKILL.md) | 手动调用；按垂直结果与真实依赖拆分可执行工作 |
-| [`implement`](skills/implement/SKILL.md) | 从明确任务或现成 issue 连续完成实现、验证和修复 |
-| [`implement-spec`](skills/implement-spec/SKILL.md) | 从唯一 tracker 调度任务图并验收组合结果 |
-| [`triage`](skills/triage/SKILL.md) | 手动调用；识别请求的范围、重复、信息缺口与可执行性 |
-| [`wayfinder`](skills/wayfinder/SKILL.md) | 手动调用；把复杂目标中的决定与可执行工作分开推进 |
-| [`improve-codebase-architecture`](skills/improve-codebase-architecture/SKILL.md) | 手动调用；从实际摩擦找到值得深化的模块边界 |
-| [`research`](skills/research/SKILL.md) | 用匹配版本的一手来源解决技术未知 |
-| [`prototype`](skills/prototype/SKILL.md) | 用可运行逻辑或真实画面回答设计问题 |
-| [`pr`](skills/pr/SKILL.md) | 根据真实 diff 与证据起草 PR，按明确授权发布 |
-| [`wizard`](skills/wizard/SKILL.md) | 为确需人工输入或批准的配置生成安全脚本 |
-| [`handoff`](skills/handoff/SKILL.md) | 手动调用；携带目标、证据与状态真源指针，不复制进度 |
-| [`writing-for-agents`](skills/writing-for-agents/SKILL.md) | 编写能改变 Agent 判断、按需可达的指令与 Skill |
-| [`retro`](skills/retro/SKILL.md) | 手动调用；从会话或项目材料改进环境，而非堆叠禁令 |
-| [`dev-docs`](skills/dev-docs/SKILL.md) | 按项目协议写入、修订和核验稳定知识，不强制引入 Bundle |
-| [`knowledge-navigation`](skills/knowledge-navigation/SKILL.md) | 手动调用；按真实任务建立或改善知识检索路径 |
-| [`setup-power-agent`](skills/setup-power-agent/SKILL.md) | 最小补齐 Agent 入口与选定的 tracker/领域指针 |
+24 个 Skill，15 个允许模型调用，9 个仅手动调用。
+
+### 实现与修复
+
+| Skill | 用途 | 调用 |
+|---|---|---|
+| [`proof-oriented-development`](skills/proof-oriented-development/SKILL.md) | 用 Red/Green 和匹配证据实现行为变更 | 自动 |
+| [`diagnosing-bugs`](skills/diagnosing-bugs/SKILL.md) | 用区分性证据定位根因；先建立会变红的反馈环 | 自动 |
+| [`implement`](skills/implement/SKILL.md) | 从明确任务或现有 issue 连续完成实现、验证和修复 | 自动 |
+| [`implement-spec`](skills/implement-spec/SKILL.md) | 按 tracker 中的任务图调度独立切片并验收组合结果 | 自动 |
+
+### 目标、设计与调查
+
+| Skill | 用途 | 调用 |
+|---|---|---|
+| [`grilling`](skills/grilling/SKILL.md) | 按问题树逐轮追问，直到共同理解被确认 | 自动 |
+| [`grill-with-docs`](skills/grill-with-docs/SKILL.md) | 组合 grilling 与 domain-modeling，用于需要文档和领域语境的讨论 | 手动 |
+| [`domain-modeling`](skills/domain-modeling/SKILL.md) | 维护术语、上下文边界和值得记录的 ADR | 自动 |
+| [`to-spec`](skills/to-spec/SKILL.md) | 把目标整理成可交付、可验收的 spec | 手动 |
+| [`to-tickets`](skills/to-tickets/SKILL.md) | 按垂直结果和真实依赖拆分工作 | 手动 |
+| [`triage`](skills/triage/SKILL.md) | 判断请求的范围、重复、信息缺口和可执行性 | 手动 |
+| [`wayfinder`](skills/wayfinder/SKILL.md) | 把复杂目标中的决定与可执行工作分开推进 | 手动 |
+| [`codebase-design`](skills/codebase-design/SKILL.md) | 判断模块深度、资源责任和接口是否真的降低复杂度 | 自动 |
+| [`improve-codebase-architecture`](skills/improve-codebase-architecture/SKILL.md) | 从实际摩擦找值得深化的模块边界，输出候选报告 | 手动 |
+| [`research`](skills/research/SKILL.md) | 用匹配版本的一手来源解决技术未知 | 自动 |
+| [`prototype`](skills/prototype/SKILL.md) | 用单文件逻辑原型或真实 UI 变体回答设计问题 | 自动 |
+
+### 审查与交付
+
+| Skill | 用途 | 调用 |
+|---|---|---|
+| [`code-review`](skills/code-review/SKILL.md) | 按需求与工程两维审查变更，给出可定位证据 | 自动 |
+| [`pr`](skills/pr/SKILL.md) | 根据真实 diff 和证据起草 PR，发布需要授权 | 自动 |
+| [`wizard`](skills/wizard/SKILL.md) | 为需要人工输入或批准的配置生成安全脚本 | 自动 |
+| [`handoff`](skills/handoff/SKILL.md) | 把目标、证据和权威状态指针交给下一位 | 手动 |
+
+### 知识与元技能
+
+| Skill | 用途 | 调用 |
+|---|---|---|
+| [`dev-docs`](skills/dev-docs/SKILL.md) | 写入、修订和核验长期开发知识 | 自动 |
+| [`knowledge-navigation`](skills/knowledge-navigation/SKILL.md) | 设计或演进仓库知识检索路径 | 手动 |
+| [`writing-for-agents`](skills/writing-for-agents/SKILL.md) | 编写能改变 Agent 判断的 Skill、AGENTS.md 和引用材料 | 自动 |
+| [`retro`](skills/retro/SKILL.md) | 从会话或项目材料改进 Harness，而不是堆禁令 | 手动 |
+| [`setup-power-agent`](skills/setup-power-agent/SKILL.md) | 最小补齐项目 Agent 入口、tracker 和领域指针 | 自动 |
 
 ## 安装
+
+整包安装，不承诺单个 Skill 独立运行。宿主步骤、版本与信任条件见 [宿主兼容性](docs/agent-compatibility.md)。
 
 ### Claude Code
 
@@ -52,7 +88,43 @@ claude plugin install power-agent@power-agent --scope user
 claude plugin install power-agent@power-agent --scope project
 ```
 
-本地加载使用 `claude --plugin-dir /absolute/path/to/power-agent`。本仓库包含 marketplace catalog 与 `.claude-plugin/plugin.json`；catalog 校验不等于所有宿主的运行验收。
+本地加载使用 `claude --plugin-dir /absolute/path/to/power-agent`。仓库包含 marketplace catalog 与 `.claude-plugin/plugin.json`；catalog 校验不等于所有宿主的运行验收。
+
+### Codex
+
+```bash
+codex plugin marketplace add /absolute/path/to/power-agent
+```
+
+安装入口是 marketplace 注册加桌面应用启用；CLI 没有 `plugin install` 子命令。注册后，在 Codex 桌面应用 Plugins 中安装并启用，再启动新会话。非托管 hook 须在 `/hooks` 审核并信任，定义变更后重新审核。IDE 扩展不支持插件；marketplace 注册成功不等于 Skill 或规则已送达。
+
+### OMP
+
+```bash
+# 本地 checkout 以链接加载，不是独立副本
+omp plugin install /absolute/path/to/power-agent
+omp plugin list
+```
+
+单次会话加载：`omp --extension /absolute/path/to/power-agent`。本地安装写宿主配置，并在新会话初始化扩展。
+
+观察到的 OMP 18.18.9 / Bun 1.4.0 环境中，原生 `github:` 安装会请求 GitHub tarball API 并返回 404；私有仓库不要通过公开仓库或写入 token 绕过。需要独立快照时，按[宿主兼容性](docs/agent-compatibility.md#omp)中的 `gh api` + `npm pack` + `bun add file:` 路径处理。
+
+### pi
+
+```bash
+pi install git:github.com/Linfee/power-agent
+# 或本地 checkout
+pi install /absolute/path/to/power-agent
+# 项目范围安装，须经宿主项目可信确认
+pi install --local /absolute/path/to/power-agent
+```
+
+`pi list` 查看已配置包。个人范围写宿主设置，`--local` 写项目设置；项目包仅在宿主信任项目后加载。
+
+### Cursor
+
+在可用 marketplace 的 Customize 页面安装，或按 Cursor 本地插件说明将整个插件放入 `~/.cursor/plugins/local/power-agent`，重启或 Reload Window 后在 Customize 检查。团队 marketplace 和本地导入受组织策略限制；插件内 `disable-model-invocation: true` 的 Skill 在部分版本会从命令菜单消失，须按目标版本实测。
 
 ### Droid
 
@@ -63,15 +135,9 @@ droid plugin install power-agent@power-agent --scope user
 droid plugin install power-agent@power-agent --scope project
 ```
 
-### pi、OMP、Codex 与 Cursor
-
-pi 可通过 `pi install git:github.com/Linfee/power-agent` 安装整个包。OMP、Codex 和 Cursor 也使用各自的插件或包入口安装本仓库；具体步骤、版本与信任条件见[宿主兼容性](docs/agent-compatibility.md)。Cursor 的插件需通过可用的 marketplace 安装，或使用其本地插件开发入口；不能假定本仓库已经上架。
-
-六种宿主的安装均不需要向业务项目复制规则或运行项目配置器。实际规则送达、Skill 发现和子代理能力分别受宿主版本及启用状态影响；manifest 存在不等于运行验证。
-
 ## 开发与验证
 
-见 [开发指南](docs/development.md) 与 [Skill 设计指南](docs/skill-and-harness-design.md)。常用入口：
+维护方式与清单本身一致：先确认行为缺口，再改 Skill，最后跑结构检查和必要的真实场景。见 [开发指南](docs/development.md) 与 [Skill 设计指南](docs/skill-and-harness-design.md)。
 
 ```bash
 python3 scripts/check-description-length.py
@@ -83,14 +149,18 @@ node scripts/sync-plugin-rules.cjs --check
 
 脚本与行为改动另选直接验证，不把引用可达当作运行成功。
 
-## 设计与来源
+## 状态
 
-当前分工见[架构](docs/architecture.md)、[工作方式](docs/workflow.md)与统一的[ADR-0014](docs/adr/0014-current-baseline.md)。旧决定、融合设计和早期评估保留在[ADR 导航](docs/adr/index.md)及[历史资料](docs/archive/index.md)，不再作为当前规范或活动计划。
+个人使用，持续调整；不承诺稳定 API、向后兼容或适合所有团队。Skill 数量、调用方式和正文都可能变化。当前基线见 [ADR-0014](docs/adr/0014-current-baseline.md)；历史决定、融合设计和旧计划保留在 [ADR 导航](docs/adr/index.md) 与 [历史资料](docs/archive/index.md)，不作为现行指令。
 
-- Matt Pocock Skills，MIT，固定来源 `4ae2317ddb22b046e26455e4f9c9b3aaaf62212d`。
+## 来源与许可
+
+不是从零设计，主要参考以下开源项目和方法：
+
+- [Matt Pocock Skills](https://github.com/mattpocock/skills)，MIT，固定来源 `4ae2317ddb22b046e26455e4f9c9b3aaaf62212d`。
 - [superpowers](https://github.com/obra/superpowers)，Jesse Vincent，MIT。
 - [Ponytail](https://github.com/DietrichGebert/ponytail/tree/96608e078b2d5ea607c5c3b8b5a54d1c1fba6846) v5.3.3，DietrichGebert，MIT；借鉴最小改动与宿主集成，不需要单独安装 Ponytail。
 - PR 视觉表达保留 Dex Horthy / HumanLayer `show-me` 的署名。
 - [Harness Engineering](https://openai.com/index/harness-engineering/) 为方法参考，不作为 MIT 软件来源。
 
-许可见 [LICENSE](LICENSE)。
+逐 Skill 的来源和取舍见[历史融合设计](docs/archive/2026-11-11-matt-power-agent-fusion.md)；第三方许可见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。许可条款见 [LICENSE](LICENSE)。

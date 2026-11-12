@@ -1,47 +1,83 @@
 # power-agent
 
-A Matt-led engineering skill bundle, combining [Matt Pocock’s skills](https://github.com/mattpocock/skills) with Power-Agent’s proof-oriented development (POD), causal diagnosis, engineering judgment, project knowledge, and **continuous execution within authorization**.
+A personal engineering skill list.
 
-## Usage
+Assembled, adapted, and combined from several open-source agent-skill projects around an established workflow: implementation, diagnosis, design, review, delivery, and documentation. Not a general framework, team standard, or ready-to-use product; intended for personal workflows.
 
-Describe the result. A clear small task or existing issue goes straight to implementation; discuss genuine uncertainty and use specs/tickets only when dependencies, coordination, or recovery need them. Within the chosen execution path, the agent composes automatic capabilities without step-by-step human relay. Skills marked manual below require explicit user invocation.
+## Design choices
 
-Automated behavioral changes default to red/green. Continue through relevant verification, review, and repairs, but a request for advice, discussion, or a draft does not authorize implementation or publication. Refactoring belongs to the review stage. Commits, pushes, PRs, merges, secrets, permissions, and production changes retain their explicit authorization boundaries.
+- Small tasks go straight to implementation. Specs, tickets, or maps appear only when dependencies, recovery, or coordination need them.
+- Behavior changes start with red/green. Refactoring belongs to the review stage, once behavior is better covered.
+- Diagnosis starts with a tight, red-capable loop that asserts the reported symptom; hypotheses come after that.
+- Review uses two independent axes, requirements and engineering quality. They are merged only when explicitly requested.
+- Automatic invocation fires as needed; manual entries only run when explicitly invoked. Direction, scope, trade-offs, and acceptance do not transfer to automation.
+- Documentation goes into the project's existing authoritative location. Session notes, plans, and temporary conclusions are not long-term knowledge.
+- Being auto-invocable does not grant permission to commit, push, publish, delete, or change production. Those still need specific authorization.
 
-The cross-task [minimal complete change defaults](skills/codebase-design/references/minimal-complete-change.md) steer agents toward the authorized problem instead of abstractions for hypothetical needs, without sacrificing correctness, appropriate evidence, or safety. They ship with all 24 skills in one plugin or package, loaded through hooks, an extension, or a Cursor plugin-owned rule. This is distinct from invoking the `codebase-design` skill.
+## How to use it
 
-All 24 skills are **distributed together**: 15 are model-invocable and 9 are manual, as marked below. `implement`, `implement-spec`, and their dependencies remain automatically reachable. No skill may autonomously invoke a manual entry or read its body to bypass the restriction. `grilling` retains the original question-tree rounds and requires the user to confirm shared understanding before action. Standalone skill installation is not supported. The host needs ordinary sub-agents with fresh contexts. Parallelism follows dependencies and write ownership. One tracker owns execution state; documentation and handoffs do not duplicate progress.
+Describe the result. Automatic skills fire as needed; manual entries require an explicit invocation. There is no fixed pipeline, and no task needs to run the full set.
+
+Common entry points, not a required sequence:
+
+- A clear small task or existing issue → `implement`; `proof-oriented-development` selects the evidence for behavior changes.
+- An unclear failure → `diagnosing-bugs`; build the loop before forming a root-cause theory.
+- Unclear goals or disagreement over approach → `grilling`; use `grill-with-docs` when domain documents matter.
+- A deliverable plan → `to-spec` / `to-tickets`; use `wayfinder` first for complex goals.
+- A design or architecture comparison → `codebase-design` / `improve-codebase-architecture`; use `prototype` when running logic or actual UI is needed.
+- Implementation finished → `code-review`; use `pr` when a delivery description is needed.
 
 ## Skills
 
-| Skill | Result |
-|---|---|
-| [`proof-oriented-development`](skills/proof-oriented-development/SKILL.md) | Implement behavior with red/green and evidence for the real risk |
-| [`code-review`](skills/code-review/SKILL.md) | Review requirements and engineering quality with actionable evidence |
-| [`diagnosing-bugs`](skills/diagnosing-bugs/SKILL.md) | Find causes using discriminating evidence, not plausible patches |
-| [`codebase-design`](skills/codebase-design/SKILL.md) | Judge module depth, resource ownership, and useful interfaces |
-| [`grilling`](skills/grilling/SKILL.md) | Work the question tree in rounds until the user confirms shared understanding |
-| [`grill-with-docs`](skills/grill-with-docs/SKILL.md) | Manually invoke the original grilling and domain-modeling composition |
-| [`domain-modeling`](skills/domain-modeling/SKILL.md) | Reuse domain terminology and record consequential decisions |
-| [`to-spec`](skills/to-spec/SKILL.md) | Manual; turn a goal into an actionable, verifiable spec |
-| [`to-tickets`](skills/to-tickets/SKILL.md) | Manual; slice work by observable outcomes and real dependencies |
-| [`implement`](skills/implement/SKILL.md) | Complete a clear task or existing issue with implementation and proof |
-| [`implement-spec`](skills/implement-spec/SKILL.md) | Execute a task graph from one tracker and verify the integrated result |
-| [`triage`](skills/triage/SKILL.md) | Manual; triage scope, duplicates, missing information, and readiness |
-| [`wayfinder`](skills/wayfinder/SKILL.md) | Manual; separate decisions from implementation in complex work |
-| [`improve-codebase-architecture`](skills/improve-codebase-architecture/SKILL.md) | Manual; find architectural improvements grounded in actual friction |
-| [`research`](skills/research/SKILL.md) | Resolve technical unknowns with version-matched primary sources |
-| [`prototype`](skills/prototype/SKILL.md) | Answer a design question with running logic or actual UI |
-| [`pr`](skills/pr/SKILL.md) | Draft a PR from the actual diff and evidence; publish only when authorized |
-| [`wizard`](skills/wizard/SKILL.md) | Generate safe scripts for setup that genuinely needs human input |
-| [`handoff`](skills/handoff/SKILL.md) | Manual; carry intent, evidence, and the authoritative state pointer |
-| [`writing-for-agents`](skills/writing-for-agents/SKILL.md) | Write agent instructions and skills that change useful decisions |
-| [`retro`](skills/retro/SKILL.md) | Manual; improve the harness from session or project evidence |
-| [`dev-docs`](skills/dev-docs/SKILL.md) | Write, revise, and verify durable knowledge using project conventions |
-| [`knowledge-navigation`](skills/knowledge-navigation/SKILL.md) | Manually invoked; build or improve knowledge retrieval paths for actual tasks |
-| [`setup-power-agent`](skills/setup-power-agent/SKILL.md) | Fill the minimum agent entrypoint and selected tracker/domain pointers |
+24 skills: 15 model-invocable and 9 manual.
+
+### Implementation and repair
+
+| Skill | Purpose | Invocation |
+|---|---|---|
+| [`proof-oriented-development`](skills/proof-oriented-development/SKILL.md) | Implement behavior changes with red/green and risk-matched evidence | Auto |
+| [`diagnosing-bugs`](skills/diagnosing-bugs/SKILL.md) | Find root causes with discriminating evidence; build a red-capable loop first | Auto |
+| [`implement`](skills/implement/SKILL.md) | Complete a clear task or existing issue through implementation, verification, and repair | Auto |
+| [`implement-spec`](skills/implement-spec/SKILL.md) | Run a tracker-backed task graph and verify the integrated result | Auto |
+
+### Goals, design, and investigation
+
+| Skill | Purpose | Invocation |
+|---|---|---|
+| [`grilling`](skills/grilling/SKILL.md) | Work the question tree in rounds until shared understanding is confirmed | Auto |
+| [`grill-with-docs`](skills/grill-with-docs/SKILL.md) | Combine grilling with domain-modeling for document-heavy or domain-heavy discussions | Manual |
+| [`domain-modeling`](skills/domain-modeling/SKILL.md) | Maintain terminology, context boundaries, and decision records worth keeping | Auto |
+| [`to-spec`](skills/to-spec/SKILL.md) | Turn a goal into a deliverable, verifiable spec | Manual |
+| [`to-tickets`](skills/to-tickets/SKILL.md) | Slice work by observable outcomes and real dependencies | Manual |
+| [`triage`](skills/triage/SKILL.md) | Assess scope, duplication, missing information, and readiness | Manual |
+| [`wayfinder`](skills/wayfinder/SKILL.md) | Separate decisions from implementation in complex work | Manual |
+| [`codebase-design`](skills/codebase-design/SKILL.md) | Judge whether module depth, resource ownership, and interfaces actually reduce complexity | Auto |
+| [`improve-codebase-architecture`](skills/improve-codebase-architecture/SKILL.md) | Find architecture improvements grounded in actual friction; produce a candidate report | Manual |
+| [`research`](skills/research/SKILL.md) | Resolve technical unknowns with version-matched primary sources | Auto |
+| [`prototype`](skills/prototype/SKILL.md) | Answer a design question with a single-file logic prototype or real UI variants | Auto |
+
+### Review and delivery
+
+| Skill | Purpose | Invocation |
+|---|---|---|
+| [`code-review`](skills/code-review/SKILL.md) | Review changes on requirements and engineering axes with locateable evidence | Auto |
+| [`pr`](skills/pr/SKILL.md) | Draft a PR from the actual diff and evidence; publishing needs authorization | Auto |
+| [`wizard`](skills/wizard/SKILL.md) | Generate safe scripts for setup that genuinely needs human input or approval | Auto |
+| [`handoff`](skills/handoff/SKILL.md) | Hand off the goal, evidence, and authoritative state pointer | Manual |
+
+### Knowledge and meta-skills
+
+| Skill | Purpose | Invocation |
+|---|---|---|
+| [`dev-docs`](skills/dev-docs/SKILL.md) | Write, revise, and verify durable development knowledge | Auto |
+| [`knowledge-navigation`](skills/knowledge-navigation/SKILL.md) | Design or evolve repository knowledge retrieval paths | Manual |
+| [`writing-for-agents`](skills/writing-for-agents/SKILL.md) | Write skills, AGENTS.md, and reference material that change agent decisions | Auto |
+| [`retro`](skills/retro/SKILL.md) | Improve the harness from session or project evidence instead of stacking prohibitions | Manual |
+| [`setup-power-agent`](skills/setup-power-agent/SKILL.md) | Fill the minimum agent entrypoint, tracker, and domain pointers | Auto |
 
 ## Installation
+
+Install the whole bundle; standalone skill installation is not supported. Host-specific steps, version limits, and trust conditions are in [host compatibility](docs/agent-compatibility.md).
 
 ### Claude Code
 
@@ -54,6 +90,42 @@ claude plugin install power-agent@power-agent --scope project
 
 For a local checkout: `claude --plugin-dir /absolute/path/to/power-agent`. A marketplace catalog and `.claude-plugin/plugin.json` are included. Manifest validation is not runtime validation of every host.
 
+### Codex
+
+```bash
+codex plugin marketplace add /absolute/path/to/power-agent
+```
+
+Installation is marketplace registration plus desktop-app enablement; the CLI has no `plugin install` subcommand. After registration, install and enable in the Codex desktop app's Plugins page, then start a new session. Non-managed hooks must be reviewed and trusted in `/hooks`, and re-reviewed after definition changes. The IDE extension does not support plugins; successful marketplace registration does not prove that skills or rules were delivered.
+
+### OMP
+
+```bash
+# Local checkout is linked, not copied into an independent snapshot
+omp plugin install /absolute/path/to/power-agent
+omp plugin list
+```
+
+Load for one session with `omp --extension /absolute/path/to/power-agent`. Local installation writes host configuration and initializes the extension in a new session.
+
+In the observed OMP 18.18.9 / Bun 1.4.0 environment, a native `github:` install requests the GitHub tarball API and returns 404. Do not work around this by making a private repository public or embedding a token. For an independent snapshot, follow the `gh api` + `npm pack` + `bun add file:` path in [host compatibility](docs/agent-compatibility.md#omp).
+
+### pi
+
+```bash
+pi install git:github.com/Linfee/power-agent
+# Or a local checkout
+pi install /absolute/path/to/power-agent
+# Project-scoped install, subject to host trust confirmation
+pi install --local /absolute/path/to/power-agent
+```
+
+Use `pi list` to inspect configured packages. Personal scope writes host settings; `--local` writes project settings, and a project package loads only after the host trusts the project.
+
+### Cursor
+
+Install from Customize when a marketplace is available, or follow Cursor's local plugin instructions to place the whole plugin under `~/.cursor/plugins/local/power-agent`, then restart or reload the window and inspect Customize. Team marketplaces and local imports are subject to organization policy. On some versions, skills with `disable-model-invocation: true` disappear from the command menu; verify against the target version.
+
 ### Droid
 
 ```bash
@@ -63,15 +135,9 @@ droid plugin install power-agent@power-agent --scope user
 droid plugin install power-agent@power-agent --scope project
 ```
 
-### pi, OMP, Codex, and Cursor
-
-Install the complete pi package with `pi install git:github.com/Linfee/power-agent`. OMP, Codex, and Cursor also load this repository through their native plugin or package mechanisms; see [host compatibility](docs/agent-compatibility.md) for steps, version limits, and trust conditions. Cursor requires an available marketplace or its local plugin development entry; do not assume this repository is publicly listed.
-
-None of the six hosts requires copying rules into a business project or running a project configurator. Actual rule delivery, skill discovery, and sub-agent capabilities depend on the host version and enablement; a manifest alone is not runtime evidence.
-
 ## Development
 
-See [development.md](docs/development.md) and [the skill design guide](docs/skill-and-harness-design.md). Common checks:
+Maintenance follows the same rules the list asks agents to use: state the behavior gap, change the skill, then run structural checks and only the necessary real-world scenarios. See [development](docs/development.md) and [skill design](docs/skill-and-harness-design.md).
 
 ```bash
 python3 scripts/check-description-length.py
@@ -83,14 +149,18 @@ node scripts/sync-plugin-rules.cjs --check
 
 Script and behavioral changes also need evidence exercising their actual contract; reachable references alone do not prove execution.
 
-## Design and attribution
+## Status
 
-See [architecture](docs/architecture.md), [workflow](docs/workflow.md), and the consolidated [ADR-0014](docs/adr/0014-current-baseline.md) for the current baseline. Earlier decisions, the fusion design, and past evaluations remain in the [ADR index](docs/adr/index.md) and [historical archive](docs/archive/index.md); they are not current instructions or active plans.
+Personal use, continuously adjusted. No promise of a stable API, backward compatibility, or fitness for every team. Skill count, invocation modes, and content may change. The current baseline is [ADR-0014](docs/adr/0014-current-baseline.md); earlier decisions, the fusion design, and old plans remain in the [ADR index](docs/adr/index.md) and [historical archive](docs/archive/index.md), not as current instructions.
 
-- Matt Pocock Skills, MIT; pinned source `4ae2317ddb22b046e26455e4f9c9b3aaaf62212d`.
+## Sources and license
+
+Not designed from scratch. Main references:
+
+- [Matt Pocock Skills](https://github.com/mattpocock/skills), MIT; pinned source `4ae2317ddb22b046e26455e4f9c9b3aaaf62212d`.
 - [superpowers](https://github.com/obra/superpowers), Jesse Vincent, MIT.
 - [Ponytail](https://github.com/DietrichGebert/ponytail/tree/96608e078b2d5ea607c5c3b8b5a54d1c1fba6846) v5.3.3, DietrichGebert, MIT; minimal-change and host-integration inspiration, with no separate Ponytail install.
 - PR visual guidance retains Dex Horthy / HumanLayer `show-me` credits.
 - [Harness Engineering](https://openai.com/index/harness-engineering/) is a methodological reference, not MIT-licensed software copied into this bundle.
 
-See [LICENSE](LICENSE) for permission terms.
+Per-skill sources and trade-offs are in the [historical fusion design](docs/archive/2026-11-11-matt-power-agent-fusion.md); third-party notices are in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). License terms are in [LICENSE](LICENSE).
