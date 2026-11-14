@@ -1,6 +1,6 @@
 ---
 name: wayfinder
-description: 探索目标或路线尚不明确的大型工作，维护决策地图、研究未知并区分需人决定的取舍。
+description: 为超出单次会话的大型工作建立可推进的决策地图。
 disable-model-invocation: true
 ---
 

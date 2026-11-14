@@ -2,6 +2,12 @@
 
 > 归档正文已从仓库移除；以下记录中的归档名称仅用于追溯历史，不再链接到文件。
 
+## 2026-11-14
+
+- 按用户要求把 `grilling` 与 `grill-with-docs` 的正文由 Matt 原版英文译为中文，保留问题树、轮次、frontier、输出格式与共同理解确认；调用元数据未变。
+- 实现路径改由 `implement` / `implement-spec` 驱动 review–fix 循环，循环规则、跳过条件与退出判据收归实现入口；独立审查仍按需求与工程两维并行，不固定轮数。同步 [ADR-0014](adr/0014-current-baseline.md)、[工作方式](workflow.md)、[架构](architecture.md)与 `AGENTS.md`。
+- 收紧 16 个 Skill 的 description 使其只承担触发判断，修正设计文档中残留的 25 个 Skill / 17 自动 / 8 手动计数为当前 24 / 14 / 10。
+
 ## 2026-11-12
 
 - 按当前 0.2.0 的 Skill、实现与元数据，将 ADR-0001 至 0013 归并为 [ADR-0014](adr/0014-current-baseline.md)；旧记录曾移入 `adr/archive/`，归档正文现已移除。

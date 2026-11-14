@@ -9,14 +9,14 @@ Assembled, adapted, and combined from several open-source agent-skill projects a
 - Small tasks go straight to implementation. Specs, tickets, or maps appear only when dependencies, recovery, or coordination need them.
 - Behavior changes start with red/green. Refactoring belongs to the review stage, once behavior is better covered.
 - Diagnosis starts with a tight, red-capable loop that asserts the reported symptom; hypotheses come after that.
-- Review uses two independent axes, requirements and engineering quality. They are merged only when explicitly requested.
+- Review uses two independent axes, requirements and engineering quality. Implementation review is driven by `implement` / `implement-spec` through the review–fix loop; mechanical changes may skip it. The axes are merged only when explicitly requested.
 - Automatic invocation fires as needed; manual entries only run when explicitly invoked. Direction, scope, trade-offs, and acceptance do not transfer to automation.
 - Documentation goes into the project's existing authoritative location. Session notes, plans, and temporary conclusions are not long-term knowledge.
 - Being auto-invocable does not grant permission to commit, push, publish, delete, or change production. Those still need specific authorization.
 
 ## How to use it
 
-Describe the result. Automatic skills fire as needed; manual entries require an explicit invocation. There is no fixed pipeline, and no task needs to run the full set.
+Describe the result. Automatic skills fire as needed; manual entries require an explicit invocation. There is no fixed stage chain; the implementation entry drives the review–fix loop, and mechanical changes may skip it.
 
 Common entry points, not a required sequence:
 
@@ -25,7 +25,7 @@ Common entry points, not a required sequence:
 - Unclear goals or disagreement over approach → `grilling`; use `grill-with-docs` when domain documents matter.
 - A deliverable plan → `to-spec` / `to-tickets`; use `wayfinder` first for complex goals.
 - A design or architecture comparison → `codebase-design` / `improve-codebase-architecture`; use `prototype` when running logic or actual UI is needed.
-- Implementation finished → `code-review`; use `pr` when a delivery description is needed.
+- Implementation finished → `implement` drives the review–fix loop; use `pr` when a delivery description is needed.
 
 ## Skills
 
@@ -37,8 +37,8 @@ Common entry points, not a required sequence:
 |---|---|---|
 | [`proof-oriented-development`](skills/proof-oriented-development/SKILL.md) | Implement behavior changes with red/green and risk-matched evidence | Auto |
 | [`diagnosing-bugs`](skills/diagnosing-bugs/SKILL.md) | Find root causes with discriminating evidence; build a red-capable loop first | Auto |
-| [`implement`](skills/implement/SKILL.md) | Complete a clear task or existing issue through implementation, verification, and repair | Auto |
-| [`implement-spec`](skills/implement-spec/SKILL.md) | Run a tracker-backed task graph and verify the integrated result | Auto |
+| [`implement`](skills/implement/SKILL.md) | Complete a clear task or existing issue through implementation, verification, the default review–fix loop, and repair | Auto |
+| [`implement-spec`](skills/implement-spec/SKILL.md) | Run a tracker-backed task graph, drive per-slice review, and verify the integrated result | Auto |
 
 ### Goals, design, and investigation
 

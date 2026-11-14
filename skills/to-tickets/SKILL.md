@@ -1,6 +1,6 @@
 ---
 name: to-tickets
-description: 将 spec、计划或复杂目标拆成可独立验收的任务与真实依赖，并按授权在项目 tracker 中创建票据。
+description: 把 spec 或复杂目标拆成带依赖关系的可验收票据。
 disable-model-invocation: true
 ---
 

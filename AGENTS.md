@@ -47,8 +47,8 @@ Power-Agent 以 Matt Pocock 的轻量工程能力为主干，融合 Power 的证
 |`domain-modeling`|复用术语真源，维护领域边界与值得记录的决定|
 |`to-spec`|手动调用；将目标整理成可交付、可验收的 spec|
 |`to-tickets`|手动调用；按垂直结果与真实依赖拆分可执行工作|
-|`implement`|从明确任务或现成 issue 连续完成实现、验证和修复|
-|`implement-spec`|从唯一 tracker 调度任务图并验收组合结果|
+|`implement`|从明确任务或现成 issue 连续完成实现、验证、驱动 review–fix 循环和修复|
+|`implement-spec`|从唯一 tracker 调度任务图、驱动切片审查并验收组合结果|
 |`triage`|手动调用；识别请求的范围、重复、信息缺口与可执行性|
 |`wayfinder`|手动调用；把复杂目标中的决定与可执行工作分开推进|
 |`improve-codebase-architecture`|手动调用；从实际摩擦找到值得深化的模块边界|

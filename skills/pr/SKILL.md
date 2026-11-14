@@ -1,6 +1,6 @@
 ---
 name: pr
-description: 草拟、创建或更新 pull request，组织变更摘要、真实证据和合并风险；是否发布取决于具体授权。
+description: 草拟、创建或更新 pull request，组织变更摘要、证据与合并风险。
 metadata:
   credits:
     skill: show-me

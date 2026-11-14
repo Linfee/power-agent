@@ -1,6 +1,6 @@
 ---
 name: knowledge-navigation
-description: 设计仓库整体知识导航，或结合对话历史、用户反馈与讨论演进已有体系时使用；最小入口补缺口、单篇写作和纯扫描不用。
+description: 设计或演进仓库的知识导航。
 disable-model-invocation: true
 ---
 

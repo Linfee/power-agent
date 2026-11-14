@@ -1,6 +1,6 @@
 ---
 name: improve-codebase-architecture
-description: 发现代码库中的架构摩擦并评估改进机会；适用于寻找高杠杆重构候选，不适用于仅实现已确定的局部修改。
+description: 扫描代码库，找出值得深化的架构改进机会。
 disable-model-invocation: true
 ---
 

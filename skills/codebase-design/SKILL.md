@@ -1,6 +1,6 @@
 ---
 name: codebase-design
-description: 设计或审查模块接口、依赖边界与测试切入点，判断深模块和抽象是否有实际价值。
+description: 判断深模块、seam 与抽象是否有实际价值，设计或审查模块接口、依赖边界和测试切入点。
 ---
 
 # Codebase Design

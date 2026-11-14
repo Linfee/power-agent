@@ -1,6 +1,6 @@
 ---
 name: setup-power-agent
-description: 初始化项目 Agent 入口、配置所选 issue tracker 或为现有项目知识补齐明确缺口时使用；整体知识导航设计与历史反馈分析不属于此项。
+description: 初始化项目 Agent 入口，配置 issue tracker 并补齐知识缺口。
 disable-model-invocation: true
 ---
 

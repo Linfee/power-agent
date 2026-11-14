@@ -1,6 +1,6 @@
 ---
 name: research
-description: 研究具体技术问题、库或 API 的事实与版本差异，查找并核对可追溯来源；适用于需要资料调查而非单纯实现的任务。
+description: 研究技术问题、库或 API 的事实与版本差异，查找并核对可追溯来源。
 ---
 
 # Research

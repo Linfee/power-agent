@@ -1,6 +1,6 @@
 ---
 name: to-spec
-description: 将已讨论的需求整理为可执行 spec，或为 tracker 起草目标、范围与验收；简单任务无需先写 spec。
+description: 把已讨论的需求整理成 spec 并发布到 tracker。
 disable-model-invocation: true
 ---
 

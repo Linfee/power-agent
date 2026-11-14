@@ -9,14 +9,14 @@
 - 小任务直接做。只有依赖、恢复或协作确有需要时，才用 spec、tickets 或地图。
 - 行为变更先 Red/Green；重构留到 review 阶段，在行为覆盖更完整时进行。
 - 诊断先建立能变红、能断言所报症状的反馈环，再提假设。
-- 审查默认把需求与工程质量分别交给独立 reviewer；只有明确要求时才合并。
+- 审查默认把需求与工程质量分别交给独立 reviewer；实现路径由 `implement` / `implement-spec` 驱动 review–fix 循环，只有明确要求时才合并两维。
 - 自动调用按需触发；标为“手动”的入口只在显式调用时进入。方向、范围、取舍和验收不因自动调用而转移。
 - 文档写入项目现有的权威位置；不把会话记录、执行计划或临时结论当长期知识。
 - 能自动调用不等于有权提交、推送、发布、删除或改生产；这些仍按具体授权。
 
 ## 怎么用
 
-直接描述要完成的结果。自动 Skill 按需触发；手动入口只在显式调用时进入。没有固定流水线，不要求每个任务都跑完整套。
+直接描述要完成的结果。自动 Skill 按需触发；手动入口只在显式调用时进入。没有固定阶段链；实现入口驱动 review–fix 循环收敛，纯机械改动可跳过。
 
 常见入口示例，不是固定顺序：
 
@@ -37,8 +37,8 @@
 |---|---|---|
 | [`proof-oriented-development`](skills/proof-oriented-development/SKILL.md) | 用 Red/Green 和匹配证据实现行为变更 | 自动 |
 | [`diagnosing-bugs`](skills/diagnosing-bugs/SKILL.md) | 用区分性证据定位根因；先建立会变红的反馈环 | 自动 |
-| [`implement`](skills/implement/SKILL.md) | 从明确任务或现有 issue 连续完成实现、验证和修复 | 自动 |
-| [`implement-spec`](skills/implement-spec/SKILL.md) | 按 tracker 中的任务图调度独立切片并验收组合结果 | 自动 |
+| [`implement`](skills/implement/SKILL.md) | 从明确任务或现有 issue 连续完成实现、验证、驱动默认 review–fix 循环和修复 | 自动 |
+| [`implement-spec`](skills/implement-spec/SKILL.md) | 按 tracker 中的任务图调度独立切片、驱动审查并验收组合结果 | 自动 |
 
 ### 目标、设计与调查
 
