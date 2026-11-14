@@ -1,6 +1,6 @@
 {
   "name": "power-agent",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Engineering skills and minimal complete change defaults.",
   "author": { "name": "linfee" },
   "repository": "https://github.com/linfee/power-agent",
