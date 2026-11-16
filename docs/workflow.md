@@ -19,6 +19,8 @@ scope:
 - 需要依赖调度或跨会话恢复：`implement-spec` 可直接消费已有 spec、票据和关系；用户需要专门的规划流程时显式选择 `to-spec`、`to-tickets` 或 `wayfinder`，不为进入实施额外造票。
 - 实现入口驱动 review–fix 循环；独立审查、技术研究、原型、PR 草稿和项目知识可按缺口使用自动能力；`triage`、`improve-codebase-architecture`、`retro`、`handoff` 是用户选择的手动入口，不自动扩展当前任务。
 
+`grilling`、`grill-with-docs`、`to-spec`、`to-tickets` 和 `wayfinder` 以各自的讨论或规划产物结束：共同理解、spec、票据或地图。它们不把产物接续为实现；即使原始请求同时包含实施，也先交付讨论或规划产物，等用户下一步明确要求后再进入 `implement` 或 `implement-spec`。
+
 进入 `grilling` 后，当前前置条件已满足的问题组成一轮 frontier；依赖尚未回答问题的分支留到后续轮次，事实调查使用新上下文子代理。问题树收敛后仍须用户确认共同理解，不能用自动推进绕过此确认；确认前不实施。`grill-with-docs` 保留原版手动调用元数据，不是模型自动选择的讨论入口。
 
 ## 可自动验证的实现
