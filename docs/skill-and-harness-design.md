@@ -44,4 +44,8 @@ hook 和扩展旨在传递固定约束，不直接检测过度设计，也不为
 
 需要行为对照时，在相同模型、工具、输入、授权和验收下比较基础、来源或候选，保留实际加载范围、执行轨迹和产物。少量案例只能支持对应场景，不能声称普遍提升；显式加载不能记成自然发现。不建立无持续消费者的永久评测平台。
 
+面向 GPT‑6.2 Sol 和 Astra 时，先写清调用者要拿到什么、哪些决定可自行做、怎样判断做完，再决定是否需要给步骤。参考 OpenAI 的 [GPT‑6.2 提示指南](https://developers.openai.com/api/docs/guides/latest-model/gpt-6.2-astra#prompting-best-practices)。例如，交付 PR 草稿就给可复制正文，不把模板里的发布步骤当作授权。
+
+同一份提示也供 DeepSeek V4.1 Flash 使用。保留机器实际消费的示例、空结果和失败分支，不要求普通答复一律结构化。仅当调用方启用 DeepSeek 的 `json_object` 模式时，才按[官方 JSON Output 指南](https://api-docs.deepseek.com/guides/json_mode#notice)在对应提示中注明 JSON 并给合法示例；参数和响应校验归调用方。跨模型结论分型号记录，不用一个型号通过代替另一个。
+
 模型或宿主升级后，根据实际行为重新检查哪些机制还承重。删除有证据表明无效的默认行为复述和无消费者模板；方法、理由与示例不因“模型应该懂”自动失去价值，安全、授权和实际机器协议更不能据此删除。方法细节见 [`writing-for-agents` 的判据](../skills/writing-for-agents/references/criteria.md)。

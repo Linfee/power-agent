@@ -1,6 +1,6 @@
 ---
 name: grill-with-docs
-description: 围绕计划或设计持续追问，并把结论沉淀为 ADR 与词汇表。
+description: 围绕计划或设计持续追问，并梳理相关领域术语与决策理由。
 disable-model-invocation: true
 ---
 
