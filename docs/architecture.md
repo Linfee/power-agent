@@ -33,7 +33,7 @@ Power-Agent 是以 Matt 轻量工程能力为主干的整包 Skill。目标、�
 
 最小完整改动默认规则的唯一来源是 [`skills/codebase-design/references/minimal-complete-change.md`](../skills/codebase-design/references/minimal-complete-change.md)。它指导所有编码任务优先解决已授权的实际问题，避免无实际消费者的抽象和扩张；完整性、正确性、安全、兼容性和必要验证仍由任务决定。它不是必须执行的固定工作流，也不替代 `codebase-design` 等按需加载的 Skill。
 
-`hooks/defaults.cjs` 从安装位置读取该来源，供原生 hook 和 pi/OMP 扩展使用；Cursor 插件规则由 `scripts/sync-plugin-rules.cjs` 从同一来源生成到 `rules/minimal-complete-change.mdc`，不维护第二份规则正文。Claude Code、pi、OMP、Codex、Cursor、Factory/Droid 使用本仓库的插件或包，无需向业务项目复制规则。各宿主的入口、信任条件和验证边界见[兼容性指南](agent-compatibility.md)；资源声明不等于实际送达或模型遵循。
+`hooks/defaults.cjs` 从安装位置读取该来源，供原生 hook 和 pi/OMP 扩展使用；Cursor 与 Antigravity 插件规则由 `scripts/sync-plugin-rules.cjs` 从同一来源分别生成到 `rules/minimal-complete-change.mdc` 和 `rules/AGENTS.md`，不维护第二份规则正文。Claude Code、pi、OMP、Codex、Cursor、Factory/Droid、Antigravity 使用本仓库的插件或包，无需向业务项目复制规则。各宿主的入口、信任条件和验证边界见[兼容性指南](agent-compatibility.md)；资源声明不等于实际送达或模型遵循。
 
 ## 执行状态与知识
 

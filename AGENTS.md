@@ -17,7 +17,7 @@ Power-Agent 以 Matt Pocock 的轻量工程能力为主干，融合 Power 的证
 
 宿主须支持普通 sub-agent：任务与上下文传入、独立执行及结果收集。子代理使用新上下文；并行由真实依赖和写所有权决定，共享文件和状态有唯一协调者。不使用 team mode，不维护无 sub-agent fallback，不规定平台并发数字。
 
-跨任务的最小完整改动默认规则见 [`minimal-complete-change.md`](skills/codebase-design/references/minimal-complete-change.md)，与 24 个 Skill 一起由插件或包提供；它不同于按任务调用的设计 Skill。[宿主兼容性](docs/agent-compatibility.md)说明六种宿主的安装方式、加载条件及证据边界。
+跨任务的最小完整改动默认规则见 [`minimal-complete-change.md`](skills/codebase-design/references/minimal-complete-change.md)，与 24 个 Skill 一起由插件或包提供；它不同于按任务调用的设计 Skill。[宿主兼容性](docs/agent-compatibility.md)说明七种宿主的安装方式、加载条件及证据边界。
 
 ## 知识库导航
 

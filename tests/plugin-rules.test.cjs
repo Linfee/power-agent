@@ -22,25 +22,29 @@ function run(script, args, cwd) {
 
 test('generation check detects drift without writing; generation repairs owned blocks only', t => {
   const fixture = temp(t);
+  const generated = ['rules/minimal-complete-change.mdc', 'rules/AGENTS.md'];
   for (const relative of [
     'scripts/sync-plugin-rules.cjs', 'hooks/defaults.cjs',
     'skills/codebase-design/references/minimal-complete-change.md',
-    'rules/minimal-complete-change.mdc',
+    ...generated,
   ]) {
     const target = path.join(fixture, relative);
     fs.mkdirSync(path.dirname(target), { recursive: true });
     fs.copyFileSync(path.join(repository, relative), target);
   }
   const script = path.join(fixture, 'scripts/sync-plugin-rules.cjs');
-  const artifact = path.join(fixture, 'rules/minimal-complete-change.mdc');
-  const original = fs.readFileSync(artifact, 'utf8');
-  const stale = original.replace(getDefaults(), `${START}\nstale\n${END}`);
-  fs.writeFileSync(artifact, stale);
-  assert.notEqual(run(script, ['--check'], os.tmpdir()).status, 0);
-  assert.equal(fs.readFileSync(artifact, 'utf8'), stale);
-  assert.equal(run(script, [], os.tmpdir()).status, 0);
-  assert.equal(fs.readFileSync(artifact, 'utf8'), original);
-  fs.writeFileSync(artifact, original + 'User-owned text\n');
-  assert.notEqual(run(script, [], os.tmpdir()).status, 0);
-  assert.equal(fs.readFileSync(artifact, 'utf8'), original + 'User-owned text\n');
+  for (const relative of generated) {
+    const artifact = path.join(fixture, relative);
+    const original = fs.readFileSync(artifact, 'utf8');
+    const stale = original.replace(getDefaults(), `${START}\nstale\n${END}`);
+    fs.writeFileSync(artifact, stale);
+    assert.notEqual(run(script, ['--check'], os.tmpdir()).status, 0, relative);
+    assert.equal(fs.readFileSync(artifact, 'utf8'), stale);
+    assert.equal(run(script, [], os.tmpdir()).status, 0, relative);
+    assert.equal(fs.readFileSync(artifact, 'utf8'), original);
+    fs.writeFileSync(artifact, original + 'User-owned text\n');
+    assert.notEqual(run(script, [], os.tmpdir()).status, 0, relative);
+    assert.equal(fs.readFileSync(artifact, 'utf8'), original + 'User-owned text\n');
+    fs.writeFileSync(artifact, original);
+  }
 });

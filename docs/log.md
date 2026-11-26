@@ -2,6 +2,10 @@
 
 > 归档正文已从仓库移除；以下记录中的归档名称仅用于追溯历史，不再链接到文件。
 
+## 2026-11-26
+
+- 增加 Antigravity 原生插件入口（`.antigravity-plugin/plugin.json`）：Skill 沿用根目录 `skills/`，常驻规则由 `scripts/sync-plugin-rules.cjs` 生成到 `rules/AGENTS.md`，不走 hook。同步宿主兼容、架构、开发门禁、README 和 ADR-0014；版本升至 0.3.0。
+
 ## 2026-11-19
 
 - 按 [GPT‑6.2 指南与 Flash 兼容边界](skill-and-harness-design.md#维护与对照)调整常驻规则、技能入口与交接提示：区分建议、草稿和实施，明确谁能采取下一步及哪些证据支持交付。保留现有手动入口、审查分工和宿主权限；模型参数不进入通用规则。

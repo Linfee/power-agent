@@ -6,19 +6,19 @@ freshness:
   rules:
     - type: Decision
       strategy: historical
-timestamp: 2026-11-12
+timestamp: 2026-11-26
 ---
 
 # Power-Agent Knowledge Bundle
 
-以当前 Skill、代码和调用元数据为准，按任务选择下列材料。当前产品基线为 0.2.2；安装到某个宿主的副本和版本须另行确认。本仓库采用 Bundle，普通业务项目不因此必须迁移成 Bundle。
+以当前 Skill、代码和调用元数据为准，按任务选择下列材料。当前产品基线为 0.3.0；安装到某个宿主的副本和版本须另行确认。本仓库采用 Bundle，普通业务项目不因此必须迁移成 Bundle。
 
 ## 当前架构与开发
 
 - [系统架构](architecture.md)：Matt 主干的 24 项能力、整包具名组合与状态边界。
 - [工作方式](workflow.md)：授权内连续推进、任务图、真实证据与必要人工决定。
 - [开发指南](development.md)：安装路径、元数据、脚本与验证入口。
-- [宿主兼容性](agent-compatibility.md)：六种宿主的整包安装、常驻规则加载条件和验证边界。
+- [宿主兼容性](agent-compatibility.md)：七种宿主的整包安装、常驻规则加载条件和验证边界。
 - [Skill 设计](skill-and-harness-design.md)：行为缺口、渐进披露和有效对照。
 - [Harness Engineering](harness-engineering.md)：环境、知识与机械化。
 - [ADR-0014](adr/0014-current-baseline.md)：唯一现行决定基线，集中说明能力、自动与手动调用、授权、知识和 hook 的取舍；不需要叠加旧 ADR 才能恢复当前规则。

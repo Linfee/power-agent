@@ -14,6 +14,8 @@ sources:
   - skills/writing-for-agents/references/skill-mechanics.md
   - skills/codebase-design/references/minimal-complete-change.md
   - hooks/defaults.cjs
+  - .antigravity-plugin/plugin.json
+  - scripts/sync-plugin-rules.cjs
   - pi-extension/index.mjs
   - scripts/check-invocation-consistency.sh
 ---
@@ -31,6 +33,8 @@ sources:
 2026-11-12 后续技能重构将入口收敛为 24 个，`dev-docs-maintain` 合并入 `dev-docs`，`knowledge-navigation` 改为手动；本记录第 1、2、3 节已同步当前边界。
 
 2026-11-14 将实现路径的审查改为默认 review–fix 循环，循环规则归实现入口；跳过条件同步到 §2 与[工作方式](../workflow.md#可自动验证的实现)。
+
+2026-11-26 增加 Antigravity 原生插件入口：Skill 保持根目录 `skills/` 布局，常驻规则由既有生成器输出到 `rules/AGENTS.md`；不新增 hook，也不维护第二份规则正文。
 
 ## 1. 能力可组合，入口有边界
 
@@ -62,7 +66,7 @@ sources:
 
 ## 4. 固定规则薄适配，不复制动态产品机制
 
-支持 Claude Code、pi、OMP、Codex、Cursor、Factory/Droid 的插件或包入口，不向业务项目复制规则或提供项目规则配置器。`hooks/defaults.cjs` 读取唯一规则源；Claude、Codex、Droid 使用原生 hook，pi/OMP 使用扩展，Cursor 使用生成的插件规则。安装、启用、信任和实际送达是不同边界，具体限制见[安装指南](../agent-compatibility.md)。
+支持 Claude Code、pi、OMP、Codex、Cursor、Factory/Droid、Antigravity 的插件或包入口，不向业务项目复制规则或提供项目规则配置器。`hooks/defaults.cjs` 读取唯一规则源；Claude、Codex、Droid 使用原生 hook，pi/OMP 使用扩展，Cursor 与 Antigravity 使用生成的插件规则。安装、启用、信任和实际送达是不同边界，具体限制见[安装指南](../agent-compatibility.md)。
 
 只有固定约束，没有可切换模式。保留幂等合并与用户已有文本，不复制 Ponytail 的模式恢复、状态栏、额外会话状态或每工具提醒，不改写 provider payload。先观察工具连续调用、恢复、压缩后与新上下文子代理的真实请求，发现具体送达缺口才补注入点；辅助请求单独判断。
 

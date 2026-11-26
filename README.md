@@ -90,6 +90,15 @@ claude plugin install power-agent@power-agent --scope project
 
 仓库包含 marketplace catalog 与 `.claude-plugin/plugin.json`；安装后在新会话确认插件、hook 与 Skill 的实际加载状态。catalog 校验不等于所有宿主的运行验收。
 
+### Antigravity
+
+```bash
+agy plugin install https://github.com/Linfee/power-agent
+agy plugin list --json
+```
+
+仓库包含 `.antigravity-plugin/plugin.json`；Skill 从 `skills/` 发现，常驻规则由生成器写入 `rules/AGENTS.md`。安装后在新会话确认 Skill、规则和普通 sub-agent 的实际加载；`agy plugin list --json` 只证明插件登记。
+
 ### Codex
 
 ```bash

@@ -90,6 +90,15 @@ claude plugin install power-agent@power-agent --scope project
 
 The repository includes a marketplace catalog and `.claude-plugin/plugin.json`. After installation, verify plugin, hook, and skill loading in a new session; catalog validation is not runtime validation of every host.
 
+### Antigravity
+
+```bash
+agy plugin install https://github.com/Linfee/power-agent
+agy plugin list --json
+```
+
+The repository includes `.antigravity-plugin/plugin.json`; skills are discovered from `skills/`, and the always-on rule is generated to `rules/AGENTS.md`. After installation, verify skill, rule, and ordinary sub-agent loading in a new session; `agy plugin list --json` only proves plugin registration.
+
 ### Codex
 
 ```bash

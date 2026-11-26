@@ -6,7 +6,7 @@ scope:
 
 # 宿主兼容性与安装
 
-Power-Agent 面向 Claude Code、pi、OMP、Codex、Cursor 和 Factory/Droid，以**单个插件或包**分发全部 Skill 与跨任务[最小完整改动默认规则](../skills/codebase-design/references/minimal-complete-change.md)。规则和按需调用的 Skill 作用不同：规则不替代 Skill 的方法，也不保证模型遵守。宿主还需要普通 sub-agent 才能完整使用依赖它的工作方式。
+Power-Agent 面向 Claude Code、pi、OMP、Codex、Cursor、Factory/Droid 和 Antigravity，以**单个插件或包**分发全部 Skill 与跨任务[最小完整改动默认规则](../skills/codebase-design/references/minimal-complete-change.md)。规则和按需调用的 Skill 作用不同：规则不替代 Skill 的方法，也不保证模型遵守。宿主还需要普通 sub-agent 才能完整使用依赖它的工作方式。
 
 安装前审查插件代码和宿主的权限、信任与配置作用域；插件 hook 和扩展会执行代码。不要把插件安装到一个真实账户、授信或修改其设置当作默认授权。正常安装不需要在业务项目中复制规则或运行项目规则配置器。
 
@@ -16,7 +16,7 @@ Power-Agent 面向 Claude Code、pi、OMP、Codex、Cursor 和 Factory/Droid，�
 
 手动入口是 `grill-with-docs`、`to-spec`、`to-tickets`、`wayfinder`、`triage`、`improve-codebase-architecture`、`retro`、`handoff`、`knowledge-navigation`、`setup-power-agent`；其余入口允许模型调用。`implement`、`implement-spec` 及其实际依赖保持自动可达。
 
-手动入口同时提供 `SKILL.md` 的 `disable-model-invocation: true` 与 Codex 的 `agents/openai.yaml` 中 `policy.allow_implicit_invocation: false`。Claude、pi、OMP、Cursor、Droid 使用前者，Codex 使用后者；这些是宿主调用策略，不是通用访问控制，也不授予外部副作用权限。内部调用只指向自动能力，不读取手动正文绕过限制。
+手动入口同时提供 `SKILL.md` 的 `disable-model-invocation: true` 与 Codex 的 `agents/openai.yaml` 中 `policy.allow_implicit_invocation: false`。Claude、pi、OMP、Cursor、Droid、Antigravity 使用前者，Codex 使用后者；这些是宿主调用策略，不是通用访问控制，也不授予外部副作用权限。内部调用只指向自动能力，不读取手动正文绕过限制。
 
 用户显式入口及命名由宿主决定；各宿主的菜单、发现数量及版本限制须分别确认，不能由元数据推断全部通过。另见 [Cursor Skills](https://cursor.com/docs/skills.md) 与 [Factory Skills](https://docs.factory.ai/harness/skills) 的调用开关说明。
 
@@ -71,6 +71,15 @@ codex plugin add power-agent@power-agent
 Cursor 使用插件自己的 `rules/minimal-complete-change.mdc`，而非业务项目的 `.cursor/rules`；该文件作为插件资源安装，与其他宿主共用同一规则源。插件 manifest 还声明 `skills/`。参见 [Cursor 插件格式](https://cursor.com/docs/reference/plugins)。
 
 **版本风险：** Cursor 上游记录过插件中的 `disable-model-invocation: true` Skill 同时从命令菜单消失的问题：2.6.20 获官方确认，3.23.23 仍有报告；未确认目标版本已经修复。见[问题记录](https://github.com/cursor/plugins/issues/527)与[官方论坛](https://forum.cursor.com/t/disable-model-invocation-true-completely-hides-plugin-delivered-skills-from-command-palette/155748)。应以目标版本实测菜单为准，不通过删除调用开关、自动读取手动正文或复制业务项目规则来规避。
+
+### Antigravity
+
+```bash
+agy plugin install https://github.com/Linfee/power-agent
+agy plugin list --json
+```
+
+插件清单在 `.antigravity-plugin/plugin.json`，Skill 从根目录 `skills/` 原生发现，常驻规则由既有生成器写入 `rules/AGENTS.md`（Cursor 使用同一来源生成的 `.mdc`），Antigravity 不经 hook。公开仓库可直接作为安装源；本地开发先运行 `agy plugin validate <checkout>`，再 `agy plugin install <checkout>`。`--strict` 会因多宿主仓库中根 `AGENTS.md`、`hooks/hooks.json` 等预期被忽略的文件失败；CI 使用非 strict，或按[多工具仓库警告](https://antigravity.google/docs/build-plugins#warnings-in-multi-tool-repositories)显式排除这两类路径后再以 `--json` 判定。`agy plugin list --json` 只证明登记与组件发现，Skill、规则及普通 sub-agent 的实际加载须在新会话确认。参见 [Antigravity 插件](https://antigravity.google/docs/plugins)、[构建插件](https://antigravity.google/docs/build-plugins)与[规则](https://antigravity.google/docs/rules)。
 
 ### Factory / Droid
 

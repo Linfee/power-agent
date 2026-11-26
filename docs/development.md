@@ -18,7 +18,7 @@ Skill 名称用小写连字符且与目录一致；description 只负责可区�
 
 跨任务最小完整改动规则只维护在 [`skills/codebase-design/references/minimal-complete-change.md`](../skills/codebase-design/references/minimal-complete-change.md)；`hooks/defaults.cjs` 读取它，原生注入和生成的宿主规则共用这一来源。它不同于按需使用的 `codebase-design` Skill，不应将规则正文手工复制到各适配器。
 
-修改规则后运行 `node scripts/sync-plugin-rules.cjs` 更新 Cursor 插件拥有的 `rules/minimal-complete-change.mdc`；`node scripts/sync-plugin-rules.cjs --check` 只检查是否缺失或过期。六类宿主的分发入口为原生插件或包管理器，无需业务项目规则配置器；各入口的适用条件和实际运行证据见[兼容性指南](agent-compatibility.md)。
+修改规则后运行 `node scripts/sync-plugin-rules.cjs` 更新 Cursor 与 Antigravity 插件拥有的 `rules/minimal-complete-change.mdc` 和 `rules/AGENTS.md`；`node scripts/sync-plugin-rules.cjs --check` 只检查是否缺失或过期。七类宿主的分发入口为原生插件或包管理器，无需业务项目规则配置器；各入口的适用条件和实际运行证据见[兼容性指南](agent-compatibility.md)。
 
 验证集成时在临时项目和隔离 HOME、宿主及 XDG 配置下运行宿主真实入口，分别观察规则是否实际进入上下文、整包 Skill 是否发现、普通 sub-agent 是否可用及其是否收到规则。恢复或压缩上下文、重复注入及更新也应按适用入口覆盖。不要修改真实用户配置或绕过宿主信任，也不要用 manifest 校验、静态文件存在或模型自评代替运行证据。
 
@@ -31,7 +31,7 @@ Skill 名称用小写连字符且与目录一致；description 只负责可区�
 |入口、链接、锚点或明确脚本指针|`python3 scripts/check-skill-references.py`，可传路径限定；修改检查器时运行 `python3 scripts/test-check-skill-references.py`|
 |可选审查 package/workspace CLI|`bash skills/implement/scripts/test-review-package.sh`|
 |wizard 输入、确认与中断清理|`python3 skills/wizard/scripts/test-template.py`；`bash -n skills/wizard/scripts/template.sh`|
-|plugin 或 marketplace|`claude plugin validate . --strict`，另做本地隔离加载消费|
+|plugin 或 marketplace|`claude plugin validate . --strict`；`agy plugin validate .`（多宿主警告按官方过滤），另做本地隔离加载消费|
 |常驻规则、hook、扩展或插件规则生成器|`node --test tests/*.test.cjs`；`node scripts/sync-plugin-rules.cjs --check`；按兼容性指南运行相应宿主隔离验证|
 |其他脚本或行为|最窄真实入口、沙盒、语法或风险边界场景|
 
